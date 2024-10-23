@@ -99,7 +99,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
 
     ///set max scroll extend
-    if (index == _positiveDataList.length - 1) {
+    if (index == _positiveDataList.length - 1 ||
+
+        ///Fix a bug when jump to the last one of the list
+        (index == _positiveDataList.length - 2 &&
+            _relativeItemMap[_positiveDataList.length - 1] != null)) {
       ///calculate height test
       double lastScreenOffset = 0;
       int? lastScreenIndex;
@@ -132,7 +136,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         offsetRectList(_relativeItemMap, needChangeOffset);
 
         ///jump to new offset
-        jumpTo(position.pixels + needChangeOffset);
+        position.setPixels(position.pixels + needChangeOffset);
 
         ///set offset for animation
         notifyActionListeners(
