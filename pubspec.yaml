@@ -1,6 +1,6 @@
 name: free_scroll_listview
 description: "This is a listview support scroll to any index with animation you need. Even though you can reset the hole data and animate to a index you need, Provide users with a pleasant experience."
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/flappygod/free_scroll_listview.git
 
 environment:

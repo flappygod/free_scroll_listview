@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:free_scroll_listview/free_scroll_listview.dart';
 import 'package:flutter/material.dart';
 
@@ -148,6 +149,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.blue,
               ),
               reverse: false,
+              onItemShow: (List<int> dataList) {
+                print(dataList);
+              },
               /*willReachTail: () {
                 return _checkAddTail();
               },

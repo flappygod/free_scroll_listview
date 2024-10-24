@@ -46,6 +46,12 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     _updateScrollRectToController();
   }
 
+  @override
+  void dispose() {
+    widget.controller.removeItemRectOnScreen(widget.relativeIndex);
+    super.dispose();
+  }
+
   ///update scroll rect to controller
   void _updateScrollRectToController() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -79,7 +85,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
           itemBox.size.width,
           itemBox.size.height,
         );
-        widget.controller.addAnchorItemState(widget.relativeIndex, rect);
+        widget.controller.addItemRectOnScreen(widget.relativeIndex, rect);
       } else {
         Rect rect = Rect.fromLTWH(
           offsetItem.dx,
@@ -87,7 +93,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
           itemBox.size.width,
           itemBox.size.height,
         );
-        widget.controller.addAnchorItemState(widget.relativeIndex, rect);
+        widget.controller.addItemRectOnScreen(widget.relativeIndex, rect);
       }
     });
   }

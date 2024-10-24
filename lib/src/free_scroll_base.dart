@@ -49,6 +49,9 @@ void offsetRectList(Map<int, Rect> rectMap, double offset) {
   });
 }
 
+///on item show
+typedef FreeScrollOnItemShow<T> = void Function(List<int> data);
+
 ///animation data
 class AnimationData {
   late Duration duration;

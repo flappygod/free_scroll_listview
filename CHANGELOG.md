@@ -1,3 +1,3 @@
-## 1.0.1
+## 1.0.2
 
-* Fix a bug that when scroll to the last position.
+* Add onItemShow for you to observe which index was show when scroll end.
