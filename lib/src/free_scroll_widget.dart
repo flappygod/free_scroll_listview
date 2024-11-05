@@ -115,7 +115,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       int? lastScreenIndex;
       for (int s = index; s > -_negativeDataList.length; s--) {
         lastScreenOffset += (_cachedItemRectMap[s]?.height ?? 0);
-        if (lastScreenOffset >= listViewHeight) {
+        if (lastScreenOffset.round() >= listViewHeight.round()) {
           lastScreenIndex = s;
           break;
         }
@@ -731,14 +731,20 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       _timeStampDebouncer.run(widget.willReachHead);
     }
 
+    bool isAnimating = _animationController?.isAnimating ?? false;
+
     ///通知消息被展示
-    if (notification is ScrollEndNotification &&
-        !(_animationController?.isAnimating ?? false)) {
+    if (notification is ScrollEndNotification && !isAnimating) {
       _notifyOnShow();
     }
 
     ///通知Index
-    _notifyIndex();
+    if (((notification is ScrollUpdateNotification &&
+                notification.dragDetails != null) ||
+            (notification is ScrollEndNotification)) &&
+        !isAnimating) {
+      _notifyIndex();
+    }
 
     return false;
   }
@@ -790,6 +796,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     if (widget.onIndexChange != null) {
       ///offset count
       int offsetCount = widget.controller._negativeDataList.length;
+      double pixels = widget.controller.position.pixels;
 
       ///keys
       for (int key in widget.controller._visibleItemRectMap.keys) {
@@ -799,11 +806,11 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         }
 
         ///offset top
-        double offsetTop = rect.top - widget.controller.position.pixels;
-        double offsetBottom = rect.bottom - widget.controller.position.pixels;
+        double offsetTop = rect.top - pixels;
+        double offsetBottom = rect.bottom - pixels;
 
         ///Listview height
-        if (offsetTop <= 0 && offsetBottom >= 0) {
+        if (offsetTop.round() <= 0 && offsetBottom.round() > 0) {
           int index = key + offsetCount;
           if (_currentIndex != index) {
             _currentIndex = index;
@@ -845,7 +852,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
   ///force negative pixels
   void _forceNegativePixels(double offset) {
-    if(hasPixels){
+    if (hasPixels && hasContentDimensions) {
       super.forcePixels(-offset);
     }
   }
