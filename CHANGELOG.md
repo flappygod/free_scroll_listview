@@ -1,3 +1,4 @@
-## 1.0.2
+## 1.0.3
 
-* Add onItemShow for you to observe which index was show when scroll end.
+* Fix bugs when scroll view appear with animations.
+* Fix bugs which changed the init data list.

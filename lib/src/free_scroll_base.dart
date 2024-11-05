@@ -55,7 +55,6 @@ typedef FreeScrollOnItemShow = void Function(List<int> data);
 ///on item show
 typedef FreeScrollOnIndexChange = void Function(int data);
 
-
 ///animation data
 class AnimationData {
   late Duration duration;
