@@ -1,3 +1,3 @@
-## 1.0.4
+## 1.0.5
 
-* Handling a boundary issue.
+* Handling a boundary issue which may cause a wrong index callback.
