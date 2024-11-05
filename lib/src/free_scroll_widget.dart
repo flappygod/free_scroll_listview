@@ -115,7 +115,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       int? lastScreenIndex;
       for (int s = index; s > -_negativeDataList.length; s--) {
         lastScreenOffset += (_cachedItemRectMap[s]?.height ?? 0);
-        if (lastScreenOffset > listViewHeight) {
+        if (lastScreenOffset >= listViewHeight) {
           lastScreenIndex = s;
           break;
         }

@@ -1,4 +1,3 @@
-## 1.0.3
+## 1.0.4
 
-* Fix bugs when scroll view appear with animations.
-* Fix bugs which changed the init data list.
+* Handling a boundary issue.
