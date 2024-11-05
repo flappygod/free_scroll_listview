@@ -845,7 +845,9 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
   ///force negative pixels
   void _forceNegativePixels(double offset) {
-    super.forcePixels(-offset);
+    if(hasPixels){
+      super.forcePixels(-offset);
+    }
   }
 
   @override
