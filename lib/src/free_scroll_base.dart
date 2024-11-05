@@ -50,7 +50,11 @@ void offsetRectList(Map<int, Rect> rectMap, double offset) {
 }
 
 ///on item show
-typedef FreeScrollOnItemShow<T> = void Function(List<int> data);
+typedef FreeScrollOnItemShow = void Function(List<int> data);
+
+///on item show
+typedef FreeScrollOnIndexChange = void Function(int data);
+
 
 ///animation data
 class AnimationData {

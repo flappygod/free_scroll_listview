@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:free_scroll_listview/src/free_scroll_observe.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
 import 'package:synchronized/synchronized.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'free_scroll_wrapper.dart';
@@ -54,7 +54,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   //listview offset
-  double get listViewOffset{
+  double get listViewOffset {
     RenderBox? box = _listViewKey.currentContext?.findRenderObject() as RenderBox?;
     Offset? position = box?.localToGlobal(Offset.zero);
     return position?.dy ?? 0;
@@ -440,6 +440,9 @@ class FreeScrollListView<T> extends StatefulWidget {
   ///item show
   final FreeScrollOnItemShow? onItemShow;
 
+  ///index changed
+  final FreeScrollOnIndexChange? onIndexChange;
+
   const FreeScrollListView({
     super.key,
     required this.controller,
@@ -455,6 +458,7 @@ class FreeScrollListView<T> extends StatefulWidget {
     this.headerView,
     this.footerView,
     this.onItemShow,
+    this.onIndexChange,
   });
 
   @override
@@ -475,6 +479,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
   AnimationController? _animationController;
   Animation<double>? _animation;
   double _animationOffset = 0;
+
+  ///current index
+  int _currentIndex = -1;
 
   ///init listener
   void _initListener() {
@@ -710,6 +717,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
       _notifyOnShow();
     }
 
+    ///通知Index
+    _notifyIndex();
+
     return false;
   }
 
@@ -724,6 +734,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
       List<int> keys = [];
 
       int offsetCount = widget.controller._negativeDataList.length;
+      double listViewHeight = widget.controller.listViewHeight;
 
       ///keys
       for (int key in widget.controller._visibleItemRectMap.keys) {
@@ -736,10 +747,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
         double offsetTop = rect.top - widget.controller.position.pixels;
         double offsetBottom = rect.bottom - widget.controller.position.pixels;
 
-        double listViewHeight = widget.controller.listViewHeight;
         ///Listview height
-        if ((offsetTop >= 0 && offsetBottom <= listViewHeight) ||
-            offsetTop <= 0 && offsetBottom >= listViewHeight) {
+        if ((offsetTop >= 0 && offsetBottom <= listViewHeight) || offsetTop <= 0 && offsetBottom >= listViewHeight) {
           keys.add(key + offsetCount);
         }
       }
@@ -747,6 +756,39 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
       ///keys data
       if (keys.isNotEmpty) {
         widget.onItemShow!(keys);
+      }
+    }
+  }
+
+  ///notify index if changed
+  void _notifyIndex() {
+    if (!mounted) {
+      return;
+    }
+
+    if (widget.onIndexChange != null) {
+      ///offset count
+      int offsetCount = widget.controller._negativeDataList.length;
+
+      ///keys
+      for (int key in widget.controller._visibleItemRectMap.keys) {
+        Rect? rect = widget.controller._visibleItemRectMap[key];
+        if (rect == null) {
+          continue;
+        }
+
+        ///offset top
+        double offsetTop = rect.top - widget.controller.position.pixels;
+        double offsetBottom = rect.bottom - widget.controller.position.pixels;
+
+        ///Listview height
+        if (offsetTop <= 0 && offsetBottom >= 0) {
+          int index = key + offsetCount;
+          if (_currentIndex != index) {
+            _currentIndex = index;
+            widget.onIndexChange!(_currentIndex);
+          }
+        }
       }
     }
   }
