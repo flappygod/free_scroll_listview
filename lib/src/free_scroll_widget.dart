@@ -739,8 +739,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     }
 
     ///通知Index
-    if (((notification is ScrollUpdateNotification &&
-                notification.dragDetails != null) ||
+    if (((notification is ScrollUpdateNotification) ||
             (notification is ScrollEndNotification)) &&
         !isAnimating) {
       _notifyIndex();
@@ -815,6 +814,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           if (_currentIndex != index) {
             _currentIndex = index;
             widget.onIndexChange!(_currentIndex);
+            break;
           }
         }
       }
