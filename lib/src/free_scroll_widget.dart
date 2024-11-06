@@ -48,14 +48,21 @@ class FreeScrollListViewController<T> extends ScrollController {
   //global key
   final GlobalKey _listViewKey = GlobalKey();
 
-  //listview height
+  ///current index
+  int _currentIndex = 0;
+
+  int get currentIndex {
+    return _currentIndex;
+  }
+
+  ///listview height
   double get listViewHeight {
     RenderBox? box =
         _listViewKey.currentContext?.findRenderObject() as RenderBox?;
     return box?.size.height ?? 0;
   }
 
-  //listview offset
+  ///listview offset
   double get listViewOffset {
     RenderBox? box =
         _listViewKey.currentContext?.findRenderObject() as RenderBox?;
@@ -66,7 +73,6 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///notify negative height
   void _setHeaderViewHeight(double height) {
     _headerViewHeight = height;
-    //position negative scroll position
     if (position is _NegativedScrollPosition) {
       (position as _NegativedScrollPosition).minScrollExtend =
           _negativeHeight - _headerViewHeight;
@@ -76,7 +82,6 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///set negative height
   void _setNegativeHeight(double height) {
     _negativeHeight = height;
-    //position negative scroll position
     if (position is _NegativedScrollPosition) {
       (position as _NegativedScrollPosition).minScrollExtend =
           _negativeHeight - _headerViewHeight;
@@ -87,12 +92,6 @@ class FreeScrollListViewController<T> extends ScrollController {
   void removeItemRectOnScreen(int index) {
     _visibleItemRectMap.removeWhere((pos, rect) => pos == index);
   }
-
-  ///remove anchor item state
-  /*void removeItemRectOnScreen(int index) {
-    _relativeItemMap.removeWhere((pos,rect)=>pos==index);
-    _onScreenItemMap.removeWhere((pos,rect)=>pos==index);
-  }*/
 
   ///add anchor item state
   void addItemRectOnScreen(int index, Rect rect) {
@@ -199,7 +198,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///set data list
   set dataList(List<T> dataList) {
     _lock.synchronized(() {
-      _negativeHeight = 0;
+      _setNegativeHeight(0);
       _positiveDataList.clear();
       _negativeDataList.clear();
       _positiveDataList.addAll(dataList);
@@ -487,9 +486,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   AnimationController? _animationController;
   Animation<double>? _animation;
   double _animationOffset = 0;
-
-  ///current index
-  int _currentIndex = -1;
 
   ///init listener
   void _initListener() {
@@ -811,9 +807,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         ///Listview height
         if (offsetTop.round() <= 0 && offsetBottom.round() > 0) {
           int index = key + offsetCount;
-          if (_currentIndex != index) {
-            _currentIndex = index;
-            widget.onIndexChange!(_currentIndex);
+          if (widget.controller._currentIndex != index) {
+            widget.controller._currentIndex = index;
+            widget.onIndexChange!(index);
             break;
           }
         }
