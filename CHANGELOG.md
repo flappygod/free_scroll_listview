@@ -1,3 +1,3 @@
-## 1.0.5
+## 1.0.6
 
-* Handling a boundary issue which may cause a wrong index callback.
+* Fix a bug that may cause an over-scrolling.
