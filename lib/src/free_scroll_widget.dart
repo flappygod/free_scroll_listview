@@ -849,8 +849,8 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     _minScrollExtend = data;
     _callback = () {
       if (_minScrollExtend != double.negativeInfinity &&
-          pixels < _minScrollExtend - 100) {
-        jumpTo(_minScrollExtend - 100);
+          pixels < _minScrollExtend - 200) {
+        jumpTo(_minScrollExtend - 200);
       }
     };
     removeListener(_callback);
