@@ -1,3 +1,3 @@
-## 1.0.6
+## 1.0.7
 
-* Fix a bug that may cause an over-scrolling.
+* Fix a bug that may cause can't scroll to actual index.
