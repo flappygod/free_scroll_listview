@@ -201,6 +201,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       _setNegativeHeight(0);
       _positiveDataList.clear();
       _negativeDataList.clear();
+      _cachedItemRectMap.clear();
+      _visibleItemRectMap.clear();
       _positiveDataList.addAll(dataList);
       notifyActionListeners(FreeScrollListViewActionType.notifyData);
     });
@@ -243,6 +245,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///insert all data
       _negativeDataList.clear();
       _positiveDataList.clear();
+      _cachedItemRectMap.clear();
+      _visibleItemRectMap.clear();
       _positiveDataList.addAll(dataList);
 
       ///notify data
@@ -343,17 +347,14 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///_negativeHeight
     _setNegativeHeight(double.negativeInfinity);
 
-    ///negative
-    _negativeDataList.clear();
-    _negativeDataList.addAll(newNegativeList);
-
-    ///positive
-    _positiveDataList.clear();
-    _positiveDataList.addAll(newPositiveList);
-
     ///clear data
+    _negativeDataList.clear();
+    _positiveDataList.clear();
     _cachedItemRectMap.clear();
     _visibleItemRectMap.clear();
+
+    _negativeDataList.addAll(newNegativeList);
+    _positiveDataList.addAll(newPositiveList);
 
     ///refresh
     notifyActionListeners(FreeScrollListViewActionType.notifyData);
