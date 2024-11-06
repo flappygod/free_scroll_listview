@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 ///如果项目的大小是固定的，则无需将小部件包装到项目中
 class AnchorItemWrapper extends StatefulWidget {
   const AnchorItemWrapper({
-    required this.relativeIndex,
+    required this.actualIndex,
     required this.controller,
     this.reverse = false,
     this.listViewState,
@@ -23,7 +23,7 @@ class AnchorItemWrapper extends StatefulWidget {
   final Widget? child;
 
   //项目的索引
-  final int relativeIndex;
+  final int actualIndex;
 
   //reverse
   final bool reverse;
@@ -48,7 +48,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   void dispose() {
-    widget.controller.removeItemRectOnScreen(widget.relativeIndex);
+    widget.controller.removeItemRectOnScreen(widget.actualIndex);
     super.dispose();
   }
 
@@ -85,7 +85,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
           itemBox.size.width,
           itemBox.size.height,
         );
-        widget.controller.addItemRectOnScreen(widget.relativeIndex, rect);
+        widget.controller.addItemRectOnScreen(widget.actualIndex, rect);
       } else {
         Rect rect = Rect.fromLTWH(
           offsetItem.dx,
@@ -93,7 +93,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
           itemBox.size.width,
           itemBox.size.height,
         );
-        widget.controller.addItemRectOnScreen(widget.relativeIndex, rect);
+        widget.controller.addItemRectOnScreen(widget.actualIndex, rect);
       }
     });
   }
