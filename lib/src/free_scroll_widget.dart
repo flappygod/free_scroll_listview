@@ -830,7 +830,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 ///negatived scroll position
 class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   ///min scroll extend
-  double _minScrollExtend = 0;
+  double _minScrollExtend = double.negativeInfinity;
 
   ///callback
   late VoidCallback _callback;
