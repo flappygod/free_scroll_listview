@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'free_scroll_wrapper.dart';
 import 'free_scroll_base.dart';
 import 'dart:async';
+import 'dart:math';
 
 ///addition controller
 typedef FreeScrollListControllerListener = Future Function(
@@ -48,9 +49,18 @@ class FreeScrollListViewController<T> extends ScrollController {
   //global key
   final GlobalKey _listViewKey = GlobalKey();
 
-  ///current index
+  //current index
   int _currentIndex = 0;
 
+  //is animating
+  bool _isAnimating = false;
+
+  //check is animating
+  bool get isAnimating {
+    return _isAnimating;
+  }
+
+  //get current index
   int get currentIndex {
     return _currentIndex;
   }
@@ -98,19 +108,24 @@ class FreeScrollListViewController<T> extends ScrollController {
     _cachedItemRectMap[index] = rect;
     _visibleItemRectMap[index] = rect;
 
-    ///count
-    int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
-
     ///set min scroll extend
     if (index == 0) {
       _setNegativeHeight(rect.top);
     }
 
-    ///set max scroll extend
-    if (index == maxIndex ||
+    ///check when  animating
+    if (isAnimating) {
+      _checkAndResetIndex();
+    }
+  }
 
-        ///Fix a bug when jump to the last one of the list
-        (index == (maxIndex - 1) && _cachedItemRectMap[maxIndex] != null)) {
+  ///check and reset index
+  void _checkAndResetIndex() {
+    ///get max index
+    int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
+
+    ///set max scroll extend
+    if (_cachedItemRectMap[maxIndex] != null) {
       ///calculate height test
       double lastScreenOffset = 0;
       int? lastScreenIndex;
@@ -138,6 +153,11 @@ class FreeScrollListViewController<T> extends ScrollController {
           needChangeOffset += (_cachedItemRectMap[s]?.height ?? 0);
         }
 
+        ///change
+        if (position.pixels + needChangeOffset > position.maxScrollExtent) {
+          return;
+        }
+
         ///offset changed
         for (int s = 0; s <= (tempCount - lastScreenIndex); s++) {
           _positiveDataList.insert(0, _negativeDataList.last);
@@ -145,14 +165,19 @@ class FreeScrollListViewController<T> extends ScrollController {
         }
         offsetRectList(_cachedItemRectMap, needChangeOffset);
 
-        ///jump to new offset
-        position.correctPixels(position.pixels + needChangeOffset);
+        ///when  animating  just correct by and notifyAnimOffset
+        if (_isAnimating) {
+          position.correctBy(needChangeOffset);
+          notifyActionListeners(
+            FreeScrollListViewActionType.notifyAnimOffset,
+            data: needChangeOffset,
+          );
+        }
 
-        ///set offset for animation
-        notifyActionListeners(
-          FreeScrollListViewActionType.notifyAnimOffset,
-          data: needChangeOffset,
-        );
+        ///when  not animating ,use jump to
+        else {
+          position.jumpTo(position.pixels + needChangeOffset);
+        }
 
         ///setState
         notifyActionListeners(
@@ -255,7 +280,6 @@ class FreeScrollListViewController<T> extends ScrollController {
       _positiveDataList.addAll(dataList);
 
       ///notify data
-      await notifyActionListeners(FreeScrollListViewActionType.notifyData);
       await scrollToIndexSkipAlign(
         index,
         align: align,
@@ -270,11 +294,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) {
-    return animateTo(
+    return _handleAnimation(animateTo(
       _negativeHeight,
       duration: duration,
       curve: curve,
-    );
+    ));
   }
 
   ///scroll to max
@@ -282,11 +306,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) {
-    return animateTo(
+    return _handleAnimation(animateTo(
       position.maxScrollExtent,
       duration: duration,
       curve: curve,
-    );
+    ));
   }
 
   ///scroll to index
@@ -299,11 +323,17 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///if index is exists
     if (rect != null) {
-      return animateTo(
-        rect.top + _anchorOffset,
+      double toOffset = rect.top + _anchorOffset;
+      if (hasClients &&
+          position.maxScrollExtent != double.infinity &&
+          position.maxScrollExtent != double.maxFinite) {
+        toOffset = min(position.maxScrollExtent, toOffset);
+      }
+      return _handleAnimation(animateTo(
+        toOffset,
         duration: duration,
         curve: curve,
-      );
+      ));
     }
 
     ///if index is not exists
@@ -370,21 +400,32 @@ class FreeScrollListViewController<T> extends ScrollController {
           listViewHeight + _anchorOffset,
           0 + _anchorOffset,
         );
-        return notifyActionListeners(
+        return _handleAnimation(notifyActionListeners(
           FreeScrollListViewActionType.notifyAnim,
           data: data,
-        );
+        ));
       case FreeScrollAlign.topToBottom:
         AnimationData data = AnimationData(
           duration,
           -listViewHeight + _anchorOffset,
           0 + _anchorOffset,
         );
-        return notifyActionListeners(
+        return _handleAnimation(notifyActionListeners(
           FreeScrollListViewActionType.notifyAnim,
           data: data,
-        );
+        ));
+      case FreeScrollAlign.directJumpTo:
+        jumpTo(0);
+        return Future.delayed(Duration.zero);
     }
+  }
+
+  ///handler animation
+  Future _handleAnimation(Future futureFunction) async {
+    _isAnimating = true;
+    return futureFunction.whenComplete(() {
+      _isAnimating = false;
+    });
   }
 
   @override
@@ -546,10 +587,29 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       end: data.endPosition,
     ).animate(_animationController!)
       ..addListener(() {
-        if (_animation?.value != null) {
-          widget.controller.position.jumpTo(
-            _animation!.value + _animationOffset,
-          );
+        ///is null
+        if (_animation?.value == null) {
+          return;
+        }
+
+        ///set offset
+        double offsetTo = _animation!.value + _animationOffset;
+
+        ///check max scroll extend
+        if (offsetTo <= widget.controller.position.maxScrollExtent ||
+            widget.controller.position.maxScrollExtent == double.infinity ||
+            widget.controller.position.maxScrollExtent == double.maxFinite) {
+          widget.controller.position.jumpTo(offsetTo);
+        }
+
+        ///jump to max and stop animation
+        else {
+          widget.controller.position
+              .jumpTo(widget.controller.position.maxScrollExtent);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            widget.controller.position
+                .jumpTo(widget.controller.position.maxScrollExtent);
+          });
         }
       });
 
@@ -761,6 +821,11 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       _notifyIndex();
     }
 
+    ///check need reset index when scroll end
+    if (notification is ScrollEndNotification) {
+      widget.controller._checkAndResetIndex();
+    }
+
     return false;
   }
 
@@ -868,8 +933,8 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     _minScrollExtend = data;
     _callback = () {
       if (_minScrollExtend != double.negativeInfinity &&
-          pixels < _minScrollExtend - 200) {
-        jumpTo(_minScrollExtend - 200);
+          pixels < _minScrollExtend - 100) {
+        jumpTo(_minScrollExtend - 100);
       }
     };
     removeListener(_callback);

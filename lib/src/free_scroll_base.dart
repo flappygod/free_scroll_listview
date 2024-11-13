@@ -72,4 +72,5 @@ class AnimationData {
 enum FreeScrollAlign {
   topToBottom,
   bottomToTop,
+  directJumpTo,
 }

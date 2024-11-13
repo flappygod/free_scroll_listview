@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:free_scroll_listview/free_scroll_listview.dart';
 import 'package:flutter/material.dart';
 
@@ -88,8 +87,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 99,
-      align: FreeScrollAlign.topToBottom,
+      index: 94,
+      align: FreeScrollAlign.directJumpTo,
     );
   }
 
@@ -123,7 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
               behavior: HitTestBehavior.translucent,
               onTap: () {
                 _controller.scrollToIndex(
-                  80,
+                  99,
                 );
               },
               child: Container(
