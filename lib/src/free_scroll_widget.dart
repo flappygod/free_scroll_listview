@@ -122,7 +122,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
 
     ///when last index show
-    if (index == maxIndex) {
+    if (index == maxIndex ||
+        (index == (maxIndex - 1) && _cachedItemRectMap[maxIndex] != null)) {
       _checkAndResetIndex();
     }
   }
@@ -175,17 +176,18 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///when  animating  just correct by and notifyAnimOffset
         if (_isAnimating) {
-          position.correctBy(needChangeOffset);
-          notifyActionListeners(
-            FreeScrollListViewActionType.notifyAnimOffset,
-            data: needChangeOffset,
-          );
+          position.correctPixels(position.pixels + needChangeOffset);
         }
-
-        ///when  not animating ,use jump to
+        ///when not animating,use jump to
         else {
           position.jumpTo(position.pixels + needChangeOffset);
         }
+
+        ///set offset for animation
+        notifyActionListeners(
+          FreeScrollListViewActionType.notifyAnimOffset,
+          data: needChangeOffset,
+        );
 
         ///setState
         notifyActionListeners(
@@ -288,6 +290,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _positiveDataList.addAll(dataList);
 
       ///notify data
+      await notifyActionListeners(FreeScrollListViewActionType.notifyData);
       await scrollToIndexSkipAlign(
         index,
         align: align,
@@ -602,8 +605,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
         ///set offset
         double offsetTo = _animation!.value + _animationOffset;
-
-        ///check max scroll extend
+        widget.controller.position.jumpTo(offsetTo);
+        /*///check max scroll extend
         if (offsetTo <= widget.controller.position.maxScrollExtent ||
             widget.controller.position.maxScrollExtent == double.infinity ||
             widget.controller.position.maxScrollExtent == double.maxFinite) {
@@ -618,7 +621,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
             widget.controller.position
                 .jumpTo(widget.controller.position.maxScrollExtent);
           });
-        }
+        }*/
       });
 
     ///start animation
