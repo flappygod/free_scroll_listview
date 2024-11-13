@@ -176,7 +176,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///when  not animating ,use jump to
         else {
-          position.jumpTo(position.pixels + needChangeOffset);
+          position.setPixels(position.pixels + needChangeOffset);
         }
 
         ///setState
@@ -416,7 +416,9 @@ class FreeScrollListViewController<T> extends ScrollController {
         ));
       case FreeScrollAlign.directJumpTo:
         jumpTo(0);
-        return Future.delayed(Duration.zero);
+        return notifyActionListeners(
+          FreeScrollListViewActionType.notifyJump,
+        );
     }
   }
 
@@ -425,6 +427,9 @@ class FreeScrollListViewController<T> extends ScrollController {
     _isAnimating = true;
     return futureFunction.whenComplete(() {
       _isAnimating = false;
+      notifyActionListeners(
+        FreeScrollListViewActionType.notifyJump,
+      );
     });
   }
 
@@ -556,6 +561,14 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         case FreeScrollListViewActionType.notifyAnimOffset:
           _animationOffset = data;
           break;
+
+        ///start animation
+        case FreeScrollListViewActionType.notifyJump:
+          Future.delayed(const Duration(milliseconds: 100)).then((_) {
+            _notifyIndex();
+            _notifyOnShow();
+          });
+          break;
       }
     };
     widget.controller.addActionListener(_listener);
@@ -594,7 +607,20 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
         ///set offset
         double offsetTo = _animation!.value + _animationOffset;
-        widget.controller.position.jumpTo(offsetTo);
+
+        ///check max scroll extend
+        if (offsetTo <= widget.controller.position.maxScrollExtent) {
+          widget.controller.position.jumpTo(offsetTo);
+          return;
+        }
+
+        ///only top to bottom need this
+        if (data.endPosition > data.startPosition &&
+            widget.controller.position.pixels.round() !=
+                widget.controller.position.maxScrollExtent.round()) {
+          widget.controller.position
+              .jumpTo(widget.controller.position.maxScrollExtent);
+        }
       });
 
     ///start animation
@@ -625,10 +651,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void _initHeight() {
     ///get height
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
       _notifyOnShow();
+      _notifyIndex();
     });
   }
 
@@ -791,23 +815,26 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       _timeStampDebouncer.run(widget.willReachHead);
     }
 
-    bool isAnimating = _animationController?.isAnimating ?? false;
+    ///滚动结束的时候检查是否到达最大
+    if (notification is ScrollEndNotification) {
+      widget.controller._checkAndResetIndex();
+    }
+
+    ///动画过程中不需要处理
+    ///bool isAnimating = _animationController?.isAnimating ?? false;
+    if (widget.controller.isAnimating) {
+      return false;
+    }
 
     ///通知消息被展示
-    if (notification is ScrollEndNotification && !isAnimating) {
+    if (notification is ScrollEndNotification) {
       _notifyOnShow();
     }
 
     ///通知Index
-    if (((notification is ScrollUpdateNotification) ||
-            (notification is ScrollEndNotification)) &&
-        !isAnimating) {
+    if (notification is ScrollUpdateNotification ||
+        notification is ScrollEndNotification) {
       _notifyIndex();
-    }
-
-    ///check need reset index when scroll end
-    if (notification is ScrollEndNotification) {
-      widget.controller._checkAndResetIndex();
     }
 
     return false;

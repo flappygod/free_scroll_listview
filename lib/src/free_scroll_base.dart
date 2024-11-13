@@ -5,6 +5,7 @@ enum FreeScrollListViewActionType {
   notifyData,
   notifyAnim,
   notifyAnimOffset,
+  notifyJump,
 }
 
 ///time stamp debouncer

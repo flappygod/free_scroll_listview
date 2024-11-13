@@ -148,6 +148,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.blue,
               ),
               reverse: false,
+              onIndexChange: (int index) {
+                print("A" + index.toString());
+              },
               onItemShow: (List<int> dataList) {
                 print(dataList);
               },
