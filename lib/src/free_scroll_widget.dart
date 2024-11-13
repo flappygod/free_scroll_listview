@@ -73,7 +73,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///notify negative height
   void _setHeaderViewHeight(double height) {
     _headerViewHeight = height;
-    if (position is _NegativedScrollPosition) {
+    if (hasClients && position is _NegativedScrollPosition) {
       (position as _NegativedScrollPosition).minScrollExtend =
           _negativeHeight - _headerViewHeight;
     }
@@ -82,7 +82,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///set negative height
   void _setNegativeHeight(double height) {
     _negativeHeight = height;
-    if (position is _NegativedScrollPosition) {
+    if (hasClients && position is _NegativedScrollPosition) {
       (position as _NegativedScrollPosition).minScrollExtend =
           _negativeHeight - _headerViewHeight;
     }
@@ -508,7 +508,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
         ///start animation
         case FreeScrollListViewActionType.notifyAnim:
-          _startAnimation(data);
+          await _startAnimation(data);
           break;
 
         ///start animation
@@ -521,14 +521,26 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   }
 
   ///start animation
-  void _startAnimation(AnimationData data) {
+  Future _startAnimation(AnimationData data) {
     _cancelAnimation();
+
+    ///completer
+    Completer completer = Completer();
 
     ///Define a custom animation from start to end
     _animationController = AnimationController(
       duration: data.duration,
       vsync: this,
     );
+
+    ///add status listener
+    _animationController?.addStatusListener((status) {
+      if (!(_animationController?.isAnimating ?? false)) {
+        completer.complete();
+      }
+    });
+
+    ///new animation
     _animation = Tween<double>(
       begin: data.startPosition,
       end: data.endPosition,
@@ -543,12 +555,15 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
     ///start animation
     _animationController?.forward(from: 0);
+
+    return completer.future;
   }
 
   ///cancel animation
   void _cancelAnimation() {
     if (_animationController?.isAnimating ?? false) {
       _animationController?.stop();
+      _animationController?.reset();
     }
     _animationOffset = 0;
   }
