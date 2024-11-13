@@ -108,22 +108,13 @@ class FreeScrollListViewController<T> extends ScrollController {
     _cachedItemRectMap[index] = rect;
     _visibleItemRectMap[index] = rect;
 
-    ///get max index
-    int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
-
     ///set min scroll extend
     if (index == 0) {
       _setNegativeHeight(rect.top);
     }
 
-    ///not animating do nothing
-    if (!isAnimating) {
-      return;
-    }
-
-    ///when last index show
-    if (index == maxIndex ||
-        (index == (maxIndex - 1) && _cachedItemRectMap[maxIndex] != null)) {
+    ///check when  animating
+    if (isAnimating) {
       _checkAndResetIndex();
     }
   }
@@ -176,18 +167,17 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///when  animating  just correct by and notifyAnimOffset
         if (_isAnimating) {
-          position.correctPixels(position.pixels + needChangeOffset);
+          position.correctBy(needChangeOffset);
+          notifyActionListeners(
+            FreeScrollListViewActionType.notifyAnimOffset,
+            data: needChangeOffset,
+          );
         }
-        ///when not animating,use jump to
+
+        ///when  not animating ,use jump to
         else {
           position.jumpTo(position.pixels + needChangeOffset);
         }
-
-        ///set offset for animation
-        notifyActionListeners(
-          FreeScrollListViewActionType.notifyAnimOffset,
-          data: needChangeOffset,
-        );
 
         ///setState
         notifyActionListeners(
@@ -290,7 +280,6 @@ class FreeScrollListViewController<T> extends ScrollController {
       _positiveDataList.addAll(dataList);
 
       ///notify data
-      await notifyActionListeners(FreeScrollListViewActionType.notifyData);
       await scrollToIndexSkipAlign(
         index,
         align: align,
@@ -606,22 +595,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         ///set offset
         double offsetTo = _animation!.value + _animationOffset;
         widget.controller.position.jumpTo(offsetTo);
-        /*///check max scroll extend
-        if (offsetTo <= widget.controller.position.maxScrollExtent ||
-            widget.controller.position.maxScrollExtent == double.infinity ||
-            widget.controller.position.maxScrollExtent == double.maxFinite) {
-          widget.controller.position.jumpTo(offsetTo);
-        }
-
-        ///jump to max and stop animation
-        else {
-          widget.controller.position
-              .jumpTo(widget.controller.position.maxScrollExtent);
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            widget.controller.position
-                .jumpTo(widget.controller.position.maxScrollExtent);
-          });
-        }*/
       });
 
     ///start animation
