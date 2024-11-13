@@ -1,3 +1,3 @@
-## 1.0.7
+## 1.0.8
 
-* Fix a bug that may cause can't scroll to actual index.
+* Fix a bug when set dataList during build.
