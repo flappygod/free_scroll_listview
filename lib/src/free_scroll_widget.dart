@@ -609,7 +609,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         double offsetTo = _animation!.value + _animationOffset;
 
         ///check max scroll extend
-        if (offsetTo <= widget.controller.position.maxScrollExtent) {
+        if (offsetTo <= widget.controller.position.maxScrollExtent &&
+            widget.controller.hasClients &&
+            widget.controller.position.hasPixels) {
           widget.controller.position.jumpTo(offsetTo);
           return;
         }
@@ -617,7 +619,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         ///only top to bottom need this
         if (data.endPosition > data.startPosition &&
             widget.controller.position.pixels.round() !=
-                widget.controller.position.maxScrollExtent.round()) {
+                widget.controller.position.maxScrollExtent.round() &&
+            widget.controller.hasClients &&
+            widget.controller.position.hasPixels) {
           widget.controller.position
               .jumpTo(widget.controller.position.maxScrollExtent);
         }
@@ -944,7 +948,8 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     _minScrollExtend = data;
     _callback = () {
       if (_minScrollExtend != double.negativeInfinity &&
-          pixels < _minScrollExtend - 100) {
+          pixels < _minScrollExtend - 100 &&
+          hasPixels) {
         jumpTo(_minScrollExtend - 100);
       }
     };
