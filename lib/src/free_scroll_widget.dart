@@ -535,7 +535,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   ///animation controller and offset
   AnimationController? _animationController;
-  Animation<double>? _animation;
   double _animationOffset = 0;
 
   ///init listener
@@ -582,53 +581,58 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     Completer completer = Completer();
 
     ///Define a custom animation from start to end
-    _animationController = AnimationController(
+    AnimationController animationController = AnimationController(
       duration: data.duration,
       vsync: this,
     );
 
     ///add status listener
-    _animationController?.addStatusListener((status) {
-      if (!(_animationController?.isAnimating ?? false)) {
+    animationController.addStatusListener((status) {
+      if (!animationController.isAnimating) {
         completer.complete();
       }
     });
 
     ///new animation
-    _animation = Tween<double>(
+    Animation<double> animation = Tween<double>(
       begin: data.startPosition,
       end: data.endPosition,
-    ).animate(_animationController!)
-      ..addListener(() {
-        ///is null
-        if (_animation?.value == null) {
-          return;
-        }
+    ).animate(animationController);
+    animation.addListener(() {
+      ///controller
+      if (animationController != _animationController) {
+        return;
+      }
 
-        ///set offset
-        double offsetTo = _animation!.value + _animationOffset;
+      ///set offset
+      double offsetTo = animation.value + _animationOffset;
 
-        ///check max scroll extend
-        if (offsetTo <= widget.controller.position.maxScrollExtent &&
-            widget.controller.hasClients &&
-            widget.controller.position.hasPixels) {
-          widget.controller.position.jumpTo(offsetTo);
-          return;
-        }
+      ///max scroll extend
+      double maxScrollExtent = widget.controller.position.maxScrollExtent;
 
-        ///only top to bottom need this
-        if (data.endPosition > data.startPosition &&
-            widget.controller.position.pixels.round() !=
-                widget.controller.position.maxScrollExtent.round() &&
-            widget.controller.hasClients &&
-            widget.controller.position.hasPixels) {
-          widget.controller.position
-              .jumpTo(widget.controller.position.maxScrollExtent);
-        }
-      });
+      ///check max scroll extend
+      if (offsetTo <= maxScrollExtent &&
+          widget.controller.hasClients &&
+          widget.controller.position.hasPixels) {
+        widget.controller.position.jumpTo(offsetTo);
+        return;
+      }
+
+      ///only top to bottom need this
+      if (data.endPosition > data.startPosition &&
+          widget.controller.position.pixels.round() !=
+              maxScrollExtent.round() &&
+          widget.controller.hasClients &&
+          widget.controller.position.hasPixels) {
+        widget.controller.position.jumpTo(maxScrollExtent);
+      }
+    });
 
     ///start animation
-    _animationController?.forward(from: 0);
+    animationController.forward(from: 0);
+
+    ///set animation and controller
+    _animationController = animationController;
 
     return completer.future;
   }
@@ -638,14 +642,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     if (_animationController?.isAnimating ?? false) {
       _animationController?.stop();
       _animationController?.reset();
-    }
-    _animationOffset = 0;
-  }
-
-  ///dispose animation
-  void _disposeAnimation() {
-    if (_animationController?.isAnimating ?? false) {
-      _animationController?.stop();
       _animationController?.dispose();
     }
     _animationOffset = 0;
@@ -655,8 +651,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void _initHeight() {
     ///get height
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _notifyOnShow();
-      _notifyIndex();
+      Future.delayed(const Duration(milliseconds: 100)).then((_) {
+        _notifyIndex();
+        _notifyOnShow();
+      });
     });
   }
 
@@ -680,7 +678,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   @override
   void dispose() {
     super.dispose();
-    _disposeAnimation();
+    _cancelAnimation();
     widget.controller.removeActionListener(_listener);
   }
 

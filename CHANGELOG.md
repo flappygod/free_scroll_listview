@@ -1,3 +1,3 @@
-## 1.0.10
+## 1.0.11
 
-* Fix a bug when set dataList during build.
+* Add more checks for free scroll listview.
