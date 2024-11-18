@@ -176,7 +176,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///when  not animating ,use jump to
         else {
-          position.setPixels(position.pixels + needChangeOffset);
+          position.jumpTo(position.pixels + needChangeOffset);
         }
 
         ///setState
@@ -344,7 +344,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       keys.sort((one, two) {
         return one.compareTo(two);
       });
-      if(keys.isEmpty){
+      if (keys.isEmpty) {
         return Future.delayed(Duration.zero);
       }
       if (index < keys.first) {
@@ -624,11 +624,15 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       }
 
       ///only top to bottom need this
+      int maxIndex = widget.controller._positiveDataList.length +
+          widget.controller._negativeDataList.length -
+          1;
       if (data.align == FreeScrollAlign.topToBottom &&
           widget.controller.position.pixels.round() !=
               maxScrollExtent.round() &&
           widget.controller.hasClients &&
-          widget.controller.position.hasPixels) {
+          widget.controller.position.hasPixels &&
+          widget.controller._visibleItemRectMap[maxIndex] != null) {
         widget.controller.position.jumpTo(maxScrollExtent);
       }
     });

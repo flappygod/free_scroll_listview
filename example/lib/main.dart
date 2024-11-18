@@ -102,7 +102,10 @@ class _MyHomePageState extends State<MyHomePage> {
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTap: () {
-                _resetDataAndScrollAlign();
+                _controller.scrollToIndex(
+                  0,
+                );
+                //_resetDataAndScrollAlign();
               },
               child: Container(
                 width: double.infinity,
