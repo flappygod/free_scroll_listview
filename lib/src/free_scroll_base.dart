@@ -61,11 +61,13 @@ class AnimationData {
   late Duration duration;
   late double startPosition;
   late double endPosition;
+  late FreeScrollAlign align;
 
   AnimationData(
     this.duration,
     this.startPosition,
     this.endPosition,
+    this.align,
   );
 }
 

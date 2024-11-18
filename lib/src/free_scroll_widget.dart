@@ -399,6 +399,7 @@ class FreeScrollListViewController<T> extends ScrollController {
           duration,
           listViewHeight + _anchorOffset,
           0 + _anchorOffset,
+          FreeScrollAlign.bottomToTop,
         );
         return _handleAnimation(notifyActionListeners(
           FreeScrollListViewActionType.notifyAnim,
@@ -409,6 +410,7 @@ class FreeScrollListViewController<T> extends ScrollController {
           duration,
           -listViewHeight + _anchorOffset,
           0 + _anchorOffset,
+          FreeScrollAlign.topToBottom,
         );
         return _handleAnimation(notifyActionListeners(
           FreeScrollListViewActionType.notifyAnim,
@@ -619,7 +621,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       }
 
       ///only top to bottom need this
-      if (data.endPosition > data.startPosition &&
+      if (data.align == FreeScrollAlign.topToBottom &&
           widget.controller.position.pixels.round() !=
               maxScrollExtent.round() &&
           widget.controller.hasClients &&
