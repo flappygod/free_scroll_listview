@@ -344,6 +344,9 @@ class FreeScrollListViewController<T> extends ScrollController {
       keys.sort((one, two) {
         return one.compareTo(two);
       });
+      if(keys.isEmpty){
+        return Future.delayed(Duration.zero);
+      }
       if (index < keys.first) {
         align = FreeScrollAlign.bottomToTop;
       } else {
