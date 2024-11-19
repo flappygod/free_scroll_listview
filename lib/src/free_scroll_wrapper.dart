@@ -35,18 +35,6 @@ class AnchorItemWrapper extends StatefulWidget {
 ///anchor item wrapper state
 class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   @override
-  void initState() {
-    _updateScrollRectToController();
-    super.initState();
-  }
-
-  @override
-  void didUpdateWidget(AnchorItemWrapper oldWidget) {
-    _updateScrollRectToController();
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
   void dispose() {
     widget.controller.removeItemRectOnScreen(widget.actualIndex);
     super.dispose();
@@ -72,34 +60,42 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
       Offset? offsetItem = itemBox?.localToGlobal(const Offset(0.0, 0.0));
 
       ///nothing
-      if (offsetItem == null || itemBox == null) {
+      if (offsetItem == null ||
+          itemBox == null ||
+          !widget.controller.hasClients ||
+          !widget.controller.position.hasPixels) {
         return;
       }
+
+      double pixels = widget.controller.position.pixels;
 
       ///offset item
       if (widget.reverse) {
         double dy = offset + height - offsetItem.dy - itemBox.size.height;
-        Rect rect = Rect.fromLTWH(
-          offsetItem.dx,
-          dy + widget.controller.position.pixels,
-          itemBox.size.width,
-          itemBox.size.height,
-        );
-        widget.controller.addItemRectOnScreen(widget.actualIndex, rect);
+        widget.controller.addItemRectOnScreen(
+            widget.actualIndex,
+            Rect.fromLTWH(
+              offsetItem.dx,
+              dy + pixels,
+              itemBox.size.width,
+              itemBox.size.height,
+            ));
       } else {
-        Rect rect = Rect.fromLTWH(
-          offsetItem.dx,
-          offsetItem.dy - offset + widget.controller.position.pixels,
-          itemBox.size.width,
-          itemBox.size.height,
-        );
-        widget.controller.addItemRectOnScreen(widget.actualIndex, rect);
+        widget.controller.addItemRectOnScreen(
+            widget.actualIndex,
+            Rect.fromLTWH(
+              offsetItem.dx,
+              offsetItem.dy - offset + pixels,
+              itemBox.size.width,
+              itemBox.size.height,
+            ));
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    _updateScrollRectToController();
     return widget.child ?? const SizedBox();
   }
 }

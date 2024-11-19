@@ -1,3 +1,3 @@
-## 1.0.12
+## 1.0.13
 
 * Add more checks for free scroll listview.

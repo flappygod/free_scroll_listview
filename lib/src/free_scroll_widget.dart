@@ -108,19 +108,19 @@ class FreeScrollListViewController<T> extends ScrollController {
     _cachedItemRectMap[index] = rect;
     _visibleItemRectMap[index] = rect;
 
+    ///check when animating
+    if (isAnimating && _checkAndResetIndex()) {
+      return;
+    }
+
     ///set min scroll extend
     if (index == 0) {
       _setNegativeHeight(rect.top);
     }
-
-    ///check when  animating
-    if (isAnimating) {
-      _checkAndResetIndex();
-    }
   }
 
   ///check and reset index
-  void _checkAndResetIndex() {
+  bool _checkAndResetIndex() {
     ///get max index
     int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
 
@@ -139,7 +139,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
       ///all of item not longer than listview height
       if (lastScreenIndex == null) {
-        return;
+        return false;
       }
 
       ///current count
@@ -155,7 +155,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///change
         if (position.pixels + needChangeOffset > position.maxScrollExtent) {
-          return;
+          return false;
         }
 
         ///offset changed
@@ -183,8 +183,11 @@ class FreeScrollListViewController<T> extends ScrollController {
         notifyActionListeners(
           FreeScrollListViewActionType.notifyData,
         );
+
+        return true;
       }
     }
+    return false;
   }
 
   ///add listener
@@ -253,9 +256,9 @@ class FreeScrollListViewController<T> extends ScrollController {
       _negativeDataList.insertAll(0, dataList);
 
       ///preview the height and add it to negative height
-      if(_negativeHeight!=double.negativeInfinity){
+      if (_negativeHeight != double.negativeInfinity) {
         double previewHeight =
-        await _previewController.previewItemsHeight(dataList);
+            await _previewController.previewItemsHeight(dataList);
         _negativeHeight -= previewHeight;
         _setNegativeHeight(_negativeHeight);
       }
