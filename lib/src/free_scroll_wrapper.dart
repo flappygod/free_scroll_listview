@@ -36,14 +36,14 @@ class AnchorItemWrapper extends StatefulWidget {
 class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   @override
   void initState() {
-    super.initState();
     _updateScrollRectToController();
+    super.initState();
   }
 
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
-    super.didUpdateWidget(oldWidget);
     _updateScrollRectToController();
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
