@@ -109,8 +109,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     _visibleItemRectMap[index] = rect;
 
     ///check when animating
-    if (isAnimating && _checkAndResetIndex()) {
-      return;
+    if (isAnimating) {
+      _checkAndResetIndex();
     }
 
     ///set min scroll extend
@@ -164,6 +164,7 @@ class FreeScrollListViewController<T> extends ScrollController {
           _negativeDataList.removeLast();
         }
         offsetRectList(_cachedItemRectMap, needChangeOffset);
+        offsetRectList(_visibleItemRectMap, needChangeOffset);
 
         ///when  animating  just correct by and notifyAnimOffset
         if (_isAnimating) {
