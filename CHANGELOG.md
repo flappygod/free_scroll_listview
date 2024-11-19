@@ -1,3 +1,3 @@
 ## 1.0.14
 
-* Add more checks for free scroll listview.
+* Fix bugs that may cause can't scroll to top.
