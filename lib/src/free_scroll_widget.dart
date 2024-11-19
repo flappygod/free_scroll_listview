@@ -253,10 +253,12 @@ class FreeScrollListViewController<T> extends ScrollController {
       _negativeDataList.insertAll(0, dataList);
 
       ///preview the height and add it to negative height
-      double previewHeight =
-          await _previewController.previewItemsHeight(dataList);
-      _negativeHeight -= previewHeight;
-      _setNegativeHeight(_negativeHeight);
+      if(_negativeHeight!=double.negativeInfinity){
+        double previewHeight =
+        await _previewController.previewItemsHeight(dataList);
+        _negativeHeight -= previewHeight;
+        _setNegativeHeight(_negativeHeight);
+      }
 
       ///notify data
       await notifyActionListeners(FreeScrollListViewActionType.notifyData);
