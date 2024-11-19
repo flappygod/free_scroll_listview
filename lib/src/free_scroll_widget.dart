@@ -630,6 +630,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       if (data.align == FreeScrollAlign.topToBottom &&
           widget.controller.position.pixels.round() !=
               maxScrollExtent.round() &&
+          maxScrollExtent != double.infinity &&
+          maxScrollExtent != double.maxFinite &&
           widget.controller.hasClients &&
           widget.controller.position.hasPixels &&
           widget.controller._visibleItemRectMap[maxIndex] != null) {
