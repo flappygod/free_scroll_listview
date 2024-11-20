@@ -325,7 +325,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) {
-    Rect? rect = _cachedItemRectMap[index];
+    Rect? rect = _visibleItemRectMap[index];
 
     ///if index is exists
     if (rect != null) {
