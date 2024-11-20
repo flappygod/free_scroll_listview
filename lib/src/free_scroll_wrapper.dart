@@ -40,9 +40,8 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     super.dispose();
   }
 
-
   @override
-  void didUpdateWidget(AnchorItemWrapper oldWidget){
+  void didUpdateWidget(AnchorItemWrapper oldWidget) {
     widget.controller.removeItemRectOnScreen(oldWidget.actualIndex);
     super.didUpdateWidget(oldWidget);
   }

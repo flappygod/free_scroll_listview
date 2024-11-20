@@ -109,13 +109,13 @@ class FreeScrollListViewController<T> extends ScrollController {
     _visibleItemRectMap[index] = rect;
 
     ///check when animating
-    if (isAnimating) {
-      _checkAndResetIndex();
+    if (isAnimating && _checkAndResetIndex()) {
+      return;
     }
 
     ///set min scroll extend
-    if (index == 0 && _visibleItemRectMap[0] != null) {
-      _setNegativeHeight(_visibleItemRectMap[0]!.top);
+    if (index == 0) {
+      _setNegativeHeight(rect.top);
     }
   }
 
