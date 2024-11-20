@@ -40,6 +40,13 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     super.dispose();
   }
 
+
+  @override
+  void didUpdateWidget(AnchorItemWrapper oldWidget){
+    widget.controller.removeItemRectOnScreen(oldWidget.actualIndex);
+    super.didUpdateWidget(oldWidget);
+  }
+
   ///update scroll rect to controller
   void _updateScrollRectToController() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
