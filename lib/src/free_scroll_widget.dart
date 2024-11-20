@@ -163,8 +163,12 @@ class FreeScrollListViewController<T> extends ScrollController {
           _positiveDataList.insert(0, _negativeDataList.last);
           _negativeDataList.removeLast();
         }
-        offsetRectList(_cachedItemRectMap, needChangeOffset);
-        offsetRectList(_visibleItemRectMap, needChangeOffset);
+
+        ///we remove all
+        _cachedItemRectMap.clear();
+        _visibleItemRectMap.clear();
+        /*offsetRectList(_cachedItemRectMap, needChangeOffset);
+        offsetRectList(_visibleItemRectMap, needChangeOffset);*/
 
         ///when  animating  just correct by and notifyAnimOffset
         if (_isAnimating) {
