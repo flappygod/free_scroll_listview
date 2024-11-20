@@ -356,6 +356,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       keys.sort((one, two) {
         return one.compareTo(two);
       });
+      keys.removeWhere((e)=>(_visibleItemRectMap[e]?.top ?? 0) < 0);
       if (keys.isEmpty) {
         return Future.delayed(Duration.zero);
       }
