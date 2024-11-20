@@ -167,8 +167,6 @@ class FreeScrollListViewController<T> extends ScrollController {
         ///we remove all
         _cachedItemRectMap.clear();
         _visibleItemRectMap.clear();
-        /*offsetRectList(_cachedItemRectMap, needChangeOffset);
-        offsetRectList(_visibleItemRectMap, needChangeOffset);*/
 
         ///when  animating  just correct by and notifyAnimOffset
         if (_isAnimating) {
