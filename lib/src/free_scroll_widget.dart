@@ -189,7 +189,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///when  not animating ,use jump to
         else {
-          position.jumpTo(position.pixels + needChangeOffset);
+          position.setPixels(position.pixels + needChangeOffset);
         }
 
         ///setState
