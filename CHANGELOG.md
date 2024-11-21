@@ -1,3 +1,3 @@
-## 1.0.19
+## 1.1.0
 
-* Add error handling to prevent unexpected issues.
+* Add support for update dataList and update data by index.

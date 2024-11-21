@@ -254,14 +254,53 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///set data list
   set dataList(List<T> dataList) {
     _lock.synchronized(() {
-      _setNegativeHeight(0);
-      _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
-      _positiveDataList.clear();
-      _negativeDataList.clear();
-      _cachedItemRectMap.clear();
-      _visibleItemRectMap.clear();
-      _positiveDataList.addAll(dataList);
-      notifyActionListeners(FreeScrollListViewActionType.notifyData);
+      ///set data if not init
+      if (_negativeDataList.isEmpty && _positiveDataList.isEmpty) {
+        _setNegativeHeight(0);
+        _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
+        _positiveDataList.clear();
+        _negativeDataList.clear();
+        _cachedItemRectMap.clear();
+        _visibleItemRectMap.clear();
+        _positiveDataList.addAll(dataList);
+        notifyActionListeners(FreeScrollListViewActionType.notifyData);
+      }
+
+      ///set data if is init
+      else {
+        int index = min(_negativeDataList.length, dataList.length);
+        List<T> firstList = dataList.sublist(0, index);
+        List<T> secondList = firstList.length != dataList.length
+            ? dataList.sublist(firstList.length, dataList.length)
+            : [];
+        _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
+        _positiveDataList.clear();
+        _negativeDataList.clear();
+        _cachedItemRectMap.clear();
+        _visibleItemRectMap.clear();
+        _negativeDataList.addAll(firstList);
+        _positiveDataList.addAll(secondList);
+        notifyActionListeners(FreeScrollListViewActionType.notifyData);
+      }
+    });
+  }
+
+  ///update data
+  void updateData(T t, int index) {
+    _lock.synchronized(() {
+      ///negative data replace
+      if (index < _negativeDataList.length) {
+        _negativeDataList[index] = t;
+        notifyActionListeners(FreeScrollListViewActionType.notifyData);
+        return;
+      }
+
+      ///positive data replace
+      if (index - _negativeDataList.length < _positiveDataList.length) {
+        _positiveDataList[index - _negativeDataList.length] = t;
+        notifyActionListeners(FreeScrollListViewActionType.notifyData);
+        return;
+      }
     });
   }
 
