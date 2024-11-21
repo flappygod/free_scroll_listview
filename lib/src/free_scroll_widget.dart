@@ -315,6 +315,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///add data to head
   Future addDataToHead(List<T> dataList) {
     return _lock.synchronized(() async {
+      ///formers
+      double formerTopData = _negativeHeight;
+
       ///insert all data
       _negativeDataList.insertAll(0, dataList);
 
@@ -322,8 +325,12 @@ class FreeScrollListViewController<T> extends ScrollController {
       if (_negativeHeight != double.negativeInfinity) {
         double previewHeight =
             await _previewController.previewItemsHeight(dataList);
-        _negativeHeight -= previewHeight;
-        _setNegativeHeight(_negativeHeight);
+
+        ///avoid addItemRectOnScreen changed _negativeHeight
+        if (formerTopData.round() == _negativeHeight.round()) {
+          _negativeHeight -= previewHeight;
+          _setNegativeHeight(_negativeHeight);
+        }
       }
 
       ///notify data
