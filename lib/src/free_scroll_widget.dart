@@ -174,9 +174,9 @@ class FreeScrollListViewController<T> extends ScrollController {
         }
 
         ///we remove all
+        _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
         _cachedItemRectMap.clear();
         _visibleItemRectMap.clear();
-        _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
 
         ///when  animating  just correct by and notifyAnimOffset
         if (_isAnimating) {
@@ -255,11 +255,11 @@ class FreeScrollListViewController<T> extends ScrollController {
   set dataList(List<T> dataList) {
     _lock.synchronized(() {
       _setNegativeHeight(0);
+      _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
       _positiveDataList.clear();
       _negativeDataList.clear();
       _cachedItemRectMap.clear();
       _visibleItemRectMap.clear();
-      _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
       _positiveDataList.addAll(dataList);
       notifyActionListeners(FreeScrollListViewActionType.notifyData);
     });
@@ -302,11 +302,11 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) {
     return _lock.synchronized(() async {
       ///insert all data
+      _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
       _negativeDataList.clear();
       _positiveDataList.clear();
       _cachedItemRectMap.clear();
       _visibleItemRectMap.clear();
-      _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
       _positiveDataList.addAll(dataList);
 
       ///notify data
@@ -424,11 +424,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     _setNegativeHeight(double.negativeInfinity);
 
     //Clear existing data and cached maps
+    _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
     _negativeDataList.clear();
     _positiveDataList.clear();
     _cachedItemRectMap.clear();
     _visibleItemRectMap.clear();
-    _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
 
     //Add new data to respective lists
     _negativeDataList.addAll(newNegativeList);
