@@ -378,10 +378,15 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
   }) {
     return _handleAnimation(animateTo(
-      _negativeHeight,
+      _negativeHeight - _headerViewHeight,
       duration: duration,
       curve: curve,
     ));
+  }
+
+  ///jump to top
+  void jumpToTop() {
+    jumpTo(_negativeHeight - _headerViewHeight);
   }
 
   ///scroll to max
@@ -394,6 +399,11 @@ class FreeScrollListViewController<T> extends ScrollController {
       duration: duration,
       curve: curve,
     ));
+  }
+
+  ///jump to bottom
+  void jumpToBottom() {
+    jumpTo(position.maxScrollExtent);
   }
 
   ///scroll to index
