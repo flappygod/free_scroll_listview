@@ -1,4 +1,5 @@
 import 'package:free_scroll_listview/free_scroll_listview.dart';
+import 'package:synchronized/synchronized.dart';
 import 'package:flutter/material.dart';
 
 ///包装器小部件，用于帮助获取项目的偏移量
@@ -7,6 +8,7 @@ class AnchorItemWrapper extends StatefulWidget {
   const AnchorItemWrapper({
     required this.actualIndex,
     required this.controller,
+    required this.visibleRectStamp,
     this.reverse = false,
     this.listViewState,
     this.child,
@@ -25,6 +27,9 @@ class AnchorItemWrapper extends StatefulWidget {
   //项目的索引
   final int actualIndex;
 
+  //stamp
+  final int visibleRectStamp;
+
   //reverse
   final bool reverse;
 
@@ -34,16 +39,32 @@ class AnchorItemWrapper extends StatefulWidget {
 
 ///anchor item wrapper state
 class AnchorItemWrapperState extends State<AnchorItemWrapper> {
+  static final Lock _lock = Lock();
+
   @override
   void dispose() {
-    widget.controller.removeItemRectOnScreen(widget.actualIndex);
+    _lock.synchronized(() {
+      widget.controller.removeItemRectOnScreen(widget.actualIndex);
+    });
+
     super.dispose();
   }
 
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
-    widget.controller.removeItemRectOnScreen(oldWidget.actualIndex);
+    _lock.synchronized(() {
+      widget.controller.removeItemRectOnScreen(oldWidget.actualIndex);
+    });
     super.didUpdateWidget(oldWidget);
+  }
+
+  ///add to rect
+  void _addFrameRectToController(Rect rect) {
+    _lock.synchronized(() {
+      if (widget.visibleRectStamp == widget.controller.visibleItemStamp) {
+        widget.controller.addItemRectOnScreen(widget.actualIndex, rect);
+      }
+    });
   }
 
   ///update scroll rect to controller
@@ -78,23 +99,19 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
       ///offset item
       if (widget.reverse) {
         double dy = offset + height - offsetItem.dy - itemBox.size.height;
-        widget.controller.addItemRectOnScreen(
-            widget.actualIndex,
-            Rect.fromLTWH(
-              offsetItem.dx,
-              dy + pixels,
-              itemBox.size.width,
-              itemBox.size.height,
-            ));
+        _addFrameRectToController(Rect.fromLTWH(
+          offsetItem.dx,
+          dy + pixels,
+          itemBox.size.width,
+          itemBox.size.height,
+        ));
       } else {
-        widget.controller.addItemRectOnScreen(
-            widget.actualIndex,
-            Rect.fromLTWH(
-              offsetItem.dx,
-              offsetItem.dy - offset + pixels,
-              itemBox.size.width,
-              itemBox.size.height,
-            ));
+        _addFrameRectToController(Rect.fromLTWH(
+          offsetItem.dx,
+          offsetItem.dy - offset + pixels,
+          itemBox.size.width,
+          itemBox.size.height,
+        ));
       }
     });
   }

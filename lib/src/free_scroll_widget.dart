@@ -39,6 +39,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   //item maps
   final Map<int, Rect> _cachedItemRectMap = {};
   final Map<int, Rect> _visibleItemRectMap = {};
+  int _visibleItemStamp = 0;
 
   //header view height
   double _headerViewHeight = 0;
@@ -63,6 +64,10 @@ class FreeScrollListViewController<T> extends ScrollController {
   //get current index
   int get currentIndex {
     return _currentIndex;
+  }
+
+  int get visibleItemStamp {
+    return _visibleItemStamp;
   }
 
   ///listview height
@@ -100,7 +105,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///remove item on screen
   void removeItemRectOnScreen(int index) {
-    _visibleItemRectMap.removeWhere((pos, rect) => pos == index);
+    _visibleItemRectMap.remove(index);
   }
 
   ///add anchor item state
@@ -138,18 +143,16 @@ class FreeScrollListViewController<T> extends ScrollController {
       double lastScreenOffset = 0;
       int? lastScreenIndex;
       for (int s = maxIndex; s >= 0; s--) {
-        if (_cachedItemRectMap[s]?.height == null) {
+        final itemHeight = _cachedItemRectMap[s]?.height;
+        if (itemHeight == null) {
           return false;
-        } else {
-          lastScreenOffset += _cachedItemRectMap[s]!.height;
         }
+        lastScreenOffset += itemHeight;
         if (lastScreenOffset.round() >= listViewHeight.round()) {
           lastScreenIndex = s;
           break;
         }
       }
-
-      ///all of item not longer than listview height
       if (lastScreenIndex == null) {
         return false;
       }
@@ -179,6 +182,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         ///we remove all
         _cachedItemRectMap.clear();
         _visibleItemRectMap.clear();
+        _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
 
         ///when  animating  just correct by and notifyAnimOffset
         if (_isAnimating) {
@@ -251,6 +255,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _negativeDataList.clear();
       _cachedItemRectMap.clear();
       _visibleItemRectMap.clear();
+      _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
       _positiveDataList.addAll(dataList);
       notifyActionListeners(FreeScrollListViewActionType.notifyData);
     });
@@ -297,6 +302,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _positiveDataList.clear();
       _cachedItemRectMap.clear();
       _visibleItemRectMap.clear();
+      _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
       _positiveDataList.addAll(dataList);
 
       ///notify data
@@ -406,27 +412,21 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) {
-    ///total data list
-    List<T> totalList = dataList;
-    List<T> newNegativeList = [];
-    List<T> newPositiveList = [];
-    for (int s = 0; s < totalList.length; s++) {
-      if (s < index) {
-        newNegativeList.add(totalList[s]);
-      } else {
-        newPositiveList.add(totalList[s]);
-      }
-    }
+    //Initialize lists for negative and positive data
+    List<T> newNegativeList = dataList.sublist(0, index);
+    List<T> newPositiveList = dataList.sublist(index);
 
-    ///_negativeHeight
+    //Set negative height
     _setNegativeHeight(double.negativeInfinity);
 
-    ///clear data
+    //Clear existing data and cached maps
     _negativeDataList.clear();
     _positiveDataList.clear();
     _cachedItemRectMap.clear();
     _visibleItemRectMap.clear();
+    _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
 
+    //Add new data to respective lists
     _negativeDataList.addAll(newNegativeList);
     _positiveDataList.addAll(newPositiveList);
 
@@ -787,6 +787,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                               actualIndex: actualIndex,
                               listViewState: this,
                               controller: widget.controller,
+                              visibleRectStamp:
+                                  widget.controller._visibleItemStamp,
                               child: widget.builder(context, actualIndex),
                             );
                           },
@@ -823,6 +825,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                               actualIndex: actualIndex,
                               listViewState: this,
                               controller: widget.controller,
+                              visibleRectStamp:
+                                  widget.controller._visibleItemStamp,
                               child: widget.builder(context, actualIndex),
                             );
                           },
