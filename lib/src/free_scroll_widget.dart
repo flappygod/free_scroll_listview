@@ -118,13 +118,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _checkAndResetIndex();
     }
 
-    ///add a check for top
-    if (index != 0 && _visibleItemRectMap[0] != null) {
-      if (rect.top < _visibleItemRectMap[0]!.bottom) {
-        _visibleItemRectMap.remove(0);
-        _setNegativeHeight(double.negativeInfinity);
-      }
-    }
+    _checkFirstIndexRectIsRight(index, rect);
 
     ///set min scroll extend
     if (index == 0) {
@@ -207,6 +201,16 @@ class FreeScrollListViewController<T> extends ScrollController {
       }
     }
     return false;
+  }
+
+  ///check first one is actual or not
+  void _checkFirstIndexRectIsRight(int index, Rect rect) {
+    if (index != 0 && _visibleItemRectMap[0] != null) {
+      if (rect.top < _visibleItemRectMap[0]!.bottom) {
+        _visibleItemRectMap.remove(0);
+        _setNegativeHeight(double.negativeInfinity);
+      }
+    }
   }
 
   ///add listener
