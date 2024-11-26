@@ -709,7 +709,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     ).animate(animationController);
     animation.addListener(() {
       ///controller
-      if (animationController != _animationController) {
+      if (animationController != _animationController ||
+          !widget.controller.hasClients ||
+          !widget.controller.position.hasPixels) {
         return;
       }
 
