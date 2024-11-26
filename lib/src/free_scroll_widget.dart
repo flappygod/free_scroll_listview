@@ -505,6 +505,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       case FreeScrollAlign.bottomToTop:
         AnimationData data = AnimationData(
           duration,
+          curve,
           listViewHeight + _anchorOffset,
           0 + _anchorOffset,
           FreeScrollAlign.bottomToTop,
@@ -516,6 +517,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       case FreeScrollAlign.topToBottom:
         AnimationData data = AnimationData(
           duration,
+          curve,
           -listViewHeight + _anchorOffset,
           0 + _anchorOffset,
           FreeScrollAlign.topToBottom,
@@ -703,11 +705,17 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       }
     });
 
+    /// Define a CurvedAnimation with the desired curve
+    CurvedAnimation curvedAnimation = CurvedAnimation(
+      parent: animationController,
+      curve: data.curve,
+    );
+
     ///new animation
     Animation<double> animation = Tween<double>(
       begin: data.startPosition,
       end: data.endPosition,
-    ).animate(animationController);
+    ).animate(curvedAnimation);
     animation.addListener(() {
       ///controller
       if (animationController != _animationController ||

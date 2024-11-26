@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
+
 ///free scroll listview action type
 enum FreeScrollListViewActionType {
   notifyData,
@@ -59,12 +61,14 @@ typedef FreeScrollOnIndexChange = void Function(int data);
 ///animation data
 class AnimationData {
   late Duration duration;
+  late Curve curve;
   late double startPosition;
   late double endPosition;
   late FreeScrollAlign align;
 
   AnimationData(
     this.duration,
+    this.curve,
     this.startPosition,
     this.endPosition,
     this.align,
