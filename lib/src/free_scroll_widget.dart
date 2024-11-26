@@ -237,7 +237,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     FreeScrollListViewActionType event, {
     dynamic data,
   }) async {
-    for (FreeScrollListControllerListener listener in _listeners) {
+    List<FreeScrollListControllerListener> listeners = List.from(_listeners);
+    for (FreeScrollListControllerListener listener in listeners) {
       await listener(event, data: data);
     }
   }
