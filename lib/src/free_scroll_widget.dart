@@ -1028,11 +1028,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       }
 
       ///offset top
-      double offsetTop = rect.top - pixels;
       double offsetBottom = rect.bottom - pixels;
 
       ///Listview height
-      if (offsetTop.round() <= 0 && offsetBottom.round() > 0) {
+      if (offsetBottom.round() > 0) {
         int index = key;
         if (widget.controller._currentIndex != index) {
           widget.controller._currentIndex = index;
