@@ -1,3 +1,3 @@
-## 1.1.0
+## 1.1.1
 
-* Add support for update dataList and update data by index.
+* Fix bugs that the curve do not working.
