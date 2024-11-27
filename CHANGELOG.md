@@ -1,3 +1,3 @@
-## 1.1.1
+## 1.1.2
 
-* Fix bugs that the curve do not working.
+* Fix a bug that the current index is not actual.
