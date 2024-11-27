@@ -1015,29 +1015,29 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       return;
     }
 
-    if (widget.onIndexChange != null) {
-      ///offset count
-      double pixels = widget.controller.position.pixels;
+    ///offset count
+    double pixels = widget.controller.position.pixels;
 
-      ///keys
-      for (int key in widget.controller._visibleItemRectMap.keys) {
-        Rect? rect = widget.controller._visibleItemRectMap[key];
-        if (rect == null) {
-          continue;
-        }
+    ///keys
+    for (int key in widget.controller._visibleItemRectMap.keys) {
+      Rect? rect = widget.controller._visibleItemRectMap[key];
+      if (rect == null) {
+        continue;
+      }
 
-        ///offset top
-        double offsetTop = rect.top - pixels;
-        double offsetBottom = rect.bottom - pixels;
+      ///offset top
+      double offsetTop = rect.top - pixels;
+      double offsetBottom = rect.bottom - pixels;
 
-        ///Listview height
-        if (offsetTop.round() <= 0 && offsetBottom.round() > 0) {
-          int index = key;
-          if (widget.controller._currentIndex != index) {
-            widget.controller._currentIndex = index;
+      ///Listview height
+      if (offsetTop.round() <= 0 && offsetBottom.round() > 0) {
+        int index = key;
+        if (widget.controller._currentIndex != index) {
+          widget.controller._currentIndex = index;
+          if (widget.onIndexChange != null) {
             widget.onIndexChange!(index);
-            break;
           }
+          break;
         }
       }
     }
