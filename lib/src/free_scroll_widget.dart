@@ -1019,7 +1019,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     double pixels = widget.controller.position.pixels;
 
     ///keys
-    for (int key in widget.controller._visibleItemRectMap.keys) {
+    List<dynamic> sortedKeys =
+        widget.controller._visibleItemRectMap.keys.toList()..sort();
+    for (int key in sortedKeys) {
       Rect? rect = widget.controller._visibleItemRectMap[key];
       if (rect == null) {
         continue;
