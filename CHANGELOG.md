@@ -1,3 +1,3 @@
-## 1.1.2
+## 1.1.3
 
-* Fix a bug that the current index is not actual.
+* Add more check for min scroll offset.

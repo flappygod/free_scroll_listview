@@ -118,12 +118,13 @@ class FreeScrollListViewController<T> extends ScrollController {
       _checkAndResetIndex();
     }
 
-    _checkFirstIndexRectIsRight(index, rect);
-
     ///set min scroll extend
     if (index == 0) {
       _setNegativeHeight(rect.top);
     }
+
+    ///check is right
+    _checkFirstIndexRectIsRight(index, rect);
   }
 
   ///check and reset index
@@ -205,18 +206,31 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///check first one is actual or not
   void _checkFirstIndexRectIsRight(int index, Rect rect) {
-    if (index != 0 && _visibleItemRectMap[0] != null) {
-      double? minTop;
-      Rect? minTopRect;
-      for (Rect rect in _visibleItemRectMap.values) {
-        if (minTop == null || rect.top < minTop) {
-          minTop = rect.top;
-          minTopRect = rect;
-        }
+    ///get min top
+    double? minTop;
+    _visibleItemRectMap.forEach((key, value) {
+      if (minTop == null || value.top < minTop!) {
+        minTop = value.top;
       }
-      if (minTopRect != _visibleItemRectMap[0] && minTop != null) {
-        _setNegativeHeight(minTop);
-      }
+    });
+
+    ///null
+    if (minTop == null || !position.hasPixels) {
+      return;
+    }
+
+    ///set min
+    if (_visibleItemRectMap[0] != null &&
+        minTop! < _visibleItemRectMap[0]!.top) {
+      _setNegativeHeight(minTop!);
+      return;
+    }
+
+    ///current min
+    double currentMin = (position as _NegativedScrollPosition).minScrollExtend;
+    if (currentMin != double.negativeInfinity && currentMin > minTop!) {
+      _setNegativeHeight(minTop!);
+      return;
     }
   }
 
@@ -1083,6 +1097,10 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     };
     removeListener(_callback);
     addListener(_callback);
+  }
+
+  double get minScrollExtend {
+    return _minScrollExtend;
   }
 
   ///force negative pixels
