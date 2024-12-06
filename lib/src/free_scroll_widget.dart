@@ -128,80 +128,81 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///check and reset index
-  bool _checkAndResetIndex() {
-    ///get max index
-    int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
+  void _checkAndResetIndex() {
+    _lock.synchronized(() {
+      ///get max index
+      int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
 
-    ///set max scroll extend
-    if (_cachedItemRectMap[maxIndex] != null) {
-      ///calculate height test
-      double lastScreenOffset = 0;
-      int? lastScreenIndex;
-      for (int s = maxIndex; s >= 0; s--) {
-        final itemHeight = _cachedItemRectMap[s]?.height;
-        if (itemHeight == null) {
-          return false;
+      ///set max scroll extend
+      if (_cachedItemRectMap[maxIndex] != null) {
+        ///calculate height test
+        double lastScreenOffset = 0;
+        int? lastScreenIndex;
+        for (int s = maxIndex; s >= 0; s--) {
+          final itemHeight = _cachedItemRectMap[s]?.height;
+          if (itemHeight == null) {
+            return;
+          }
+          lastScreenOffset += itemHeight;
+          if (lastScreenOffset.round() >= listViewHeight.round()) {
+            lastScreenIndex = s;
+            break;
+          }
         }
-        lastScreenOffset += itemHeight;
-        if (lastScreenOffset.round() >= listViewHeight.round()) {
-          lastScreenIndex = s;
-          break;
-        }
-      }
-      if (lastScreenIndex == null) {
-        return false;
-      }
-
-      ///current count
-      int tempCount = (maxIndex - _positiveDataList.length);
-
-      ///we need to do something
-      if (tempCount >= lastScreenIndex) {
-        ///we get the offset
-        double needChangeOffset = 0;
-        for (int s = lastScreenIndex; s <= tempCount; s++) {
-          needChangeOffset += (_cachedItemRectMap[s]?.height ?? 0);
+        if (lastScreenIndex == null) {
+          return;
         }
 
-        ///change
-        if (position.pixels + needChangeOffset > position.maxScrollExtent) {
-          return false;
-        }
+        ///current count
+        int tempCount = (maxIndex - _positiveDataList.length);
 
-        ///offset changed
-        for (int s = 0; s <= (tempCount - lastScreenIndex); s++) {
-          _positiveDataList.insert(0, _negativeDataList.last);
-          _negativeDataList.removeLast();
-        }
+        ///we need to do something
+        if (tempCount >= lastScreenIndex) {
+          ///we get the offset
+          double needChangeOffset = 0;
+          for (int s = lastScreenIndex; s <= tempCount; s++) {
+            needChangeOffset += (_cachedItemRectMap[s]?.height ?? 0);
+          }
 
-        ///we remove all
-        _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
-        _cachedItemRectMap.clear();
-        _visibleItemRectMap.clear();
+          ///change
+          if (position.pixels + needChangeOffset > position.maxScrollExtent) {
+            return;
+          }
 
-        ///when  animating  just correct by and notifyAnimOffset
-        if (_isAnimating) {
-          position.correctBy(needChangeOffset);
+          ///offset changed
+          for (int s = 0; s <= (tempCount - lastScreenIndex); s++) {
+            _positiveDataList.insert(0, _negativeDataList.last);
+            _negativeDataList.removeLast();
+          }
+
+          ///we remove all
+          _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
+          offsetRectList(_cachedItemRectMap, needChangeOffset);
+          offsetRectList(_visibleItemRectMap, needChangeOffset);
+
+          ///when  animating  just correct by and notifyAnimOffset
+          if (_isAnimating) {
+            position.correctBy(needChangeOffset);
+            notifyActionListeners(
+              FreeScrollListViewActionType.notifyAnimOffset,
+              data: needChangeOffset,
+            );
+          }
+
+          ///when  not animating ,use jump to
+          else {
+            position.setPixels(position.pixels + needChangeOffset);
+          }
+
+          ///setState
           notifyActionListeners(
-            FreeScrollListViewActionType.notifyAnimOffset,
-            data: needChangeOffset,
+            FreeScrollListViewActionType.notifyData,
           );
+
+          return;
         }
-
-        ///when  not animating ,use jump to
-        else {
-          position.setPixels(position.pixels + needChangeOffset);
-        }
-
-        ///setState
-        notifyActionListeners(
-          FreeScrollListViewActionType.notifyData,
-        );
-
-        return true;
       }
-    }
-    return false;
+    });
   }
 
   ///check first one is actual or not
