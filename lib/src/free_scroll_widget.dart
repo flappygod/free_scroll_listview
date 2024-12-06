@@ -739,33 +739,35 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         return;
       }
 
-      ///set offset
-      double offsetTo = animation.value + _animationOffset;
+      widget.controller._lock.synchronized(() {
+        ///set offset
+        double offsetTo = animation.value + _animationOffset;
 
-      ///max scroll extend
-      double maxScrollExtent = widget.controller.position.maxScrollExtent;
+        ///max scroll extend
+        double maxScrollExtent = widget.controller.position.maxScrollExtent;
 
-      ///check max scroll extend
-      if (offsetTo <= maxScrollExtent &&
-          widget.controller.hasClients &&
-          widget.controller.position.hasPixels) {
-        widget.controller.position.jumpTo(offsetTo);
-        return;
-      }
+        ///check max scroll extend
+        if (offsetTo <= maxScrollExtent &&
+            widget.controller.hasClients &&
+            widget.controller.position.hasPixels) {
+          widget.controller.position.jumpTo(offsetTo);
+          return;
+        }
 
-      ///only top to bottom need this
-      int maxIndex = widget.controller._positiveDataList.length +
-          widget.controller._negativeDataList.length -
-          1;
-      if (data.align == FreeScrollAlign.topToBottom &&
-          offsetTo > maxScrollExtent &&
-          maxScrollExtent != double.infinity &&
-          maxScrollExtent != double.maxFinite &&
-          widget.controller.hasClients &&
-          widget.controller.position.hasPixels &&
-          widget.controller._visibleItemRectMap[maxIndex] != null) {
-        widget.controller.position.jumpTo(maxScrollExtent);
-      }
+        ///only top to bottom need this
+        int maxIndex = widget.controller._positiveDataList.length +
+            widget.controller._negativeDataList.length -
+            1;
+        if (data.align == FreeScrollAlign.topToBottom &&
+            offsetTo > maxScrollExtent &&
+            maxScrollExtent != double.infinity &&
+            maxScrollExtent != double.maxFinite &&
+            widget.controller.hasClients &&
+            widget.controller.position.hasPixels &&
+            widget.controller._visibleItemRectMap[maxIndex] != null) {
+          widget.controller.position.jumpTo(maxScrollExtent);
+        }
+      });
     });
 
     ///start animation
