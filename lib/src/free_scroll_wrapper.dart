@@ -1,5 +1,4 @@
 import 'package:free_scroll_listview/free_scroll_listview.dart';
-import 'package:synchronized/synchronized.dart';
 import 'package:flutter/material.dart';
 
 ///包装器小部件，用于帮助获取项目的偏移量
@@ -8,7 +7,8 @@ class AnchorItemWrapper extends StatefulWidget {
   const AnchorItemWrapper({
     required this.actualIndex,
     required this.controller,
-    required this.lockKey,
+    required this.cachedItemRectMap,
+    required this.visibleItemRectMap,
     this.reverse = false,
     this.listViewState,
     this.child,
@@ -27,8 +27,11 @@ class AnchorItemWrapper extends StatefulWidget {
   //项目的索引
   final int actualIndex;
 
-  //stamp
-  final GlobalKey lockKey;
+  //cached
+  final Map<int, Rect> cachedItemRectMap;
+
+  //visible
+  final Map<int, Rect> visibleItemRectMap;
 
   //reverse
   final bool reverse;
@@ -39,8 +42,6 @@ class AnchorItemWrapper extends StatefulWidget {
 
 ///anchor item wrapper state
 class AnchorItemWrapperState extends State<AnchorItemWrapper> {
-  static final Lock _lock = Lock();
-
   @override
   void initState() {
     _removeFrameRectToController();
@@ -63,20 +64,14 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   ///add to rect
   void _addFrameRectToController(Rect rect) {
-    _lock.synchronized(() {
-      if (widget.lockKey == widget.controller.lockKey) {
-        widget.controller.addItemRectOnScreen(widget.actualIndex, rect);
-      }
-    });
+    widget.cachedItemRectMap[widget.actualIndex] = rect;
+    widget.visibleItemRectMap[widget.actualIndex] = rect;
+    widget.controller.notifyItemRectOnScreen(widget.actualIndex);
   }
 
   ///remove rect
   void _removeFrameRectToController() {
-    _lock.synchronized(() {
-      if (widget.lockKey == widget.controller.lockKey) {
-        widget.controller.removeItemRectOnScreen(widget.actualIndex);
-      }
-    });
+    widget.visibleItemRectMap.remove(widget.actualIndex);
   }
 
   ///update scroll rect to controller
