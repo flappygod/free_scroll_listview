@@ -845,6 +845,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                                     index -
                                     1;
                             return AnchorItemWrapper(
+                              key: GlobalKey(),
                               reverse: widget.reverse,
                               actualIndex: actualIndex,
                               listViewState: this,
@@ -885,6 +886,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                                 widget.controller._negativeDataList.length +
                                     index;
                             return AnchorItemWrapper(
+                              key: GlobalKey(),
                               reverse: widget.reverse,
                               actualIndex: actualIndex,
                               listViewState: this,

@@ -42,21 +42,8 @@ class AnchorItemWrapper extends StatefulWidget {
 
 ///anchor item wrapper state
 class AnchorItemWrapperState extends State<AnchorItemWrapper> {
+  ///is disposed or not
   bool _disposed = false;
-
-  @override
-  void initState() {
-    _removeFrameRectToController();
-    _updateScrollRectToController();
-    super.initState();
-  }
-
-  @override
-  void didUpdateWidget(AnchorItemWrapper oldWidget) {
-    _removeFrameRectToController();
-    _updateScrollRectToController();
-    super.didUpdateWidget(oldWidget);
-  }
 
   @override
   void dispose() {
@@ -65,17 +52,22 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     super.dispose();
   }
 
-  ///add to rect
-  void _addFrameRectToController(Rect rect) {
-    widget.cachedItemRectMap[widget.actualIndex] = rect;
-    widget.visibleItemRectMap[widget.actualIndex] = rect;
-    widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
+  @override
+  void didUpdateWidget(AnchorItemWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
   }
 
   ///remove rect
   void _removeFrameRectToController() {
     widget.visibleItemRectMap.remove(widget.actualIndex);
     widget.controller.notifyItemRectRemoveOnScreen(widget.actualIndex);
+  }
+
+  ///add to rect
+  void _addFrameRectToController(Rect rect) {
+    widget.visibleItemRectMap[widget.actualIndex] = rect;
+    widget.cachedItemRectMap[widget.actualIndex] = rect;
+    widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
   }
 
   ///update scroll rect to controller
@@ -132,6 +124,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    _updateScrollRectToController();
     return widget.child ?? const SizedBox();
   }
 }
