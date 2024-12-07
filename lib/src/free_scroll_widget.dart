@@ -1044,8 +1044,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           if (widget.onIndexChange != null) {
             widget.onIndexChange!(index);
           }
-          break;
         }
+        break;
       }
     }
   }
