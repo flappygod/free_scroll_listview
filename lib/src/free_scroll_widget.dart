@@ -256,7 +256,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     List<FreeScrollListControllerASyncListener> listeners =
         List.from(_asyncListeners);
     for (FreeScrollListControllerASyncListener listener in listeners) {
-      listener(event, data: data);
+      await listener(event, data: data);
     }
   }
 
