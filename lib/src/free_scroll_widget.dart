@@ -827,6 +827,11 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                 negativeOffset._forceNegativePixels(offset.pixels);
               });
 
+              int negativeDataLength =
+                  widget.controller._negativeDataList.length;
+              int positiveDataLength =
+                  widget.controller._positiveDataList.length;
+
               return Stack(
                 clipBehavior: Clip.none,
                 children: <Widget>[
@@ -846,10 +851,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                       SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
-                            int actualIndex =
-                                widget.controller._negativeDataList.length -
-                                    index -
-                                    1;
+                            int actualIndex = negativeDataLength - index - 1;
                             return AnchorItemWrapper(
                               key: GlobalKey(),
                               reverse: widget.reverse,
@@ -863,8 +865,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                               child: widget.builder(context, actualIndex),
                             );
                           },
-                          childCount:
-                              widget.controller._negativeDataList.length,
+                          childCount: negativeDataLength,
                         ),
                       ),
                       SliverToBoxAdapter(
@@ -888,9 +889,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                       SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
-                            int actualIndex =
-                                widget.controller._negativeDataList.length +
-                                    index;
+                            int actualIndex = negativeDataLength + index;
                             return AnchorItemWrapper(
                               key: GlobalKey(),
                               reverse: widget.reverse,
@@ -904,8 +903,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                               child: widget.builder(context, actualIndex),
                             );
                           },
-                          childCount:
-                              widget.controller._positiveDataList.length,
+                          childCount: positiveDataLength,
                         ),
                       ),
                       SliverToBoxAdapter(
