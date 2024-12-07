@@ -1,4 +1,5 @@
 import 'package:free_scroll_listview/free_scroll_listview.dart';
+import 'package:synchronized/synchronized.dart';
 import 'package:flutter/material.dart';
 
 ///包装器小部件，用于帮助获取项目的偏移量
@@ -7,8 +8,7 @@ class AnchorItemWrapper extends StatefulWidget {
   const AnchorItemWrapper({
     required this.actualIndex,
     required this.controller,
-    required this.cachedItemRectMap,
-    required this.visibleItemRectMap,
+    required this.lockKey,
     this.reverse = false,
     this.listViewState,
     this.child,
@@ -27,11 +27,8 @@ class AnchorItemWrapper extends StatefulWidget {
   //项目的索引
   final int actualIndex;
 
-  //cached
-  final Map<int, Rect> cachedItemRectMap;
-
-  //visible
-  final Map<int, Rect> visibleItemRectMap;
+  //stamp
+  final GlobalKey lockKey;
 
   //reverse
   final bool reverse;
@@ -42,48 +39,62 @@ class AnchorItemWrapper extends StatefulWidget {
 
 ///anchor item wrapper state
 class AnchorItemWrapperState extends State<AnchorItemWrapper> {
+  ///locked to set
+  static final Lock _lock = Lock();
+
+  ///this is disposed
+  bool _disposed = false;
+
   @override
   void initState() {
-    _removeFrameRectToController();
     _updateScrollRectToController();
     super.initState();
   }
 
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
-    _removeFrameRectToController();
-    _updateScrollRectToController();
+    if (oldWidget.actualIndex != widget.actualIndex) {
+      _removeFrameRectToController(oldWidget);
+      _updateScrollRectToController();
+    }
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   void dispose() {
-    _removeFrameRectToController();
+    _disposed = true;
+    _removeFrameRectToController(widget);
     super.dispose();
   }
 
   ///add to rect
-  void _addFrameRectToController(Rect rect) {
-    widget.cachedItemRectMap[widget.actualIndex] = rect;
-    widget.visibleItemRectMap[widget.actualIndex] = rect;
-    widget.controller.notifyItemRectOnScreen(widget.actualIndex);
+  void _addFrameRectToController(AnchorItemWrapper item, Rect rect) {
+    _lock.synchronized(() {
+      if (_disposed) {
+        return;
+      }
+      if (item.lockKey == item.controller.lockKey) {
+        item.controller.addItemRectOnScreen(item.actualIndex, rect);
+      }
+    });
   }
 
   ///remove rect
-  void _removeFrameRectToController() {
-    widget.visibleItemRectMap.remove(widget.actualIndex);
+  void _removeFrameRectToController(AnchorItemWrapper item) {
+    _lock.synchronized(() {
+      if (item.lockKey == item.controller.lockKey) {
+        item.controller.removeItemRectOnScreen(item.actualIndex);
+      }
+    });
   }
 
   ///update scroll rect to controller
   void _updateScrollRectToController() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Future.delayed(const Duration(milliseconds: 40));
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       ///item
       if (!mounted) {
         return;
       }
-
 
       double height = widget.controller.listViewHeight;
       double offset = widget.controller.listViewOffset;
@@ -109,19 +120,23 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
       ///offset item
       if (widget.reverse) {
         double dy = offset + height - offsetItem.dy - itemBox.size.height;
-        _addFrameRectToController(Rect.fromLTWH(
-          offsetItem.dx,
-          dy + pixels,
-          itemBox.size.width,
-          itemBox.size.height,
-        ));
+        _addFrameRectToController(
+            widget,
+            Rect.fromLTWH(
+              offsetItem.dx,
+              dy + pixels,
+              itemBox.size.width,
+              itemBox.size.height,
+            ));
       } else {
-        _addFrameRectToController(Rect.fromLTWH(
-          offsetItem.dx,
-          offsetItem.dy - offset + pixels,
-          itemBox.size.width,
-          itemBox.size.height,
-        ));
+        _addFrameRectToController(
+            widget,
+            Rect.fromLTWH(
+              offsetItem.dx,
+              offsetItem.dy - offset + pixels,
+              itemBox.size.width,
+              itemBox.size.height,
+            ));
       }
     });
   }

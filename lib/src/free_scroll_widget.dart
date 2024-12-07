@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:free_scroll_listview/src/free_scroll_observe.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'free_scroll_wrapper.dart';
 import 'free_scroll_base.dart';
 import 'dart:async';
@@ -38,8 +39,9 @@ class FreeScrollListViewController<T> extends ScrollController {
       AdditionPreviewController<T>();
 
   //item maps
-  Map<int, Rect> _cachedItemRectMap = {};
-  Map<int, Rect> _visibleItemRectMap = {};
+  final Map<int, Rect> _cachedItemRectMap = {};
+  final Map<int, Rect> _visibleItemRectMap = {};
+  GlobalKey _lockKey = GlobalKey();
 
   //header view height
   double _headerViewHeight = 0;
@@ -64,6 +66,10 @@ class FreeScrollListViewController<T> extends ScrollController {
   //get current index
   int get currentIndex {
     return _currentIndex;
+  }
+
+  GlobalKey get lockKey {
+    return _lockKey;
   }
 
   ///listview height
@@ -99,17 +105,24 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
+  ///remove item on screen
+  void removeItemRectOnScreen(int index) {
+    _visibleItemRectMap.remove(index);
+  }
+
   ///add anchor item state
-  void notifyItemRectOnScreen(int index) {
+  void addItemRectOnScreen(int index, Rect rect) {
+    _cachedItemRectMap[index] = rect;
+    _visibleItemRectMap[index] = rect;
+
     ///check when animating
     if (isAnimating) {
       _checkAndResetIndex(animatingMode: true);
     }
 
     ///set min scroll extend
-    Rect? firstRect = _visibleItemRectMap[0];
-    if (index == 0 && firstRect != null) {
-      _setNegativeHeight(firstRect.top);
+    if (index == 0) {
+      _setNegativeHeight(rect.top);
     }
   }
 
@@ -162,8 +175,9 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///we remove all
         _setNegativeHeight(double.negativeInfinity);
-        _cachedItemRectMap = <int, Rect>{};
-        _visibleItemRectMap = <int, Rect>{};
+        _lockKey = GlobalKey();
+        _cachedItemRectMap.clear();
+        _visibleItemRectMap.clear();
 
         ///when animating  just correct by and notifyAnimOffset
         if (animatingMode) {
@@ -235,10 +249,11 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///set data if is init
       if (_negativeDataList.isEmpty && _positiveDataList.isEmpty) {
         _setNegativeHeight(0);
-        _cachedItemRectMap = <int, Rect>{};
-        _visibleItemRectMap = <int, Rect>{};
+        _lockKey = GlobalKey();
         _positiveDataList.clear();
         _negativeDataList.clear();
+        _cachedItemRectMap.clear();
+        _visibleItemRectMap.clear();
         _positiveDataList.addAll(dataList);
         notifyActionListeners(FreeScrollListViewActionType.notifyData);
       }
@@ -251,10 +266,11 @@ class FreeScrollListViewController<T> extends ScrollController {
             ? dataList.sublist(firstList.length, dataList.length)
             : [];
         _setNegativeHeight(double.negativeInfinity);
-        _cachedItemRectMap = <int, Rect>{};
-        _visibleItemRectMap = <int, Rect>{};
+        _lockKey = GlobalKey();
         _positiveDataList.clear();
         _negativeDataList.clear();
+        _cachedItemRectMap.clear();
+        _visibleItemRectMap.clear();
         _negativeDataList.addAll(firstList);
         _positiveDataList.addAll(secondList);
         notifyActionListeners(FreeScrollListViewActionType.notifyData);
@@ -326,10 +342,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _lock.synchronized(() async {
       ///insert all data
       _setNegativeHeight(double.negativeInfinity);
-      _cachedItemRectMap = <int, Rect>{};
-      _visibleItemRectMap = <int, Rect>{};
+      _lockKey = GlobalKey();
       _negativeDataList.clear();
       _positiveDataList.clear();
+      _cachedItemRectMap.clear();
+      _visibleItemRectMap.clear();
       _positiveDataList.addAll(dataList);
 
       ///notify data
@@ -459,10 +476,11 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     //Clear existing data and cached maps
     _setNegativeHeight(double.negativeInfinity);
-    _cachedItemRectMap = <int, Rect>{};
-    _visibleItemRectMap = <int, Rect>{};
+    _lockKey = GlobalKey();
     _negativeDataList.clear();
     _positiveDataList.clear();
+    _cachedItemRectMap.clear();
+    _visibleItemRectMap.clear();
 
     //Add new data to respective lists
     _negativeDataList.addAll(newNegativeList);
@@ -843,10 +861,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                               actualIndex: actualIndex,
                               listViewState: this,
                               controller: widget.controller,
-                              cachedItemRectMap:
-                                  widget.controller._cachedItemRectMap,
-                              visibleItemRectMap:
-                                  widget.controller._visibleItemRectMap,
+                              lockKey: widget.controller._lockKey,
                               child: widget.builder(context, actualIndex),
                             );
                           },
@@ -883,10 +898,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                               actualIndex: actualIndex,
                               listViewState: this,
                               controller: widget.controller,
-                              cachedItemRectMap:
-                                  widget.controller._cachedItemRectMap,
-                              visibleItemRectMap:
-                                  widget.controller._visibleItemRectMap,
+                              lockKey: widget.controller._lockKey,
                               child: widget.builder(context, actualIndex),
                             );
                           },
