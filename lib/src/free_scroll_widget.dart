@@ -339,6 +339,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) {
     return _lock.synchronized(() async {
       ///insert all data
+      _setNegativeHeight(double.negativeInfinity);
       _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
       _negativeDataList.clear();
       _positiveDataList.clear();
