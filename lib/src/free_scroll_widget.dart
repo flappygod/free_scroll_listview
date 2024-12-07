@@ -115,123 +115,100 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///check when animating
     if (isAnimating) {
-      _checkAndResetIndex();
+      _checkAndResetIndex(animatingMode: true);
     }
 
-    ///set min scroll extend
-    if (index == 0) {
-      _setNegativeHeight(rect.top);
-    }
-
-    ///check is right
-    _checkFirstIndexRectIsRight(index, rect);
+    ///check negative top to set
+    _checkNegativeTop(index, rect);
   }
 
   ///check and reset index
-  void _checkAndResetIndex() {
-    _lock.synchronized(() {
-      ///get max index
-      int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
+  bool _checkAndResetIndex({bool animatingMode = true}) {
+    ///get max index
+    int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
 
-      ///set max scroll extend
-      if (_cachedItemRectMap[maxIndex] != null) {
-        ///calculate height test
-        double lastScreenOffset = 0;
-        int? lastScreenIndex;
-        for (int s = maxIndex; s >= 0; s--) {
-          final itemHeight = _cachedItemRectMap[s]?.height;
-          if (itemHeight == null) {
-            return;
-          }
-          lastScreenOffset += itemHeight;
-          if (lastScreenOffset.round() >= listViewHeight.round()) {
-            lastScreenIndex = s;
-            break;
-          }
+    ///set max scroll extend
+    if (_cachedItemRectMap[maxIndex] != null) {
+      ///calculate height test
+      double lastScreenOffset = 0;
+      int? lastScreenIndex;
+      for (int s = maxIndex; s >= 0; s--) {
+        final itemHeight = _cachedItemRectMap[s]?.height;
+        if (itemHeight == null) {
+          return false;
         }
-        if (lastScreenIndex == null) {
-          return;
-        }
-
-        ///current count
-        int tempCount = (maxIndex - _positiveDataList.length);
-
-        ///we need to do something
-        if (tempCount >= lastScreenIndex) {
-          ///we get the offset
-          double needChangeOffset = 0;
-          for (int s = lastScreenIndex; s <= tempCount; s++) {
-            needChangeOffset += (_cachedItemRectMap[s]?.height ?? 0);
-          }
-
-          ///change
-          if (position.pixels + needChangeOffset > position.maxScrollExtent) {
-            return;
-          }
-
-          ///offset changed
-          for (int s = 0; s <= (tempCount - lastScreenIndex); s++) {
-            _positiveDataList.insert(0, _negativeDataList.last);
-            _negativeDataList.removeLast();
-          }
-
-          ///we remove all
-          _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
-          offsetRectList(_cachedItemRectMap, needChangeOffset);
-          offsetRectList(_visibleItemRectMap, needChangeOffset);
-
-          ///when  animating  just correct by and notifyAnimOffset
-          if (_isAnimating) {
-            position.correctBy(needChangeOffset);
-            notifyActionListeners(
-              FreeScrollListViewActionType.notifyAnimOffset,
-              data: needChangeOffset,
-            );
-          }
-
-          ///when  not animating ,use jump to
-          else {
-            position.setPixels(position.pixels + needChangeOffset);
-          }
-
-          ///setState
-          notifyActionListeners(
-            FreeScrollListViewActionType.notifyData,
-          );
-
-          return;
+        lastScreenOffset += itemHeight;
+        if (lastScreenOffset.round() >= listViewHeight.round()) {
+          lastScreenIndex = s;
+          break;
         }
       }
-    });
+      if (lastScreenIndex == null) {
+        return false;
+      }
+
+      ///current count
+      int tempCount = (maxIndex - _positiveDataList.length);
+
+      ///we need to do something
+      if (tempCount >= lastScreenIndex) {
+        ///we get the offset
+        double needChangeOffset = 0;
+        for (int s = lastScreenIndex; s <= tempCount; s++) {
+          needChangeOffset += (_cachedItemRectMap[s]?.height ?? 0);
+        }
+
+        ///change
+        if (position.pixels + needChangeOffset > position.maxScrollExtent) {
+          return false;
+        }
+
+        ///offset changed
+        for (int s = 0; s <= (tempCount - lastScreenIndex); s++) {
+          _positiveDataList.insert(0, _negativeDataList.last);
+          _negativeDataList.removeLast();
+        }
+
+        ///we remove all
+        _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
+        _cachedItemRectMap.clear();
+        _visibleItemRectMap.clear();
+
+        ///when animating  just correct by and notifyAnimOffset
+        if (animatingMode) {
+          position.correctBy(needChangeOffset);
+          notifyActionListeners(
+            FreeScrollListViewActionType.notifyAnimOffset,
+            data: needChangeOffset,
+          );
+        }
+
+        ///when not animating ,use jump to
+        else {
+          position.jumpTo(position.pixels + needChangeOffset);
+        }
+
+        ///setState
+        notifyActionListeners(
+          FreeScrollListViewActionType.notifyData,
+        );
+
+        return true;
+      }
+    }
+    return false;
   }
 
   ///check first one is actual or not
-  void _checkFirstIndexRectIsRight(int index, Rect rect) {
-    ///get min top
+  void _checkNegativeTop(int index, Rect rect) {
     double? minTop;
-    _visibleItemRectMap.forEach((key, value) {
-      if (minTop == null || value.top < minTop!) {
-        minTop = value.top;
+    for (Rect rect in _visibleItemRectMap.values) {
+      if (minTop == null || rect.top < minTop) {
+        minTop = rect.top;
       }
-    });
-
-    ///null
-    if (minTop == null || !position.hasPixels) {
-      return;
     }
-
-    ///set min
-    if (_visibleItemRectMap[0] != null &&
-        minTop! < _visibleItemRectMap[0]!.top) {
-      _setNegativeHeight(minTop!);
-      return;
-    }
-
-    ///current min
-    double currentMin = (position as _NegativedScrollPosition).minScrollExtend;
-    if (currentMin != double.negativeInfinity && currentMin > minTop!) {
-      _setNegativeHeight(minTop!);
-      return;
+    if (minTop != null) {
+      _setNegativeHeight(minTop);
     }
   }
 
@@ -427,7 +404,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     int index, {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
-  }) {
+  }) async {
+    ///stop the former animations
+    await notifyActionListeners(FreeScrollListViewActionType.notifyAnimStop);
+
+    ///get the rect for the index
     Rect? rect = _visibleItemRectMap[index];
 
     ///if index is exists
@@ -526,7 +507,7 @@ class FreeScrollListViewController<T> extends ScrollController {
           FreeScrollAlign.bottomToTop,
         );
         return _handleAnimation(notifyActionListeners(
-          FreeScrollListViewActionType.notifyAnim,
+          FreeScrollListViewActionType.notifyAnimStart,
           data: data,
         ));
       case FreeScrollAlign.topToBottom:
@@ -538,7 +519,7 @@ class FreeScrollListViewController<T> extends ScrollController {
           FreeScrollAlign.topToBottom,
         );
         return _handleAnimation(notifyActionListeners(
-          FreeScrollListViewActionType.notifyAnim,
+          FreeScrollListViewActionType.notifyAnimStart,
           data: data,
         ));
       case FreeScrollAlign.directJumpTo:
@@ -679,8 +660,13 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           break;
 
         ///start animation
-        case FreeScrollListViewActionType.notifyAnim:
+        case FreeScrollListViewActionType.notifyAnimStart:
           await _startAnimation(data);
+          break;
+
+        ///stop animation
+        case FreeScrollListViewActionType.notifyAnimStop:
+          _cancelAnimation();
           break;
 
         ///start animation
@@ -690,7 +676,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
         ///start animation
         case FreeScrollListViewActionType.notifyJump:
-          Future.delayed(const Duration(milliseconds: 100)).then((_) {
+          Future.delayed(const Duration(milliseconds: 80)).then((_) {
             _notifyIndex();
             _notifyOnShow();
           });
@@ -739,35 +725,35 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         return;
       }
 
-      widget.controller._lock.synchronized(() {
-        ///set offset
-        double offsetTo = animation.value + _animationOffset;
+      ///set offset
+      double offsetTo = animation.value + _animationOffset;
 
-        ///max scroll extend
-        double maxScrollExtent = widget.controller.position.maxScrollExtent;
+      ///max scroll extend
+      double maxScrollExtent = widget.controller.position.maxScrollExtent;
 
-        ///check max scroll extend
-        if (offsetTo <= maxScrollExtent &&
-            widget.controller.hasClients &&
-            widget.controller.position.hasPixels) {
-          widget.controller.position.jumpTo(offsetTo);
-          return;
-        }
+      ///check max scroll extend
+      if (offsetTo <= maxScrollExtent &&
+          widget.controller.hasClients &&
+          widget.controller.position.hasPixels) {
+        widget.controller.position.jumpTo(offsetTo);
+        return;
+      }
 
-        ///only top to bottom need this
-        int maxIndex = widget.controller._positiveDataList.length +
-            widget.controller._negativeDataList.length -
-            1;
-        if (data.align == FreeScrollAlign.topToBottom &&
-            offsetTo > maxScrollExtent &&
-            maxScrollExtent != double.infinity &&
-            maxScrollExtent != double.maxFinite &&
-            widget.controller.hasClients &&
-            widget.controller.position.hasPixels &&
-            widget.controller._visibleItemRectMap[maxIndex] != null) {
-          widget.controller.position.jumpTo(maxScrollExtent);
-        }
-      });
+      ///only top to bottom need this
+      int maxIndex = widget.controller._positiveDataList.length +
+          widget.controller._negativeDataList.length -
+          1;
+      if (data.align == FreeScrollAlign.topToBottom &&
+          offsetTo > maxScrollExtent &&
+          maxScrollExtent != double.infinity &&
+          maxScrollExtent != double.maxFinite &&
+          widget.controller.hasClients &&
+          widget.controller.position.hasPixels &&
+          widget.controller._visibleItemRectMap[maxIndex] != null &&
+          widget.controller._visibleItemRectMap[maxIndex]!.bottom >=
+              maxScrollExtent) {
+        widget.controller.position.jumpTo(maxScrollExtent);
+      }
     });
 
     ///start animation
@@ -785,6 +771,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       _animationController?.stop();
       _animationController?.reset();
       _animationController?.dispose();
+      _animationController = null;
     }
     _animationOffset = 0;
   }
@@ -793,7 +780,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void _initHeight() {
     ///get height
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 100)).then((_) {
+      Future.delayed(const Duration(milliseconds: 80)).then((_) {
         _notifyIndex();
         _notifyOnShow();
       });
@@ -963,15 +950,17 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       _timeStampDebouncer.run(widget.willReachHead);
     }
 
-    ///滚动结束的时候检查是否到达最大
-    if (notification is ScrollEndNotification) {
-      widget.controller._checkAndResetIndex();
-    }
-
     ///动画过程中不需要处理
     ///bool isAnimating = _animationController?.isAnimating ?? false;
     if (widget.controller.isAnimating) {
       return false;
+    }
+
+    ///滚动结束的时候检查是否到达最大
+    if (notification is ScrollEndNotification) {
+      widget.controller._checkAndResetIndex(
+        animatingMode: false,
+      );
     }
 
     ///通知消息被展示
@@ -1055,8 +1044,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           if (widget.onIndexChange != null) {
             widget.onIndexChange!(index);
           }
+          break;
         }
-        break;
       }
     }
   }
@@ -1092,18 +1081,14 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   set minScrollExtend(double data) {
     _minScrollExtend = data;
     _callback = () {
-      if (_minScrollExtend != double.negativeInfinity &&
-          pixels < _minScrollExtend - 100 &&
-          hasPixels) {
+      if (hasPixels &&
+          _minScrollExtend != double.negativeInfinity &&
+          pixels < _minScrollExtend - 100) {
         jumpTo(_minScrollExtend - 100);
       }
     };
     removeListener(_callback);
     addListener(_callback);
-  }
-
-  double get minScrollExtend {
-    return _minScrollExtend;
   }
 
   ///force negative pixels

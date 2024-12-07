@@ -1,11 +1,10 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 ///free scroll listview action type
 enum FreeScrollListViewActionType {
   notifyData,
-  notifyAnim,
+  notifyAnimStart,
+  notifyAnimStop,
   notifyAnimOffset,
   notifyJump,
 }

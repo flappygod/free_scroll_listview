@@ -1,3 +1,3 @@
-## 1.1.3
+## 1.2.0
 
-* Add more check for min scroll offset.
+* Improve the stability of the plugin library
