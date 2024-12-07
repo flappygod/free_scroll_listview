@@ -72,10 +72,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   ///update scroll rect to controller
   void _updateScrollRectToController() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      ///await
-      await Future.delayed(const Duration(milliseconds: 40));
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       ///item
       if (!mounted || _disposed) {
         return;
