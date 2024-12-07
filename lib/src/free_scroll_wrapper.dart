@@ -72,7 +72,10 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     }
     widget.cachedItemRectMap[widget.actualIndex] = rect;
     widget.visibleItemRectMap[widget.actualIndex] = rect;
-    widget.controller.notifyItemRectOnScreen(widget.actualIndex);
+    widget.controller.notifyItemRectOnScreen(
+      widget.visibleItemRectMap,
+      widget.actualIndex,
+    );
   }
 
   ///remove rect

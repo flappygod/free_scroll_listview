@@ -100,7 +100,12 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///add anchor item state
-  void notifyItemRectOnScreen(int index) {
+  void notifyItemRectOnScreen(Map<int, Rect> visibleMap, int index) {
+    ///not the same
+    if (visibleMap != _visibleItemRectMap) {
+      return;
+    }
+
     ///check when animating
     if (isAnimating) {
       _checkAndResetIndex(animatingMode: true);
