@@ -38,8 +38,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       AdditionPreviewController<T>();
 
   //item maps
-  Map<int, Rect> _cachedItemRectMap = {};
   Map<int, Rect> _visibleItemRectMap = {};
+  Map<int, Rect> _cachedItemRectMap = {};
 
   //header view height
   double _headerViewHeight = 0;
@@ -100,21 +100,22 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///add anchor item state
-  void notifyItemRectOnScreen(Map<int, Rect> visibleMap, int index) {
-    ///not the same
-    if (visibleMap != _visibleItemRectMap) {
-      return;
-    }
-
+  void notifyItemRectShowOnScreen(int index) {
     ///check when animating
     if (isAnimating) {
       _checkAndResetIndex(animatingMode: true);
     }
 
     ///set min scroll extend
-    Rect? firstRect = _visibleItemRectMap[0];
-    if (index == 0 && firstRect != null) {
-      _setNegativeHeight(firstRect.top);
+    if (index == 0 && _visibleItemRectMap[0]?.top != null) {
+      _setNegativeHeight(_visibleItemRectMap[0]!.top);
+    }
+  }
+
+  ///remove rect on screen
+  void notifyItemRectRemoveOnScreen(int index) {
+    if (index == 0) {
+      _setNegativeHeight(double.negativeInfinity);
     }
   }
 
@@ -240,8 +241,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///set data if is init
       if (_negativeDataList.isEmpty && _positiveDataList.isEmpty) {
         _setNegativeHeight(0);
-        _cachedItemRectMap = <int, Rect>{};
         _visibleItemRectMap = <int, Rect>{};
+        _cachedItemRectMap = <int, Rect>{};
         _positiveDataList.clear();
         _negativeDataList.clear();
         _positiveDataList.addAll(dataList);
@@ -256,8 +257,8 @@ class FreeScrollListViewController<T> extends ScrollController {
             ? dataList.sublist(firstList.length, dataList.length)
             : [];
         _setNegativeHeight(double.negativeInfinity);
-        _cachedItemRectMap = <int, Rect>{};
         _visibleItemRectMap = <int, Rect>{};
+        _cachedItemRectMap = <int, Rect>{};
         _positiveDataList.clear();
         _negativeDataList.clear();
         _negativeDataList.addAll(firstList);
@@ -331,8 +332,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _lock.synchronized(() async {
       ///insert all data
       _setNegativeHeight(double.negativeInfinity);
-      _cachedItemRectMap = <int, Rect>{};
       _visibleItemRectMap = <int, Rect>{};
+      _cachedItemRectMap = <int, Rect>{};
       _negativeDataList.clear();
       _positiveDataList.clear();
       _positiveDataList.addAll(dataList);
@@ -464,8 +465,8 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     //Clear existing data and cached maps
     _setNegativeHeight(double.negativeInfinity);
-    _cachedItemRectMap = <int, Rect>{};
     _visibleItemRectMap = <int, Rect>{};
+    _cachedItemRectMap = <int, Rect>{};
     _negativeDataList.clear();
     _positiveDataList.clear();
 
@@ -848,10 +849,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                               actualIndex: actualIndex,
                               listViewState: this,
                               controller: widget.controller,
-                              cachedItemRectMap:
-                                  widget.controller._cachedItemRectMap,
                               visibleItemRectMap:
                                   widget.controller._visibleItemRectMap,
+                              cachedItemRectMap:
+                                  widget.controller._cachedItemRectMap,
                               child: widget.builder(context, actualIndex),
                             );
                           },
@@ -888,10 +889,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                               actualIndex: actualIndex,
                               listViewState: this,
                               controller: widget.controller,
-                              cachedItemRectMap:
-                                  widget.controller._cachedItemRectMap,
                               visibleItemRectMap:
                                   widget.controller._visibleItemRectMap,
+                              cachedItemRectMap:
+                                  widget.controller._cachedItemRectMap,
                               child: widget.builder(context, actualIndex),
                             );
                           },

@@ -7,8 +7,8 @@ class AnchorItemWrapper extends StatefulWidget {
   const AnchorItemWrapper({
     required this.actualIndex,
     required this.controller,
-    required this.cachedItemRectMap,
     required this.visibleItemRectMap,
+    required this.cachedItemRectMap,
     this.reverse = false,
     this.listViewState,
     this.child,
@@ -27,11 +27,11 @@ class AnchorItemWrapper extends StatefulWidget {
   //项目的索引
   final int actualIndex;
 
-  //cached
-  final Map<int, Rect> cachedItemRectMap;
-
   //visible
   final Map<int, Rect> visibleItemRectMap;
+
+  //cached
+  final Map<int, Rect> cachedItemRectMap;
 
   //reverse
   final bool reverse;
@@ -67,29 +67,25 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   ///add to rect
   void _addFrameRectToController(Rect rect) {
-    if (_disposed) {
-      return;
-    }
     widget.cachedItemRectMap[widget.actualIndex] = rect;
     widget.visibleItemRectMap[widget.actualIndex] = rect;
-    widget.controller.notifyItemRectOnScreen(
-      widget.visibleItemRectMap,
-      widget.actualIndex,
-    );
+    widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
   }
 
   ///remove rect
   void _removeFrameRectToController() {
     widget.visibleItemRectMap.remove(widget.actualIndex);
+    widget.controller.notifyItemRectRemoveOnScreen(widget.actualIndex);
   }
 
   ///update scroll rect to controller
   void _updateScrollRectToController() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      ///await
       await Future.delayed(const Duration(milliseconds: 40));
 
       ///item
-      if (!mounted) {
+      if (!mounted || _disposed) {
         return;
       }
 
