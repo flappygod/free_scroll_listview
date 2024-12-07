@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:free_scroll_listview/src/free_scroll_observe.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
 import 'package:synchronized/synchronized.dart';
@@ -39,7 +41,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   //item maps
   final Map<int, Rect> _cachedItemRectMap = {};
   final Map<int, Rect> _visibleItemRectMap = {};
-  int _visibleItemStamp = 0;
+  GlobalKey _lockKey = GlobalKey();
 
   //header view height
   double _headerViewHeight = 0;
@@ -66,8 +68,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _currentIndex;
   }
 
-  int get visibleItemStamp {
-    return _visibleItemStamp;
+  GlobalKey get lockKey {
+    return _lockKey;
   }
 
   ///listview height
@@ -173,7 +175,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///we remove all
         _setNegativeHeight(double.negativeInfinity);
-        _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
+        _lockKey = GlobalKey();
         _cachedItemRectMap.clear();
         _visibleItemRectMap.clear();
 
@@ -247,7 +249,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///set data if is init
       if (_negativeDataList.isEmpty && _positiveDataList.isEmpty) {
         _setNegativeHeight(0);
-        _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
+        _lockKey = GlobalKey();
         _positiveDataList.clear();
         _negativeDataList.clear();
         _cachedItemRectMap.clear();
@@ -264,7 +266,7 @@ class FreeScrollListViewController<T> extends ScrollController {
             ? dataList.sublist(firstList.length, dataList.length)
             : [];
         _setNegativeHeight(double.negativeInfinity);
-        _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
+        _lockKey = GlobalKey();
         _positiveDataList.clear();
         _negativeDataList.clear();
         _cachedItemRectMap.clear();
@@ -340,7 +342,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _lock.synchronized(() async {
       ///insert all data
       _setNegativeHeight(double.negativeInfinity);
-      _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
+      _lockKey = GlobalKey();
       _negativeDataList.clear();
       _positiveDataList.clear();
       _cachedItemRectMap.clear();
@@ -474,7 +476,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     //Clear existing data and cached maps
     _setNegativeHeight(double.negativeInfinity);
-    _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
+    _lockKey = GlobalKey();
     _negativeDataList.clear();
     _positiveDataList.clear();
     _cachedItemRectMap.clear();
@@ -859,8 +861,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                               actualIndex: actualIndex,
                               listViewState: this,
                               controller: widget.controller,
-                              visibleRectStamp:
-                                  widget.controller._visibleItemStamp,
+                              lockKey: widget.controller._lockKey,
                               child: widget.builder(context, actualIndex),
                             );
                           },
@@ -897,8 +898,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                               actualIndex: actualIndex,
                               listViewState: this,
                               controller: widget.controller,
-                              visibleRectStamp:
-                                  widget.controller._visibleItemStamp,
+                              lockKey: widget.controller._lockKey,
                               child: widget.builder(context, actualIndex),
                             );
                           },

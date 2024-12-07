@@ -8,7 +8,7 @@ class AnchorItemWrapper extends StatefulWidget {
   const AnchorItemWrapper({
     required this.actualIndex,
     required this.controller,
-    required this.visibleRectStamp,
+    required this.lockKey,
     this.reverse = false,
     this.listViewState,
     this.child,
@@ -28,7 +28,7 @@ class AnchorItemWrapper extends StatefulWidget {
   final int actualIndex;
 
   //stamp
-  final int visibleRectStamp;
+  final GlobalKey lockKey;
 
   //reverse
   final bool reverse;
@@ -42,12 +42,11 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   static final Lock _lock = Lock();
 
   @override
-  void initState(){
+  void initState() {
     _removeFrameRectToController();
     _updateScrollRectToController();
     super.initState();
   }
-
 
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
@@ -65,16 +64,16 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   ///add to rect
   void _addFrameRectToController(Rect rect) {
     _lock.synchronized(() {
-      if (widget.visibleRectStamp == widget.controller.visibleItemStamp) {
+      if (widget.lockKey == widget.controller.lockKey) {
         widget.controller.addItemRectOnScreen(widget.actualIndex, rect);
       }
     });
   }
 
   ///remove rect
-  void _removeFrameRectToController(){
+  void _removeFrameRectToController() {
     _lock.synchronized(() {
-      if (widget.visibleRectStamp == widget.controller.visibleItemStamp) {
+      if (widget.lockKey == widget.controller.lockKey) {
         widget.controller.removeItemRectOnScreen(widget.actualIndex);
       }
     });
