@@ -172,6 +172,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         }
 
         ///we remove all
+        _setNegativeHeight(double.negativeInfinity);
         _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
         _cachedItemRectMap.clear();
         _visibleItemRectMap.clear();
@@ -243,7 +244,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///set data list
   set dataList(List<T> dataList) {
     _lock.synchronized(() {
-      ///set data if not init
+      ///set data if is init
       if (_negativeDataList.isEmpty && _positiveDataList.isEmpty) {
         _setNegativeHeight(0);
         _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
@@ -255,13 +256,14 @@ class FreeScrollListViewController<T> extends ScrollController {
         notifyActionListeners(FreeScrollListViewActionType.notifyData);
       }
 
-      ///set data if is init
+      ///set data if not init
       else {
         int index = min(_negativeDataList.length, dataList.length);
         List<T> firstList = dataList.sublist(0, index);
         List<T> secondList = firstList.length != dataList.length
             ? dataList.sublist(firstList.length, dataList.length)
             : [];
+        _setNegativeHeight(double.negativeInfinity);
         _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
         _positiveDataList.clear();
         _negativeDataList.clear();
@@ -469,10 +471,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     List<T> newNegativeList = dataList.sublist(0, index);
     List<T> newPositiveList = dataList.sublist(index);
 
-    //Set negative height
-    _setNegativeHeight(double.negativeInfinity);
-
     //Clear existing data and cached maps
+    _setNegativeHeight(double.negativeInfinity);
     _visibleItemStamp = DateTime.now().millisecondsSinceEpoch;
     _negativeDataList.clear();
     _positiveDataList.clear();
