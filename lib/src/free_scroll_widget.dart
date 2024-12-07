@@ -118,8 +118,10 @@ class FreeScrollListViewController<T> extends ScrollController {
       _checkAndResetIndex(animatingMode: true);
     }
 
-    ///check negative top to set
-    _checkNegativeTop(index, rect);
+    ///set min scroll extend
+    if (index == 0) {
+      _setNegativeHeight(rect.top);
+    }
   }
 
   ///check and reset index
@@ -197,19 +199,6 @@ class FreeScrollListViewController<T> extends ScrollController {
       }
     }
     return false;
-  }
-
-  ///check first one is actual or not
-  void _checkNegativeTop(int index, Rect rect) {
-    double? minTop;
-    for (Rect rect in _visibleItemRectMap.values) {
-      if (minTop == null || rect.top < minTop) {
-        minTop = rect.top;
-      }
-    }
-    if (minTop != null) {
-      _setNegativeHeight(minTop);
-    }
   }
 
   ///add listener
