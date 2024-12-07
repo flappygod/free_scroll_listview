@@ -107,8 +107,10 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
 
     ///set min scroll extend
-    if (index == 0 && _visibleItemRectMap[0]?.top != null) {
-      _setNegativeHeight(_visibleItemRectMap[0]!.top);
+    if (index == 0) {
+      _setNegativeHeight(
+        _visibleItemRectMap[0]?.top ?? double.negativeInfinity,
+      );
     }
   }
 
@@ -152,7 +154,11 @@ class FreeScrollListViewController<T> extends ScrollController {
         ///we get the offset
         double needChangeOffset = 0;
         for (int s = lastScreenIndex; s <= tempCount; s++) {
-          needChangeOffset += (_cachedItemRectMap[s]?.height ?? 0);
+          final itemHeight = _cachedItemRectMap[s]?.height;
+          if (itemHeight == null) {
+            return false;
+          }
+          needChangeOffset += itemHeight;
         }
 
         ///change

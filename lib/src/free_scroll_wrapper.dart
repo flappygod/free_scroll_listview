@@ -45,36 +45,11 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   ///is disposed or not
   bool _disposed = false;
 
-  @override
-  void dispose() {
-    _disposed = true;
-    _removeFrameRectToController();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(AnchorItemWrapper oldWidget) {
-    super.didUpdateWidget(oldWidget);
-  }
-
-  ///remove rect
-  void _removeFrameRectToController() {
-    widget.visibleItemRectMap.remove(widget.actualIndex);
-    widget.controller.notifyItemRectRemoveOnScreen(widget.actualIndex);
-  }
-
-  ///add to rect
-  void _addFrameRectToController(Rect rect) {
-    widget.visibleItemRectMap[widget.actualIndex] = rect;
-    widget.cachedItemRectMap[widget.actualIndex] = rect;
-    widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
-  }
-
   ///update scroll rect to controller
   void _updateScrollRectToController() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ///item
-      if (!mounted || _disposed) {
+      if (!mounted) {
         return;
       }
 
@@ -99,17 +74,22 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
       double pixels = widget.controller.position.pixels;
 
+      ///item
+      if (_disposed) {
+        return;
+      }
+
       ///offset item
       if (widget.reverse) {
         double dy = offset + height - offsetItem.dy - itemBox.size.height;
-        _addFrameRectToController(Rect.fromLTWH(
+        _addFrameRect(Rect.fromLTWH(
           offsetItem.dx,
           dy + pixels,
           itemBox.size.width,
           itemBox.size.height,
         ));
       } else {
-        _addFrameRectToController(Rect.fromLTWH(
+        _addFrameRect(Rect.fromLTWH(
           offsetItem.dx,
           offsetItem.dy - offset + pixels,
           itemBox.size.width,
@@ -117,6 +97,37 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
         ));
       }
     });
+  }
+
+  ///add to rect
+  void _addFrameRect(Rect rect) {
+    widget.visibleItemRectMap[widget.actualIndex] = rect;
+    widget.cachedItemRectMap[widget.actualIndex] = rect;
+    widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
+  }
+
+  ///remove rect
+  void _removeFrameRect() {
+    widget.visibleItemRectMap.remove(widget.actualIndex);
+    widget.controller.notifyItemRectRemoveOnScreen(widget.actualIndex);
+  }
+
+  @override
+  void initState() {
+    _removeFrameRect();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _removeFrameRect();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(AnchorItemWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
