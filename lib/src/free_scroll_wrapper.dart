@@ -76,11 +76,14 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   ///update scroll rect to controller
   void _updateScrollRectToController() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(milliseconds: 40));
+
       ///item
       if (!mounted) {
         return;
       }
+
 
       double height = widget.controller.listViewHeight;
       double offset = widget.controller.listViewOffset;
