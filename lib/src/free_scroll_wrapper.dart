@@ -42,20 +42,24 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   static final Lock _lock = Lock();
 
   @override
-  void dispose() {
-    _lock.synchronized(() {
-      widget.controller.removeItemRectOnScreen(widget.actualIndex);
-    });
-
-    super.dispose();
+  void initState(){
+    _removeFrameRectToController();
+    _updateScrollRectToController();
+    super.initState();
   }
+
 
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
-    _lock.synchronized(() {
-      widget.controller.removeItemRectOnScreen(oldWidget.actualIndex);
-    });
+    _removeFrameRectToController();
+    _updateScrollRectToController();
     super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void dispose() {
+    _removeFrameRectToController();
+    super.dispose();
   }
 
   ///add to rect
@@ -63,6 +67,15 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     _lock.synchronized(() {
       if (widget.visibleRectStamp == widget.controller.visibleItemStamp) {
         widget.controller.addItemRectOnScreen(widget.actualIndex, rect);
+      }
+    });
+  }
+
+  ///remove rect
+  void _removeFrameRectToController(){
+    _lock.synchronized(() {
+      if (widget.visibleRectStamp == widget.controller.visibleItemStamp) {
+        widget.controller.removeItemRectOnScreen(widget.actualIndex);
       }
     });
   }
@@ -118,7 +131,6 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    _updateScrollRectToController();
     return widget.child ?? const SizedBox();
   }
 }
