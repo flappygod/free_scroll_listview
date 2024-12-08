@@ -808,9 +808,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       _animationController = null;
     }
     _animationOffset = 0;
-    if (widget.controller.hasClients && widget.controller.position.hasPixels) {
-      widget.controller.jumpTo(widget.controller.offset);
-    }
   }
 
   ///init height
