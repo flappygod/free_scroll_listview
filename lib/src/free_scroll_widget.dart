@@ -454,11 +454,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///check rect listeners
     notifyCheckRectListeners();
 
-    ///wait
-    await _lock.synchronized(() async {
-      return await Future.delayed(const Duration(milliseconds: 40));
-    });
-
     ///get the rect for the index
     RectHolder? holder = _itemsRectHolder[index];
 
@@ -1002,6 +997,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     if (notification is ScrollStartNotification &&
         notification.dragDetails != null) {
       _cancelAnimation();
+      widget.controller.notifyCheckRectListeners();
     }
 
     ///加载之前的消息，FormerMessages
