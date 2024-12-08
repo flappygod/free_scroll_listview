@@ -120,7 +120,9 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   @override
   void initState() {
     _checkRectListener = () {
-      _refreshRectItems(widget.rectHolder, widget.actualIndex);
+      if(widget.rectHolder.isOnScreen){
+        _refreshRectItems(widget.rectHolder, widget.actualIndex);
+      }
     };
     _removeFrameRect(widget.rectHolder, widget.actualIndex);
     widget.controller.addCheckRectListener(_checkRectListener);
