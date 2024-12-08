@@ -157,12 +157,12 @@ class _MyHomePageState extends State<MyHomePage> {
               onItemShow: (List<int> dataList) {
                 print(dataList);
               },
-              willReachTail: () {
+              /*willReachTail: () {
                 return _checkAddTail();
               },
               willReachHead: () {
                 return _checkAddHead();
-              },
+              },*/
               builder: (context, index) {
                 return Container(
                   height: 75,

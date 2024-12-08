@@ -38,69 +38,76 @@ class AnchorItemWrapper extends StatefulWidget {
 
 ///anchor item wrapper state
 class AnchorItemWrapperState extends State<AnchorItemWrapper> {
+  ///check rect listener
+  late VoidCallback _checkRectListener;
+
+  ///refresh rect
+  void _refreshRectItems(RectHolder holder, int index) {
+    ///item
+    if (!mounted ||
+        !widget.controller.hasClients ||
+        !widget.controller.position.hasPixels) {
+      return;
+    }
+
+    double height = widget.controller.listViewHeight;
+    double offset = widget.controller.listViewOffset;
+    double pixels = widget.controller.position.pixels;
+
+    ///not zero
+    if (height == 0) {
+      return;
+    }
+
+    RenderObject? renderObject = context.findRenderObject();
+    RenderBox? itemBox = renderObject is RenderBox ? renderObject : null;
+    Offset? offsetItem = itemBox?.localToGlobal(const Offset(0.0, 0.0));
+
+    ///nothing
+    if (offsetItem == null || itemBox == null) {
+      return;
+    }
+
+    ///offset item
+    if (widget.reverse) {
+      double dy = offset + height - offsetItem.dy - itemBox.size.height;
+      _addFrameRect(
+        holder,
+        index,
+        Rect.fromLTWH(
+          offsetItem.dx,
+          dy + pixels,
+          itemBox.size.width,
+          itemBox.size.height,
+        ),
+      );
+    } else {
+      _addFrameRect(
+        holder,
+        index,
+        Rect.fromLTWH(
+          offsetItem.dx,
+          offsetItem.dy - offset + pixels,
+          itemBox.size.width,
+          itemBox.size.height,
+        ),
+      );
+    }
+  }
+
   ///update scroll rect to controller
   void _updateScrollRectToController(RectHolder holder, int index) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ///item
-      if (!mounted) {
-        return;
-      }
-
-      double height = widget.controller.listViewHeight;
-      double offset = widget.controller.listViewOffset;
-
-      ///not zero
-      if (height == 0) {
-        return;
-      }
-
-      RenderBox? itemBox = context.findRenderObject() as RenderBox?;
-      Offset? offsetItem = itemBox?.localToGlobal(const Offset(0.0, 0.0));
-
-      ///nothing
-      if (offsetItem == null ||
-          itemBox == null ||
-          !widget.controller.hasClients ||
-          !widget.controller.position.hasPixels) {
-        return;
-      }
-
-      double pixels = widget.controller.position.pixels;
-
-      ///offset item
-      if (widget.reverse) {
-        double dy = offset + height - offsetItem.dy - itemBox.size.height;
-        _addFrameRect(
-          holder,
-          index,
-          Rect.fromLTWH(
-            offsetItem.dx,
-            dy + pixels,
-            itemBox.size.width,
-            itemBox.size.height,
-          ),
-        );
-      } else {
-        _addFrameRect(
-          holder,
-          index,
-          Rect.fromLTWH(
-            offsetItem.dx,
-            offsetItem.dy - offset + pixels,
-            itemBox.size.width,
-            itemBox.size.height,
-          ),
-        );
-      }
+      _refreshRectItems(holder, index);
     });
   }
 
   ///add to rect
   void _addFrameRect(RectHolder holder, int index, Rect rect) {
-    if (widget.rectHolder == holder) {
+    if (widget.rectHolder == holder && widget.actualIndex == index) {
       holder.rect = rect;
       holder.isOnScreen = true;
-      widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
+      widget.controller.notifyItemRectShowOnScreen(index);
     }
   }
 
@@ -111,13 +118,27 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   }
 
   @override
+  void initState() {
+    _checkRectListener = () {
+      _refreshRectItems(widget.rectHolder, widget.actualIndex);
+    };
+    widget.controller.addCheckRectListener(_checkRectListener);
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _removeFrameRect(widget.rectHolder, widget.actualIndex);
+    widget.controller.removeCheckRectListener(_checkRectListener);
     super.dispose();
   }
 
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeCheckRectListener(_checkRectListener);
+      widget.controller.addCheckRectListener(_checkRectListener);
+    }
     _removeFrameRect(oldWidget.rectHolder, oldWidget.actualIndex);
     super.didUpdateWidget(oldWidget);
   }

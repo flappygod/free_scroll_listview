@@ -1,3 +1,3 @@
-## 1.2.1
+## 1.2.2
 
-* Improve the stability of the plugin library
+* Fix the issue of incorrect scroll position during rapid switching.

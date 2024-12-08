@@ -42,6 +42,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   //listeners
   final List<FreeScrollListASyncListener> _asyncListeners = [];
 
+  //check rect listeners
+  final List<VoidCallback> _checkRectListeners = [];
+
   //controller
   final AdditionPreviewController<T> _previewController =
       AdditionPreviewController<T>();
@@ -213,6 +216,18 @@ class FreeScrollListViewController<T> extends ScrollController {
     return false;
   }
 
+  ///add check rect listener
+  void addCheckRectListener(VoidCallback listener) {
+    if (!_checkRectListeners.contains(listener)) {
+      _checkRectListeners.add(listener);
+    }
+  }
+
+  ///remove check rect listener
+  bool removeCheckRectListener(VoidCallback listener) {
+    return _checkRectListeners.remove(listener);
+  }
+
   ///add listener
   void addSyncActionListener(FreeScrollListSyncListener listener) {
     if (!_syncListeners.contains(listener)) {
@@ -235,6 +250,14 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///remove listener
   bool removeASyncActionListener(FreeScrollListASyncListener listener) {
     return _asyncListeners.remove(listener);
+  }
+
+  ///notify check rect listeners
+  void notifyCheckRectListeners() {
+    List<VoidCallback> listeners = List.from(_checkRectListeners);
+    for (VoidCallback listener in listeners) {
+      listener();
+    }
   }
 
   ///notify listeners
@@ -427,6 +450,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     ///stop the former animations
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+
+    ///check rect listeners
+    notifyCheckRectListeners();
 
     ///wait
     await _lock.synchronized(() async {
