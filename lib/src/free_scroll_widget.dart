@@ -430,7 +430,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///wait
     await _lock.synchronized(() async {
-      return await Future.delayed(const Duration(milliseconds: 30));
+      return await Future.delayed(const Duration(milliseconds: 40));
     });
 
     ///get the rect for the index
@@ -708,7 +708,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
         ///start animation
         case FreeScrollListViewActionType.notifyJump:
-          await Future.delayed(const Duration(milliseconds: 80)).then((_) {
+          await Future.delayed(const Duration(milliseconds: 40)).then((_) {
             _notifyIndex();
             _notifyOnShow();
           });
@@ -808,13 +808,16 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       _animationController = null;
     }
     _animationOffset = 0;
+    if (widget.controller.hasClients && widget.controller.position.hasPixels) {
+      widget.controller.jumpTo(widget.controller.offset);
+    }
   }
 
   ///init height
   void _initHeight() {
     ///get height
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 80)).then((_) {
+      Future.delayed(const Duration(milliseconds: 40)).then((_) {
         _notifyIndex();
         _notifyOnShow();
       });
