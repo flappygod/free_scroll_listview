@@ -189,22 +189,23 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///when animating  just correct by and notifyAnimOffset
         if (animatingMode) {
-          position.correctBy(needChangeOffset);
           notifyActionSyncListeners(
             FreeScrollListViewActionType.notifyAnimOffset,
             data: needChangeOffset,
+          );
+          position.jumpTo(position.pixels + needChangeOffset);
+          notifyActionSyncListeners(
+            FreeScrollListViewActionType.notifyData,
           );
         }
 
         ///when not animating ,use jump to
         else {
           position.jumpTo(position.pixels + needChangeOffset);
+          notifyActionSyncListeners(
+            FreeScrollListViewActionType.notifyData,
+          );
         }
-
-        ///setState
-        notifyActionSyncListeners(
-          FreeScrollListViewActionType.notifyData,
-        );
 
         return true;
       }

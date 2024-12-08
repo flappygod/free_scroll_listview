@@ -71,24 +71,26 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
       if (widget.reverse) {
         double dy = offset + height - offsetItem.dy - itemBox.size.height;
         _addFrameRect(
-            holder,
-            index,
-            Rect.fromLTWH(
-              offsetItem.dx,
-              dy + pixels,
-              itemBox.size.width,
-              itemBox.size.height,
-            ));
+          holder,
+          index,
+          Rect.fromLTWH(
+            offsetItem.dx,
+            dy + pixels,
+            itemBox.size.width,
+            itemBox.size.height,
+          ),
+        );
       } else {
         _addFrameRect(
-            holder,
-            index,
-            Rect.fromLTWH(
-              offsetItem.dx,
-              offsetItem.dy - offset + pixels,
-              itemBox.size.width,
-              itemBox.size.height,
-            ));
+          holder,
+          index,
+          Rect.fromLTWH(
+            offsetItem.dx,
+            offsetItem.dy - offset + pixels,
+            itemBox.size.width,
+            itemBox.size.height,
+          ),
+        );
       }
     });
   }
@@ -109,12 +111,6 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   }
 
   @override
-  void initState() {
-    _updateScrollRectToController(widget.rectHolder, widget.actualIndex);
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _removeFrameRect(widget.rectHolder, widget.actualIndex);
     super.dispose();
@@ -123,12 +119,12 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
     _removeFrameRect(oldWidget.rectHolder, oldWidget.actualIndex);
-    _updateScrollRectToController(widget.rectHolder, widget.actualIndex);
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   Widget build(BuildContext context) {
+    _updateScrollRectToController(widget.rectHolder, widget.actualIndex);
     return widget.child ?? const SizedBox();
   }
 }
