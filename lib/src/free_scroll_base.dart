@@ -80,3 +80,26 @@ enum FreeScrollAlign {
   bottomToTop,
   directJumpTo,
 }
+
+///rect holder
+class RectHolder {
+  bool isOnScreen = false;
+  Rect? rect;
+
+  RectHolder(
+    this.isOnScreen,
+    this.rect,
+  );
+
+  double? rectHeight() {
+    return rect?.height;
+  }
+
+  double? rectTop() {
+    return rect?.top;
+  }
+
+  double? rectBottom() {
+    return rect?.bottom;
+  }
+}

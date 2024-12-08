@@ -7,8 +7,7 @@ class AnchorItemWrapper extends StatefulWidget {
   const AnchorItemWrapper({
     required this.actualIndex,
     required this.controller,
-    required this.visibleItemRectMap,
-    required this.cachedItemRectMap,
+    required this.rectHolder,
     this.reverse = false,
     this.listViewState,
     this.child,
@@ -27,11 +26,8 @@ class AnchorItemWrapper extends StatefulWidget {
   //项目的索引
   final int actualIndex;
 
-  //visible
-  final Map<int, Rect> visibleItemRectMap;
-
-  //cached
-  final Map<int, Rect> cachedItemRectMap;
+  //Rect
+  final RectHolder rectHolder;
 
   //reverse
   final bool reverse;
@@ -42,9 +38,6 @@ class AnchorItemWrapper extends StatefulWidget {
 
 ///anchor item wrapper state
 class AnchorItemWrapperState extends State<AnchorItemWrapper> {
-  ///is disposed or not
-  bool _disposed = false;
-
   ///update scroll rect to controller
   void _updateScrollRectToController() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -74,59 +67,58 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
       double pixels = widget.controller.position.pixels;
 
-      ///item
-      if (_disposed) {
-        return;
-      }
-
       ///offset item
       if (widget.reverse) {
         double dy = offset + height - offsetItem.dy - itemBox.size.height;
-        _addFrameRect(Rect.fromLTWH(
-          offsetItem.dx,
-          dy + pixels,
-          itemBox.size.width,
-          itemBox.size.height,
-        ));
+        _addFrameRect(
+            widget.rectHolder,
+            Rect.fromLTWH(
+              offsetItem.dx,
+              dy + pixels,
+              itemBox.size.width,
+              itemBox.size.height,
+            ));
       } else {
-        _addFrameRect(Rect.fromLTWH(
-          offsetItem.dx,
-          offsetItem.dy - offset + pixels,
-          itemBox.size.width,
-          itemBox.size.height,
-        ));
+        _addFrameRect(
+            widget.rectHolder,
+            Rect.fromLTWH(
+              offsetItem.dx,
+              offsetItem.dy - offset + pixels,
+              itemBox.size.width,
+              itemBox.size.height,
+            ));
       }
     });
   }
 
   ///add to rect
-  void _addFrameRect(Rect rect) {
-    widget.visibleItemRectMap[widget.actualIndex] = rect;
-    widget.cachedItemRectMap[widget.actualIndex] = rect;
+  void _addFrameRect(RectHolder holder, Rect rect) {
+    holder.rect = rect;
+    holder.isOnScreen = true;
     widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
   }
 
   ///remove rect
-  void _removeFrameRect() {
-    widget.visibleItemRectMap.remove(widget.actualIndex);
+  void _removeFrameRect(RectHolder holder) {
+    holder.isOnScreen = false;
     widget.controller.notifyItemRectRemoveOnScreen(widget.actualIndex);
   }
 
   @override
   void initState() {
-    _removeFrameRect();
+    _removeFrameRect(widget.rectHolder);
     super.initState();
   }
 
   @override
   void dispose() {
-    _disposed = true;
-    _removeFrameRect();
+    _removeFrameRect(widget.rectHolder);
     super.dispose();
   }
 
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
+    _removeFrameRect(oldWidget.rectHolder);
     super.didUpdateWidget(oldWidget);
   }
 

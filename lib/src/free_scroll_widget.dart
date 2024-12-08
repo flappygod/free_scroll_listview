@@ -47,8 +47,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       AdditionPreviewController<T>();
 
   //item maps
-  Map<int, Rect> _visibleItemRectMap = {};
-  Map<int, Rect> _cachedItemRectMap = {};
+  final Map<int, RectHolder> _itemsRectHolder = {};
 
   //header view height
   double _headerViewHeight = 0;
@@ -117,9 +116,12 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///set min scroll extend
     if (index == 0) {
-      _setNegativeHeight(
-        _visibleItemRectMap[0]?.top ?? double.negativeInfinity,
-      );
+      RectHolder? holder = _itemsRectHolder[0];
+      if (holder != null && holder.isOnScreen) {
+        _setNegativeHeight(
+          _itemsRectHolder[0]?.rect?.top ?? double.negativeInfinity,
+        );
+      }
     }
   }
 
@@ -136,12 +138,12 @@ class FreeScrollListViewController<T> extends ScrollController {
     int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
 
     ///set max scroll extend
-    if (_cachedItemRectMap[maxIndex] != null) {
+    if (_itemsRectHolder[maxIndex] != null) {
       ///calculate height test
       double lastScreenOffset = 0;
       int? lastScreenIndex;
       for (int s = maxIndex; s >= 0; s--) {
-        final itemHeight = _cachedItemRectMap[s]?.height;
+        final double? itemHeight = _itemsRectHolder[s]?.rectHeight();
         if (itemHeight == null) {
           return false;
         }
@@ -163,7 +165,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         ///we get the offset
         double needChangeOffset = 0;
         for (int s = lastScreenIndex; s <= tempCount; s++) {
-          final itemHeight = _cachedItemRectMap[s]?.height;
+          final itemHeight = _itemsRectHolder[s]?.rectHeight();
           if (itemHeight == null) {
             return false;
           }
@@ -183,8 +185,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///we remove all
         _setNegativeHeight(double.negativeInfinity);
-        _cachedItemRectMap = <int, Rect>{};
-        _visibleItemRectMap = <int, Rect>{};
+        _itemsRectHolder.clear();
 
         ///when animating  just correct by and notifyAnimOffset
         if (animatingMode) {
@@ -282,8 +283,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///set data if is init
       if (_negativeDataList.isEmpty && _positiveDataList.isEmpty) {
         _setNegativeHeight(0);
-        _visibleItemRectMap = <int, Rect>{};
-        _cachedItemRectMap = <int, Rect>{};
+        _itemsRectHolder.clear();
         _positiveDataList.clear();
         _negativeDataList.clear();
         _positiveDataList.addAll(dataList);
@@ -298,8 +298,7 @@ class FreeScrollListViewController<T> extends ScrollController {
             ? dataList.sublist(firstList.length, dataList.length)
             : [];
         _setNegativeHeight(double.negativeInfinity);
-        _visibleItemRectMap = <int, Rect>{};
-        _cachedItemRectMap = <int, Rect>{};
+        _itemsRectHolder.clear();
         _positiveDataList.clear();
         _negativeDataList.clear();
         _negativeDataList.addAll(firstList);
@@ -373,8 +372,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _lock.synchronized(() async {
       ///insert all data
       _setNegativeHeight(double.negativeInfinity);
-      _visibleItemRectMap = <int, Rect>{};
-      _cachedItemRectMap = <int, Rect>{};
+      _itemsRectHolder.clear();
       _negativeDataList.clear();
       _positiveDataList.clear();
       _positiveDataList.addAll(dataList);
@@ -433,11 +431,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
 
     ///get the rect for the index
-    Rect? rect = _visibleItemRectMap[index];
+    RectHolder? holder = _itemsRectHolder[index];
 
     ///if index is exists
-    if (rect != null) {
-      double toOffset = rect.top + _anchorOffset;
+    if (holder != null && holder.isOnScreen) {
+      double toOffset = holder.rectTop()! + _anchorOffset;
       if (hasClients &&
           position.maxScrollExtent != double.infinity &&
           position.maxScrollExtent != double.maxFinite) {
@@ -454,7 +452,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     else {
       ///get align
       FreeScrollAlign align = FreeScrollAlign.topToBottom;
-      List<int> keys = _visibleItemRectMap.keys.toList();
+      List<int> keys = _itemsRectHolder.keys.toList();
       keys.sort((one, two) {
         return one.compareTo(two);
       });
@@ -466,15 +464,14 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///keys
       double pixels = position.pixels;
       int currentIndex = keys.first;
-      for (int key in _visibleItemRectMap.keys) {
-        Rect? rect = _visibleItemRectMap[key];
-        if (rect == null) {
-          continue;
-        }
-        double offsetTop = rect.top - pixels;
-        double offsetBottom = rect.bottom - pixels;
-        if (offsetTop.round() <= 0 && offsetBottom.round() > 0) {
-          currentIndex = key;
+      for (int key in _itemsRectHolder.keys) {
+        RectHolder? holder = _itemsRectHolder[key];
+        if (holder != null && holder.isOnScreen) {
+          double offsetTop = holder.rectTop()! - pixels;
+          double offsetBottom = holder.rectBottom()! - pixels;
+          if (offsetTop.round() <= 0 && offsetBottom.round() > 0) {
+            currentIndex = key;
+          }
         }
       }
 
@@ -506,8 +503,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     //Clear existing data and cached maps
     _setNegativeHeight(double.negativeInfinity);
-    _visibleItemRectMap = <int, Rect>{};
-    _cachedItemRectMap = <int, Rect>{};
+    _itemsRectHolder.clear();
     _negativeDataList.clear();
     _positiveDataList.clear();
 
@@ -785,9 +781,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           maxScrollExtent != double.maxFinite &&
           widget.controller.hasClients &&
           widget.controller.position.hasPixels &&
-          widget.controller._visibleItemRectMap[maxIndex] != null &&
-          widget.controller._visibleItemRectMap[maxIndex]!.bottom >=
-              maxScrollExtent) {
+          widget.controller._itemsRectHolder[maxIndex] != null &&
+          widget.controller._itemsRectHolder[maxIndex]!.isOnScreen) {
         widget.controller.position.jumpTo(maxScrollExtent);
       }
     });
@@ -905,16 +900,15 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             int actualIndex = negativeDataLength - index - 1;
+                            RectHolder rectHolder = RectHolder(false, null);
+                            widget.controller._itemsRectHolder[actualIndex] =
+                                rectHolder;
                             return AnchorItemWrapper(
-                              key: GlobalKey(),
                               reverse: widget.reverse,
                               actualIndex: actualIndex,
                               listViewState: this,
                               controller: widget.controller,
-                              visibleItemRectMap:
-                                  widget.controller._visibleItemRectMap,
-                              cachedItemRectMap:
-                                  widget.controller._cachedItemRectMap,
+                              rectHolder: rectHolder,
                               child: widget.builder(context, actualIndex),
                             );
                           },
@@ -943,16 +937,16 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             int actualIndex = negativeDataLength + index;
+                            RectHolder rectHolder = RectHolder(false, null);
+                            widget.controller._itemsRectHolder[actualIndex] =
+                                rectHolder;
                             return AnchorItemWrapper(
                               key: GlobalKey(),
                               reverse: widget.reverse,
                               actualIndex: actualIndex,
                               listViewState: this,
                               controller: widget.controller,
-                              visibleItemRectMap:
-                                  widget.controller._visibleItemRectMap,
-                              cachedItemRectMap:
-                                  widget.controller._cachedItemRectMap,
+                              rectHolder: rectHolder,
                               child: widget.builder(context, actualIndex),
                             );
                           },
@@ -1034,20 +1028,20 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       double listViewHeight = widget.controller.listViewHeight;
 
       ///keys
-      for (int key in widget.controller._visibleItemRectMap.keys) {
-        Rect? rect = widget.controller._visibleItemRectMap[key];
-        if (rect == null) {
-          continue;
-        }
+      for (int key in widget.controller._itemsRectHolder.keys) {
+        RectHolder? holder = widget.controller._itemsRectHolder[key];
+        if (holder != null && holder.isOnScreen) {
+          ///offset top
+          double offsetTop =
+              holder.rectTop()! - widget.controller.position.pixels;
+          double offsetBottom =
+              holder.rectBottom()! - widget.controller.position.pixels;
 
-        ///offset top
-        double offsetTop = rect.top - widget.controller.position.pixels;
-        double offsetBottom = rect.bottom - widget.controller.position.pixels;
-
-        ///Listview height
-        if ((offsetTop >= 0 && offsetBottom <= listViewHeight) ||
-            offsetTop <= 0 && offsetBottom >= listViewHeight) {
-          keys.add(key);
+          ///Listview height
+          if ((offsetTop >= 0 && offsetBottom <= listViewHeight) ||
+              offsetTop <= 0 && offsetBottom >= listViewHeight) {
+            keys.add(key);
+          }
         }
       }
 
@@ -1068,27 +1062,25 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     double pixels = widget.controller.position.pixels;
 
     ///keys
-    List<dynamic> sortedKeys =
-        widget.controller._visibleItemRectMap.keys.toList()..sort();
+    List<dynamic> sortedKeys = widget.controller._itemsRectHolder.keys.toList()
+      ..sort();
     for (int key in sortedKeys) {
-      Rect? rect = widget.controller._visibleItemRectMap[key];
-      if (rect == null) {
-        continue;
-      }
+      RectHolder? holder = widget.controller._itemsRectHolder[key];
+      if (holder != null && holder.isOnScreen) {
+        ///offset top
+        double offsetBottom = holder.rectBottom()! - pixels;
 
-      ///offset top
-      double offsetBottom = rect.bottom - pixels;
-
-      ///Listview height
-      if (offsetBottom.round() > 0) {
-        int index = key;
-        if (widget.controller._currentIndex != index) {
-          widget.controller._currentIndex = index;
-          if (widget.onIndexChange != null) {
-            widget.onIndexChange!(index);
+        ///Listview height
+        if (offsetBottom.round() > 0) {
+          int index = key;
+          if (widget.controller._currentIndex != index) {
+            widget.controller._currentIndex = index;
+            if (widget.onIndexChange != null) {
+              widget.onIndexChange!(index);
+            }
           }
+          break;
         }
-        break;
       }
     }
   }
