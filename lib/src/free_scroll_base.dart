@@ -83,13 +83,16 @@ enum FreeScrollAlign {
 
 ///rect holder
 class RectHolder {
-  bool isOnScreen = false;
+  bool _isShow = false;
   Rect? rect;
 
-  RectHolder(
-    this.isOnScreen,
-    this.rect,
-  );
+  set isOnScreen(bool flag) {
+    _isShow = flag;
+  }
+
+  bool get isOnScreen {
+    return _isShow && rect != null;
+  }
 
   double? rectHeight() {
     return rect?.height;

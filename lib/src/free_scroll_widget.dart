@@ -11,13 +11,13 @@ import 'dart:async';
 import 'dart:math';
 
 ///addition controller
-typedef FreeScrollListControllerASyncListener = Future Function(
+typedef FreeScrollListASyncListener = Future Function(
   FreeScrollListViewActionType type, {
   dynamic data,
 });
 
 ///addition controller
-typedef FreeScrollListControllerSyncListener = void Function(
+typedef FreeScrollListSyncListener = void Function(
   FreeScrollListViewActionType type, {
   dynamic data,
 });
@@ -37,10 +37,10 @@ class FreeScrollListViewController<T> extends ScrollController {
   final double _anchorOffset;
 
   //listeners
-  final List<FreeScrollListControllerSyncListener> _syncListeners = [];
+  final List<FreeScrollListSyncListener> _syncListeners = [];
 
   //listeners
-  final List<FreeScrollListControllerASyncListener> _asyncListeners = [];
+  final List<FreeScrollListASyncListener> _asyncListeners = [];
 
   //controller
   final AdditionPreviewController<T> _previewController =
@@ -111,16 +111,14 @@ class FreeScrollListViewController<T> extends ScrollController {
   void notifyItemRectShowOnScreen(int index) {
     ///check when animating
     if (isAnimating) {
-      _checkAndResetIndex(animatingMode: true);
+      _checkAndResetIndex(isAnimating: true);
     }
 
     ///set min scroll extend
     if (index == 0) {
       RectHolder? holder = _itemsRectHolder[0];
       if (holder != null && holder.isOnScreen) {
-        _setNegativeHeight(
-          _itemsRectHolder[0]?.rect?.top ?? double.negativeInfinity,
-        );
+        _setNegativeHeight(holder.rectTop()!);
       }
     }
   }
@@ -133,7 +131,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///check and reset index
-  bool _checkAndResetIndex({bool animatingMode = true}) {
+  bool _checkAndResetIndex({
+    bool isAnimating = true,
+  }) {
     ///get max index
     int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
 
@@ -188,12 +188,12 @@ class FreeScrollListViewController<T> extends ScrollController {
         _itemsRectHolder.clear();
 
         ///when animating  just correct by and notifyAnimOffset
-        if (animatingMode) {
+        if (isAnimating) {
           notifyActionSyncListeners(
             FreeScrollListViewActionType.notifyAnimOffset,
             data: needChangeOffset,
           );
-          position.jumpTo(position.pixels + needChangeOffset);
+          position.correctBy(needChangeOffset);
           notifyActionSyncListeners(
             FreeScrollListViewActionType.notifyData,
           );
@@ -214,27 +214,26 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///add listener
-  void addSyncActionListener(FreeScrollListControllerSyncListener listener) {
+  void addSyncActionListener(FreeScrollListSyncListener listener) {
     if (!_syncListeners.contains(listener)) {
       _syncListeners.add(listener);
     }
   }
 
   ///remove listener
-  bool removeSyncActionListener(FreeScrollListControllerSyncListener listener) {
+  bool removeSyncActionListener(FreeScrollListSyncListener listener) {
     return _syncListeners.remove(listener);
   }
 
   ///add listener
-  void addASyncActionListener(FreeScrollListControllerASyncListener listener) {
+  void addASyncActionListener(FreeScrollListASyncListener listener) {
     if (!_asyncListeners.contains(listener)) {
       _asyncListeners.add(listener);
     }
   }
 
   ///remove listener
-  bool removeASyncActionListener(
-      FreeScrollListControllerASyncListener listener) {
+  bool removeASyncActionListener(FreeScrollListASyncListener listener) {
     return _asyncListeners.remove(listener);
   }
 
@@ -243,9 +242,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     FreeScrollListViewActionType event, {
     dynamic data,
   }) async {
-    List<FreeScrollListControllerSyncListener> listeners =
-        List.from(_syncListeners);
-    for (FreeScrollListControllerSyncListener listener in listeners) {
+    List<FreeScrollListSyncListener> listeners = List.from(_syncListeners);
+    for (FreeScrollListSyncListener listener in listeners) {
       listener(event, data: data);
     }
   }
@@ -255,9 +253,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     FreeScrollListViewActionType event, {
     dynamic data,
   }) async {
-    List<FreeScrollListControllerASyncListener> listeners =
-        List.from(_asyncListeners);
-    for (FreeScrollListControllerASyncListener listener in listeners) {
+    List<FreeScrollListASyncListener> listeners = List.from(_asyncListeners);
+    for (FreeScrollListASyncListener listener in listeners) {
       await listener(event, data: data);
     }
   }
@@ -430,6 +427,11 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     ///stop the former animations
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+
+    ///wait
+    await _lock.synchronized(() async {
+      return await Future.delayed(const Duration(milliseconds: 30));
+    });
 
     ///get the rect for the index
     RectHolder? holder = _itemsRectHolder[index];
@@ -654,10 +656,10 @@ class FreeScrollListView<T> extends StatefulWidget {
 class FreeScrollListViewState<T> extends State<FreeScrollListView>
     with TickerProviderStateMixin {
   ///function listener
-  late FreeScrollListControllerSyncListener _syncListener;
+  late FreeScrollListSyncListener _syncListener;
 
   ///function listener
-  late FreeScrollListControllerASyncListener _aSyncListener;
+  late FreeScrollListASyncListener _aSyncListener;
 
   ///time stamp debouncer
   final TimeStampDebouncer _timeStampDebouncer = TimeStampDebouncer();
@@ -901,7 +903,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             int actualIndex = negativeDataLength - index - 1;
-                            RectHolder rectHolder = RectHolder(false, null);
+                            RectHolder rectHolder = RectHolder();
                             widget.controller._itemsRectHolder[actualIndex] =
                                 rectHolder;
                             return AnchorItemWrapper(
@@ -938,7 +940,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             int actualIndex = negativeDataLength + index;
-                            RectHolder rectHolder = RectHolder(false, null);
+                            RectHolder rectHolder = RectHolder();
                             widget.controller._itemsRectHolder[actualIndex] =
                                 rectHolder;
                             return AnchorItemWrapper(
@@ -997,7 +999,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     ///滚动结束的时候检查是否到达最大
     if (notification is ScrollEndNotification) {
       widget.controller._checkAndResetIndex(
-        animatingMode: false,
+        isAnimating: false,
       );
     }
 
@@ -1035,6 +1037,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           ///offset top
           double offsetTop =
               holder.rectTop()! - widget.controller.position.pixels;
+          holder.rectTop()! - widget.controller.position.pixels;
           double offsetBottom =
               holder.rectBottom()! - widget.controller.position.pixels;
 
@@ -1115,6 +1118,9 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
   ///set min scroll extend
   set minScrollExtend(double data) {
+    if (data >= maxScrollExtent) {
+      return;
+    }
     _minScrollExtend = data;
     _callback = () {
       if (hasPixels &&
