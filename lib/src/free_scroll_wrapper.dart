@@ -39,7 +39,7 @@ class AnchorItemWrapper extends StatefulWidget {
 ///anchor item wrapper state
 class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   ///update scroll rect to controller
-  void _updateScrollRectToController() {
+  void _updateScrollRectToController(RectHolder holder, int index) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ///item
       if (!mounted) {
@@ -71,7 +71,8 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
       if (widget.reverse) {
         double dy = offset + height - offsetItem.dy - itemBox.size.height;
         _addFrameRect(
-            widget.rectHolder,
+            holder,
+            index,
             Rect.fromLTWH(
               offsetItem.dx,
               dy + pixels,
@@ -80,7 +81,8 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
             ));
       } else {
         _addFrameRect(
-            widget.rectHolder,
+            holder,
+            index,
             Rect.fromLTWH(
               offsetItem.dx,
               offsetItem.dy - offset + pixels,
@@ -92,39 +94,41 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   }
 
   ///add to rect
-  void _addFrameRect(RectHolder holder, Rect rect) {
-    holder.rect = rect;
-    holder.isOnScreen = true;
-    widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
+  void _addFrameRect(RectHolder holder, int index, Rect rect) {
+    if (widget.rectHolder == holder) {
+      holder.rect = rect;
+      holder.isOnScreen = true;
+      widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
+    }
   }
 
   ///remove rect
-  void _removeFrameRect(RectHolder holder) {
+  void _removeFrameRect(RectHolder holder, int index) {
     holder.isOnScreen = false;
-    widget.controller.notifyItemRectRemoveOnScreen(widget.actualIndex);
+    widget.controller.notifyItemRectRemoveOnScreen(index);
   }
 
   @override
   void initState() {
-    _removeFrameRect(widget.rectHolder);
+    _updateScrollRectToController(widget.rectHolder, widget.actualIndex);
     super.initState();
   }
 
   @override
   void dispose() {
-    _removeFrameRect(widget.rectHolder);
+    _removeFrameRect(widget.rectHolder, widget.actualIndex);
     super.dispose();
   }
 
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
-    _removeFrameRect(oldWidget.rectHolder);
+    _removeFrameRect(oldWidget.rectHolder, oldWidget.actualIndex);
+    _updateScrollRectToController(widget.rectHolder, widget.actualIndex);
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   Widget build(BuildContext context) {
-    _updateScrollRectToController();
     return widget.child ?? const SizedBox();
   }
 }
