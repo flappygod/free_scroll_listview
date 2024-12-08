@@ -454,6 +454,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///check rect listeners
     notifyCheckRectListeners();
 
+    ///wait
+    await _lock.synchronized(() async {
+      return await Future.delayed(const Duration(milliseconds: 40));
+    });
+
     ///get the rect for the index
     RectHolder? holder = _itemsRectHolder[index];
 
@@ -1140,7 +1145,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
   ///set min scroll extend
   set minScrollExtend(double data) {
-    if (data >= maxScrollExtent) {
+    if (hasContentDimensions && data >= maxScrollExtent) {
       return;
     }
     _minScrollExtend = data;

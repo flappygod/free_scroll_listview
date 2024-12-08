@@ -122,6 +122,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     _checkRectListener = () {
       _refreshRectItems(widget.rectHolder, widget.actualIndex);
     };
+    _removeFrameRect(widget.rectHolder, widget.actualIndex);
     widget.controller.addCheckRectListener(_checkRectListener);
     super.initState();
   }
@@ -139,7 +140,11 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
       oldWidget.controller.removeCheckRectListener(_checkRectListener);
       widget.controller.addCheckRectListener(_checkRectListener);
     }
-    _removeFrameRect(oldWidget.rectHolder, oldWidget.actualIndex);
+    if (widget.rectHolder != oldWidget.rectHolder ||
+        widget.actualIndex != oldWidget.actualIndex) {
+      _removeFrameRect(oldWidget.rectHolder, oldWidget.actualIndex);
+      _removeFrameRect(widget.rectHolder, widget.actualIndex);
+    }
     super.didUpdateWidget(oldWidget);
   }
 
