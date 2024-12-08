@@ -117,11 +117,25 @@ class FreeScrollListViewController<T> extends ScrollController {
       _checkAndResetIndex(isAnimating: true);
     }
 
-    ///set min scroll extend
+    ///if is first, set negative height
     if (index == 0) {
       RectHolder? holder = _itemsRectHolder[0];
       if (holder != null && holder.isOnScreen) {
         _setNegativeHeight(holder.rectTop()!);
+      }
+    }
+
+    ///else check the 0 holder top is min
+    else {
+      RectHolder? holderCurrent = _itemsRectHolder[index];
+      RectHolder? holderFirst = _itemsRectHolder[0];
+      if (holderCurrent != null &&
+          holderCurrent.rectTop() != null &&
+          holderCurrent.isOnScreen &&
+          holderFirst != null &&
+          holderFirst.rectTop() != null &&
+          holderCurrent.rectTop()! < holderFirst.rectTop()!) {
+        _setNegativeHeight(holderCurrent.rectTop()!);
       }
     }
   }
@@ -451,19 +465,25 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///stop the former animations
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
 
-    ///check rect listeners
-    notifyCheckRectListeners();
+    ///first remove all not on screen
+    for (RectHolder holder in _itemsRectHolder.values) {
+      holder.isOnScreen = false;
+    }
 
     ///wait
-    await _lock.synchronized(() async {
-      return await Future.delayed(const Duration(milliseconds: 40));
+    await _lock.synchronized(() {
+      return Future.delayed(const Duration(milliseconds: 25));
     });
+
+    ///all visible items refresh
+    notifyCheckRectListeners();
 
     ///get the rect for the index
     RectHolder? holder = _itemsRectHolder[index];
 
-    ///if index is exists
-    if (holder != null && holder.isOnScreen) {
+    ///if index is exists and is not animating
+    ///when animating the rect may not actual
+    if (holder != null && holder.isOnScreen && !_isAnimating) {
       double toOffset = holder.rectTop()! + _anchorOffset;
       if (hasClients &&
           position.maxScrollExtent != double.infinity &&
@@ -504,7 +524,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         }
       }
 
-      if (index < currentIndex) {
+      ///first
+      if (index < currentIndex || index == 0) {
         align = FreeScrollAlign.bottomToTop;
       } else {
         align = FreeScrollAlign.topToBottom;

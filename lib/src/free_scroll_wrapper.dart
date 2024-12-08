@@ -120,12 +120,14 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   @override
   void initState() {
     _checkRectListener = () {
-      if (widget.rectHolder.isOnScreen) {
-        _refreshRectItems(widget.rectHolder, widget.actualIndex);
-      }
+      _refreshRectItems(widget.rectHolder, widget.actualIndex);
     };
-    _removeFrameRect(widget.rectHolder, widget.actualIndex);
     widget.controller.addCheckRectListener(_checkRectListener);
+    _removeFrameRect(widget.rectHolder, widget.actualIndex);
+    _updateScrollRectToController(
+      widget.rectHolder,
+      widget.actualIndex,
+    );
     super.initState();
   }
 
@@ -138,21 +140,26 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
+    //check listener reinit
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeCheckRectListener(_checkRectListener);
       widget.controller.addCheckRectListener(_checkRectListener);
     }
+    //remove frame rect
     if (widget.rectHolder != oldWidget.rectHolder ||
         widget.actualIndex != oldWidget.actualIndex) {
       _removeFrameRect(oldWidget.rectHolder, oldWidget.actualIndex);
       _removeFrameRect(widget.rectHolder, widget.actualIndex);
     }
+    _updateScrollRectToController(
+      widget.rectHolder,
+      widget.actualIndex,
+    );
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   Widget build(BuildContext context) {
-    _updateScrollRectToController(widget.rectHolder, widget.actualIndex);
     return widget.child ?? const SizedBox();
   }
 }
