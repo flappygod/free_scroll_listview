@@ -1,3 +1,3 @@
-## 1.2.2
+## 1.2.3
 
-* Fix the issue of incorrect scroll position during rapid switching.
+* Fix a bug that sometimes may can't scroll to top.
