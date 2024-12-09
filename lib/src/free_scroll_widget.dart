@@ -77,36 +77,33 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _currentIndex;
   }
 
-  ///listview height
+  /// ListView height
   double get listViewHeight {
-    RenderBox? box =
-        _listViewKey.currentContext?.findRenderObject() as RenderBox?;
-    return box?.size.height ?? 0;
+    final box = _listViewKey.currentContext?.findRenderObject() as RenderBox?;
+    return box?.size.height ?? 0.0;
   }
 
-  ///listview offset
+  /// ListView offset
   double get listViewOffset {
-    RenderBox? box =
-        _listViewKey.currentContext?.findRenderObject() as RenderBox?;
-    Offset? position = box?.localToGlobal(Offset.zero);
-    return position?.dy ?? 0;
+    final box = _listViewKey.currentContext?.findRenderObject() as RenderBox?;
+    return box?.localToGlobal(Offset.zero).dy ?? 0.0;
   }
 
-  ///notify negative height
+  /// Notify negative height
   void _setHeaderViewHeight(double height) {
     _headerViewHeight = height;
     if (hasClients && position is _NegativedScrollPosition) {
-      (position as _NegativedScrollPosition).minScrollExtend =
-          _negativeHeight - _headerViewHeight;
+      final negativedPosition = position as _NegativedScrollPosition;
+      negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
     }
   }
 
-  ///set negative height
+  /// Set negative height
   void _setNegativeHeight(double height) {
     _negativeHeight = height;
     if (hasClients && position is _NegativedScrollPosition) {
-      (position as _NegativedScrollPosition).minScrollExtend =
-          _negativeHeight - _headerViewHeight;
+      final negativedPosition = position as _NegativedScrollPosition;
+      negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
     }
   }
 
@@ -114,7 +111,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   void notifyItemRectShowOnScreen(int index) {
     ///check when animating
     if (isAnimating) {
-      _checkAndResetIndex(isAnimating: true);
+      _checkAndResetIndexWhenAnimate();
     }
 
     ///if is first, set negative height
@@ -147,87 +144,134 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
-  ///check and reset index
-  bool _checkAndResetIndex({
-    bool isAnimating = true,
-  }) {
+  ///check and reset index when animated to end
+  void _checkAndResetIndexWhenAnimate() {
     ///get max index
     int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
+    RectHolder? holder = _itemsRectHolder[maxIndex];
+    if (holder == null || !holder.isOnScreen) {
+      return;
+    }
 
-    ///set max scroll extend
-    if (_itemsRectHolder[maxIndex] != null) {
-      ///calculate height test
-      double lastScreenOffset = 0;
-      int? lastScreenIndex;
-      for (int s = maxIndex; s >= 0; s--) {
-        final double? itemHeight = _itemsRectHolder[s]?.rectHeight();
-        if (itemHeight == null) {
-          return false;
-        }
-        lastScreenOffset += itemHeight;
-        if (lastScreenOffset.round() >= listViewHeight.round()) {
-          lastScreenIndex = s;
-          break;
-        }
+    ///if has enough data to calculate the last screen height,get the last index we need to ensure no bottom space
+    double lastScreenHeight = 0;
+    int? lastScreenIndex;
+    for (int s = maxIndex; s >= 0; s--) {
+      final double? itemHeight = _itemsRectHolder[s]?.rectHeight();
+      if (itemHeight == null) {
+        return;
       }
-      if (lastScreenIndex == null) {
-        return false;
-      }
-
-      ///current count
-      int tempCount = (maxIndex - _positiveDataList.length);
-
-      ///we need to do something
-      if (tempCount >= lastScreenIndex) {
-        ///we get the offset
-        double needChangeOffset = 0;
-        for (int s = lastScreenIndex; s <= tempCount; s++) {
-          final itemHeight = _itemsRectHolder[s]?.rectHeight();
-          if (itemHeight == null) {
-            return false;
-          }
-          needChangeOffset += itemHeight;
-        }
-
-        ///change
-        if (position.pixels + needChangeOffset > position.maxScrollExtent) {
-          return false;
-        }
-
-        ///offset changed
-        for (int s = 0; s <= (tempCount - lastScreenIndex); s++) {
-          _positiveDataList.insert(0, _negativeDataList.last);
-          _negativeDataList.removeLast();
-        }
-
-        ///we remove all
-        _setNegativeHeight(double.negativeInfinity);
-        _itemsRectHolder.clear();
-
-        ///when animating  just correct by and notifyAnimOffset
-        if (isAnimating) {
-          notifyActionSyncListeners(
-            FreeScrollListViewActionType.notifyAnimOffset,
-            data: needChangeOffset,
-          );
-          position.correctBy(needChangeOffset);
-          notifyActionSyncListeners(
-            FreeScrollListViewActionType.notifyData,
-          );
-        }
-
-        ///when not animating ,use jump to
-        else {
-          position.jumpTo(position.pixels + needChangeOffset);
-          notifyActionSyncListeners(
-            FreeScrollListViewActionType.notifyData,
-          );
-        }
-
-        return true;
+      lastScreenHeight += itemHeight;
+      if (lastScreenHeight >= listViewHeight) {
+        lastScreenIndex = s;
+        break;
       }
     }
-    return false;
+    if (lastScreenIndex == null) {
+      return;
+    }
+
+    ///check we need to reset data or not
+    int tempCount = (maxIndex - _positiveDataList.length);
+    if (tempCount >= lastScreenIndex) {
+      ///need change offset
+      double needChangeOffset = 0;
+      for (int s = lastScreenIndex; s <= tempCount; s++) {
+        final itemHeight = _itemsRectHolder[s]?.rectHeight();
+        if (itemHeight == null) {
+          return;
+        }
+        needChangeOffset += itemHeight;
+      }
+
+      ///change
+      if (position.pixels + needChangeOffset > position.maxScrollExtent) {
+        return;
+      }
+
+      ///offset changed
+      for (int s = 0; s <= (tempCount - lastScreenIndex); s++) {
+        _positiveDataList.insert(0, _negativeDataList.last);
+        _negativeDataList.removeLast();
+      }
+
+      ///we remove all
+      _setNegativeHeight(double.negativeInfinity);
+      _itemsRectHolder.clear();
+
+      ///notify offset
+      position.correctBy(needChangeOffset);
+      notifyActionSyncListeners(
+        FreeScrollListViewActionType.notifyAnimOffset,
+        data: needChangeOffset,
+      );
+      notifyActionSyncListeners(
+        FreeScrollListViewActionType.notifyData,
+      );
+    }
+  }
+
+  ///check and reset index when scroll end
+  void _checkAndResetIndexWhenScrollEnd() {
+    ///get max index
+    int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
+    RectHolder? holder = _itemsRectHolder[maxIndex];
+    if (holder == null) {
+      return;
+    }
+
+    ///if has enough data to calculate the last screen height,get the last index we need to ensure no bottom space
+    double lastScreenHeight = 0;
+    int? lastScreenIndex;
+    for (int s = maxIndex; s >= 0; s--) {
+      final double? itemHeight = _itemsRectHolder[s]?.rectHeight();
+      if (itemHeight == null) {
+        return;
+      }
+      lastScreenHeight += itemHeight;
+      if (lastScreenHeight >= listViewHeight) {
+        lastScreenIndex = s;
+        break;
+      }
+    }
+    if (lastScreenIndex == null) {
+      return;
+    }
+
+    ///check we need to reset data or not
+    int tempCount = (maxIndex - _positiveDataList.length);
+    if (tempCount >= lastScreenIndex) {
+      ///need change offset
+      double needChangeOffset = 0;
+      for (int s = lastScreenIndex; s <= tempCount; s++) {
+        final itemHeight = _itemsRectHolder[s]?.rectHeight();
+        if (itemHeight == null) {
+          return;
+        }
+        needChangeOffset += itemHeight;
+      }
+
+      ///change
+      if (position.pixels + needChangeOffset > position.maxScrollExtent) {
+        return;
+      }
+
+      ///offset changed
+      for (int s = 0; s <= (tempCount - lastScreenIndex); s++) {
+        _positiveDataList.insert(0, _negativeDataList.last);
+        _negativeDataList.removeLast();
+      }
+
+      ///we remove all
+      _setNegativeHeight(double.negativeInfinity);
+      _itemsRectHolder.clear();
+
+      ///notify offset
+      position.jumpTo(position.pixels + needChangeOffset);
+      notifyActionSyncListeners(
+        FreeScrollListViewActionType.notifyData,
+      );
+    }
   }
 
   ///add check rect listener
@@ -465,17 +509,15 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///stop the former animations
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
 
-    ///first remove all not on screen
-    for (RectHolder holder in _itemsRectHolder.values) {
-      holder.isOnScreen = false;
-    }
-
     ///wait
     await _lock.synchronized(() {
-      return Future.delayed(const Duration(milliseconds: 25));
+      return Future.delayed(const Duration(milliseconds: 30));
     });
 
     ///all visible items refresh
+    for (RectHolder holder in _itemsRectHolder.values) {
+      holder.isOnScreen = false;
+    }
     notifyCheckRectListeners();
 
     ///get the rect for the index
@@ -755,7 +797,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
         ///start animation
         case FreeScrollListViewActionType.notifyJump:
-          await Future.delayed(const Duration(milliseconds: 40)).then((_) {
+          await Future.delayed(const Duration(milliseconds: 50)).then((_) {
             _notifyIndex();
             _notifyOnShow();
           });
@@ -861,7 +903,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void _initHeight() {
     ///get height
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 40)).then((_) {
+      Future.delayed(const Duration(milliseconds: 50)).then((_) {
         _notifyIndex();
         _notifyOnShow();
       });
@@ -1046,9 +1088,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
     ///滚动结束的时候检查是否到达最大
     if (notification is ScrollEndNotification) {
-      widget.controller._checkAndResetIndex(
-        isAnimating: false,
-      );
+      widget.controller._checkAndResetIndexWhenScrollEnd();
     }
 
     ///通知消息被展示
@@ -1067,40 +1107,38 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   ///notify current on show
   void _notifyOnShow() {
-    if (!mounted) {
+    if (!mounted || widget.onItemShow == null) {
       return;
     }
 
-    if (widget.onItemShow != null) {
-      ///item show
-      List<int> keys = [];
+    ///item show
+    List<int> keys = [];
 
-      ///listview height
-      double listViewHeight = widget.controller.listViewHeight;
+    ///listview height
+    double listViewHeight = widget.controller.listViewHeight;
 
-      ///keys
-      for (int key in widget.controller._itemsRectHolder.keys) {
-        RectHolder? holder = widget.controller._itemsRectHolder[key];
-        if (holder != null && holder.isOnScreen) {
-          ///offset top
-          double offsetTop =
-              holder.rectTop()! - widget.controller.position.pixels;
-          holder.rectTop()! - widget.controller.position.pixels;
-          double offsetBottom =
-              holder.rectBottom()! - widget.controller.position.pixels;
+    ///keys
+    for (int key in widget.controller._itemsRectHolder.keys) {
+      RectHolder? holder = widget.controller._itemsRectHolder[key];
+      if (holder != null && holder.isOnScreen) {
+        ///offset top
+        double offsetTop =
+            holder.rectTop()! - widget.controller.position.pixels;
+        holder.rectTop()! - widget.controller.position.pixels;
+        double offsetBottom =
+            holder.rectBottom()! - widget.controller.position.pixels;
 
-          ///Listview height
-          if ((offsetTop >= 0 && offsetBottom <= listViewHeight) ||
-              offsetTop <= 0 && offsetBottom >= listViewHeight) {
-            keys.add(key);
-          }
+        ///Listview height
+        if ((offsetTop >= 0 && offsetBottom <= listViewHeight) ||
+            offsetTop <= 0 && offsetBottom >= listViewHeight) {
+          keys.add(key);
         }
       }
+    }
 
-      ///keys data
-      if (keys.isNotEmpty) {
-        widget.onItemShow!(keys);
-      }
+    ///keys data
+    if (keys.isNotEmpty) {
+      widget.onItemShow!(keys);
     }
   }
 
@@ -1114,15 +1152,12 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     double pixels = widget.controller.position.pixels;
 
     ///keys
-    List<dynamic> sortedKeys = widget.controller._itemsRectHolder.keys.toList()
+    List<int> sortedKeys = widget.controller._itemsRectHolder.keys.toList()
       ..sort();
     for (int key in sortedKeys) {
       RectHolder? holder = widget.controller._itemsRectHolder[key];
       if (holder != null && holder.isOnScreen) {
-        ///offset top
         double offsetBottom = holder.rectBottom()! - pixels;
-
-        ///Listview height
         if (offsetBottom.round() > 0) {
           int index = key;
           if (widget.controller._currentIndex != index) {
