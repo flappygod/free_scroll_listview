@@ -125,13 +125,13 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///else check the 0 holder top is min
     else {
       RectHolder? holderCurrent = _itemsRectHolder[index];
-      RectHolder? holderFirst = _itemsRectHolder[0];
+      _NegativedScrollPosition? currentPosition =
+          position as _NegativedScrollPosition?;
       if (holderCurrent != null &&
           holderCurrent.rectTop() != null &&
           holderCurrent.isOnScreen &&
-          holderFirst != null &&
-          holderFirst.rectTop() != null &&
-          holderCurrent.rectTop()! < holderFirst.rectTop()!) {
+          currentPosition != null &&
+          currentPosition.minScrollExtent > holderCurrent.rectTop()!) {
         _setNegativeHeight(holderCurrent.rectTop()!);
       }
     }
@@ -1221,6 +1221,11 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     };
     removeListener(_callback);
     addListener(_callback);
+  }
+
+  ///min scroll extend
+  double get minScrollExtend {
+    return _minScrollExtend;
   }
 
   ///force negative pixels
