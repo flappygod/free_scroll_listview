@@ -125,6 +125,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///else check the 0 holder top is min
     else {
       RectHolder? holderCurrent = _itemsRectHolder[index];
+      RectHolder? holderFirst = _itemsRectHolder[0];
       _NegativedScrollPosition? currentPosition =
           position as _NegativedScrollPosition?;
       if (holderCurrent != null &&
@@ -132,7 +133,11 @@ class FreeScrollListViewController<T> extends ScrollController {
           holderCurrent.isOnScreen &&
           currentPosition != null &&
           currentPosition.minScrollExtent > holderCurrent.rectTop()!) {
-        _setNegativeHeight(holderCurrent.rectTop()!-100);
+        if (holderFirst != null) {
+          _setNegativeHeight(holderCurrent.rectTop()! - 100);
+        } else {
+          _setNegativeHeight(double.negativeInfinity);
+        }
       }
     }
   }
