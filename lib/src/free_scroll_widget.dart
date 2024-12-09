@@ -56,7 +56,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   double _headerViewHeight = 0;
 
   //negative height total
-  double _negativeHeight = 0;
+  double _negativeHeight = double.negativeInfinity;
 
   //global key
   final GlobalKey _listViewKey = GlobalKey();
@@ -94,7 +94,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     _headerViewHeight = height;
     if (hasClients && position is _NegativedScrollPosition) {
       final negativedPosition = position as _NegativedScrollPosition;
-      negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
+      if (_negativeHeight == double.negativeInfinity) {
+        negativedPosition.minScrollExtend = _negativeHeight;
+      } else {
+        negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
+      }
     }
   }
 
@@ -103,7 +107,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     _negativeHeight = height;
     if (hasClients && position is _NegativedScrollPosition) {
       final negativedPosition = position as _NegativedScrollPosition;
-      negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
+      if (_negativeHeight == double.negativeInfinity) {
+        negativedPosition.minScrollExtend = _negativeHeight;
+      } else {
+        negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
+      }
     }
   }
 
@@ -134,7 +142,9 @@ class FreeScrollListViewController<T> extends ScrollController {
           currentPosition != null &&
           currentPosition.minScrollExtent > holderCurrent.rectTop()!) {
         if (holderFirst != null) {
-          _setNegativeHeight(holderCurrent.rectTop()! - 100);
+          _setNegativeHeight(
+            min(holderCurrent.rectTop()!, holderFirst.rectTop()!),
+          );
         } else {
           _setNegativeHeight(double.negativeInfinity);
         }
@@ -481,16 +491,32 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) {
-    return _handleAnimation(animateTo(
-      _negativeHeight - _headerViewHeight,
-      duration: duration,
-      curve: curve,
-    ));
+    if (_negativeHeight == double.negativeInfinity) {
+      return scrollToIndexSkipAlign(
+        0,
+        align: FreeScrollAlign.bottomToTop,
+        curve: curve,
+        duration: duration,
+      );
+    } else {
+      return _handleAnimation(animateTo(
+        _negativeHeight - _headerViewHeight,
+        duration: duration,
+        curve: curve,
+      ));
+    }
   }
 
   ///jump to top
   void jumpToTop() {
-    jumpTo(_negativeHeight - _headerViewHeight);
+    if (_negativeHeight == double.negativeInfinity) {
+      scrollToIndexSkipAlign(
+        0,
+        align: FreeScrollAlign.directJumpTo,
+      );
+    } else {
+      jumpTo(_negativeHeight - _headerViewHeight);
+    }
   }
 
   ///scroll to max
