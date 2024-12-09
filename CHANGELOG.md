@@ -1,3 +1,3 @@
-## 1.2.3
+## 1.2.4
 
-* Fix a bug that sometimes may can't scroll to top.
+* Optimize some code.
