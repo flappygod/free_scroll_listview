@@ -345,10 +345,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     List<T>? dataList,
     double? anchorOffset,
     int index = 0,
-  })  : _positiveDataList = List.from(dataList ?? []),
-        _negativeDataList = List.generate(
-          index.clamp(0, (dataList ?? []).length),
-          (index) => (dataList ?? [])[index],
+  })  : _negativeDataList = List.from(
+          (dataList ?? []).take(index.clamp(0, (dataList ?? []).length)),
+        ),
+        _positiveDataList = List.from(
+          (dataList ?? []).skip(index.clamp(0, (dataList ?? []).length)),
         ),
         _anchorOffset = anchorOffset ?? 0;
 
