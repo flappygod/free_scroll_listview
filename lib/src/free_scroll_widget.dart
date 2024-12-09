@@ -344,8 +344,12 @@ class FreeScrollListViewController<T> extends ScrollController {
   FreeScrollListViewController({
     List<T>? dataList,
     double? anchorOffset,
+    int negativeDataCount = 0,
   })  : _positiveDataList = List.from(dataList ?? []),
-        _negativeDataList = [],
+        _negativeDataList = List.generate(
+          negativeDataCount.clamp(0, (dataList ?? []).length),
+          (index) => (dataList ?? [])[index],
+        ),
         _anchorOffset = anchorOffset ?? 0;
 
   ///data list
@@ -632,7 +636,9 @@ class FreeScrollListViewController<T> extends ScrollController {
           data: data,
         ));
       case FreeScrollAlign.directJumpTo:
-        jumpTo(0);
+        if (hasClients && position.hasPixels) {
+          jumpTo(0);
+        }
         return notifyActionASyncListeners(
           FreeScrollListViewActionType.notifyJump,
         );

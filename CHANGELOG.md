@@ -1,3 +1,3 @@
-## 1.2.4
+## 1.2.5
 
-* Optimize some code.
+* Add init index to FreeScrollListViewController constructor.
