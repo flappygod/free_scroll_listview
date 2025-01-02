@@ -94,7 +94,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     _headerViewHeight = height;
     if (hasClients && position is _NegativedScrollPosition) {
       final negativedPosition = position as _NegativedScrollPosition;
-      if (_negativeHeight == double.negativeInfinity) {
+      if (_negativeHeight.isInfinite && _negativeHeight < 0) {
         negativedPosition.minScrollExtend = _negativeHeight;
       } else {
         negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
@@ -107,7 +107,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     _negativeHeight = height;
     if (hasClients && position is _NegativedScrollPosition) {
       final negativedPosition = position as _NegativedScrollPosition;
-      if (_negativeHeight == double.negativeInfinity) {
+      if (_negativeHeight.isInfinite && _negativeHeight < 0) {
         negativedPosition.minScrollExtend = _negativeHeight;
       } else {
         negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
@@ -418,7 +418,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataListOffset = _dataListOffset + dataList.length;
 
       ///preview the height and add it to negative height
-      if (_negativeHeight != double.negativeInfinity) {
+      if (!_negativeHeight.isInfinite) {
         double previewHeight =
             await _previewController.previewItemsHeight(dataList);
 
@@ -464,7 +464,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) {
-    if (_negativeHeight == double.negativeInfinity) {
+    if (_negativeHeight.isInfinite && _negativeHeight < 0) {
       return scrollToIndexSkipAlign(
         0,
         align: FreeScrollAlign.bottomToTop,
@@ -482,7 +482,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///jump to top
   void jumpToTop() {
-    if (_negativeHeight == double.negativeInfinity) {
+    if (_negativeHeight.isInfinite && _negativeHeight < 0) {
       scrollToIndexSkipAlign(
         0,
         align: FreeScrollAlign.directJumpTo,
@@ -1206,7 +1206,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     _minScrollExtend = data;
     _callback = () {
       if (hasPixels &&
-          _minScrollExtend != double.negativeInfinity &&
+          !_minScrollExtend.isInfinite &&
           pixels < _minScrollExtend - 100) {
         jumpTo(_minScrollExtend - 100);
       }
