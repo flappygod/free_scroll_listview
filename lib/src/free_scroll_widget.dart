@@ -100,7 +100,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       if (_negativeHeight == negativeInfinityValue) {
         negativedPosition.minScrollExtend = _negativeHeight;
       } else {
-        negativedPosition.minScrollExtend = (_negativeHeight - _headerViewHeight).removeTinyFraction();
+        negativedPosition.minScrollExtend =
+            (_negativeHeight - _headerViewHeight).removeTinyFraction();
       }
     }
   }
@@ -113,7 +114,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       if (_negativeHeight == negativeInfinityValue) {
         negativedPosition.minScrollExtend = _negativeHeight;
       } else {
-        negativedPosition.minScrollExtend = (_negativeHeight - _headerViewHeight).removeTinyFraction();
+        negativedPosition.minScrollExtend =
+            (_negativeHeight - _headerViewHeight).removeTinyFraction();
       }
     }
   }
@@ -148,6 +150,8 @@ class FreeScrollListViewController<T> extends ScrollController {
           _setNegativeHeight(
             min(holderCurrent.rectTop()!, holderFirst.rectTop()!),
           );
+        } else {
+          _setNegativeHeight(negativeInfinityValue);
         }
       }
     }
@@ -162,6 +166,11 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///check and reset index when animated to end
   void _checkAndResetIndexWhenAnimate() {
+    ///do nothing if no max scroll extend
+    if (position.maxScrollExtent <= 0) {
+      return;
+    }
+
     ///get max index
     int maxIndex = _dataList.length - 1;
     RectHolder? holder = _itemsRectHolder[maxIndex];
