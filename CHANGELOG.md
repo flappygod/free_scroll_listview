@@ -1,3 +1,3 @@
-## 1.2.5
+## 1.2.6
 
-* Add init index to FreeScrollListViewController constructor.
+* Data structure modification.

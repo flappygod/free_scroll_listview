@@ -27,11 +27,11 @@ class FreeScrollListViewController<T> extends ScrollController {
   //lock
   final Lock _lock = Lock();
 
-  //positive data list
-  final List<T> _positiveDataList;
+  //data list
+  final List<T> _dataList;
 
-  //negative data list
-  final List<T> _negativeDataList;
+  //data list offset
+  int _dataListOffset;
 
   //anchor offset
   final double _anchorOffset;
@@ -162,7 +162,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///check and reset index when animated to end
   void _checkAndResetIndexWhenAnimate() {
     ///get max index
-    int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
+    int maxIndex = _dataList.length - 1;
     RectHolder? holder = _itemsRectHolder[maxIndex];
     if (holder == null || !holder.isOnScreen) {
       return;
@@ -187,7 +187,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
 
     ///check we need to reset data or not
-    int tempCount = (maxIndex - _positiveDataList.length);
+    int tempCount = _dataListOffset;
     if (tempCount >= lastScreenIndex) {
       ///need change offset
       double needChangeOffset = 0;
@@ -205,10 +205,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       }
 
       ///offset changed
-      for (int s = 0; s <= (tempCount - lastScreenIndex); s++) {
-        _positiveDataList.insert(0, _negativeDataList.last);
-        _negativeDataList.removeLast();
-      }
+      _dataListOffset = lastScreenIndex;
 
       ///we remove all
       _setNegativeHeight(double.negativeInfinity);
@@ -229,7 +226,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///check and reset index when scroll end
   void _checkAndResetIndexWhenScrollEnd() {
     ///get max index
-    int maxIndex = _positiveDataList.length + _negativeDataList.length - 1;
+    int maxIndex = dataList.length - 1;
     RectHolder? holder = _itemsRectHolder[maxIndex];
     if (holder == null) {
       return;
@@ -254,7 +251,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
 
     ///check we need to reset data or not
-    int tempCount = (maxIndex - _positiveDataList.length);
+    int tempCount = _dataListOffset;
     if (tempCount >= lastScreenIndex) {
       ///need change offset
       double needChangeOffset = 0;
@@ -272,10 +269,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       }
 
       ///offset changed
-      for (int s = 0; s <= (tempCount - lastScreenIndex); s++) {
-        _positiveDataList.insert(0, _negativeDataList.last);
-        _negativeDataList.removeLast();
-      }
+      _dataListOffset = lastScreenIndex;
 
       ///we remove all
       _setNegativeHeight(double.negativeInfinity);
@@ -360,48 +354,35 @@ class FreeScrollListViewController<T> extends ScrollController {
     List<T>? dataList,
     double? anchorOffset,
     int index = 0,
-  })  : _negativeDataList = List.from(
-          (dataList ?? []).take(index.clamp(0, (dataList ?? []).length)),
-        ),
-        _positiveDataList = List.from(
-          (dataList ?? []).skip(index.clamp(0, (dataList ?? []).length)),
-        ),
+  })  : _dataList = List.from(dataList ?? []),
+        _dataListOffset = index,
         _anchorOffset = anchorOffset ?? 0;
 
   ///data list
   List<T> get dataList {
-    return [
-      ..._negativeDataList,
-      ..._positiveDataList,
-    ];
+    return _dataList;
   }
 
   ///set data list
   set dataList(List<T> dataList) {
     _lock.synchronized(() {
       ///set data if is init
-      if (_negativeDataList.isEmpty && _positiveDataList.isEmpty) {
+      if (_dataList.isEmpty) {
         _setNegativeHeight(0);
         _itemsRectHolder.clear();
-        _positiveDataList.clear();
-        _negativeDataList.clear();
-        _positiveDataList.addAll(dataList);
+        _dataList.clear();
+        _dataList.addAll(dataList);
+        _dataListOffset = 0;
         notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
       }
 
       ///set data if not init
       else {
-        int index = min(_negativeDataList.length, dataList.length);
-        List<T> firstList = dataList.sublist(0, index);
-        List<T> secondList = firstList.length != dataList.length
-            ? dataList.sublist(firstList.length, dataList.length)
-            : [];
         _setNegativeHeight(double.negativeInfinity);
         _itemsRectHolder.clear();
-        _positiveDataList.clear();
-        _negativeDataList.clear();
-        _negativeDataList.addAll(firstList);
-        _positiveDataList.addAll(secondList);
+        _dataList.clear();
+        _dataList.addAll(dataList);
+        _dataListOffset = min(_dataListOffset, dataList.length);
         notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
       }
     });
@@ -411,17 +392,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   void updateData(T t, int index) {
     _lock.synchronized(() {
       ///negative data replace
-      if (index < _negativeDataList.length) {
-        _negativeDataList[index] = t;
+      if (index < _dataList.length) {
+        _dataList[index] = t;
         notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-        return;
-      }
-
-      ///positive data replace
-      if (index - _negativeDataList.length < _positiveDataList.length) {
-        _positiveDataList[index - _negativeDataList.length] = t;
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-        return;
       }
     });
   }
@@ -429,7 +402,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///add data to tail
   Future addDataToTail(List<T> dataList) {
     return _lock.synchronized(() async {
-      _positiveDataList.addAll(dataList);
+      _dataList.addAll(dataList);
       notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     });
   }
@@ -441,7 +414,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       double formerTopData = _negativeHeight;
 
       ///insert all data
-      _negativeDataList.insertAll(0, dataList);
+      _dataList.insertAll(0, dataList);
+      _dataListOffset = _dataListOffset + dataList.length;
 
       ///preview the height and add it to negative height
       if (_negativeHeight != double.negativeInfinity) {
@@ -472,9 +446,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///insert all data
       _setNegativeHeight(double.negativeInfinity);
       _itemsRectHolder.clear();
-      _negativeDataList.clear();
-      _positiveDataList.clear();
-      _positiveDataList.addAll(dataList);
+      _dataList.clear();
+      _dataList.addAll(dataList);
 
       ///notify data
       await scrollToIndexSkipAlign(
@@ -625,19 +598,10 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) {
-    //Initialize lists for negative and positive data
-    List<T> newNegativeList = dataList.sublist(0, index);
-    List<T> newPositiveList = dataList.sublist(index);
-
     //Clear existing data and cached maps
     _setNegativeHeight(double.negativeInfinity);
     _itemsRectHolder.clear();
-    _negativeDataList.clear();
-    _positiveDataList.clear();
-
-    //Add new data to respective lists
-    _negativeDataList.addAll(newNegativeList);
-    _positiveDataList.addAll(newPositiveList);
+    _dataListOffset = index;
 
     ///refresh
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
@@ -902,9 +866,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       }
 
       ///only top to bottom need this
-      int maxIndex = widget.controller._positiveDataList.length +
-          widget.controller._negativeDataList.length -
-          1;
+      int maxIndex = widget.controller._dataList.length - 1;
       if (data.align == FreeScrollAlign.topToBottom &&
           offsetTo > maxScrollExtent &&
           maxScrollExtent != double.infinity &&
@@ -1005,10 +967,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                 negativeOffset._forceNegativePixels(offset.pixels);
               });
 
-              int negativeDataLength =
-                  widget.controller._negativeDataList.length;
-              int positiveDataLength =
-                  widget.controller._positiveDataList.length;
+              int negativeDataLength = widget.controller._dataListOffset;
+              int positiveDataLength = widget.controller._dataList.length -
+                  widget.controller._dataListOffset;
 
               return Stack(
                 clipBehavior: Clip.none,
