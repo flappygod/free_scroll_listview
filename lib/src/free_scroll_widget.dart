@@ -189,10 +189,10 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///check we need to reset data or not
     int tempCount = _dataListOffset;
-    if (tempCount >= lastScreenIndex) {
+    if (tempCount > lastScreenIndex) {
       ///need change offset
       double needChangeOffset = 0;
-      for (int s = lastScreenIndex; s <= tempCount; s++) {
+      for (int s = lastScreenIndex; s < tempCount; s++) {
         final itemHeight = _itemsRectHolder[s]?.rectHeight();
         if (itemHeight == null) {
           return;
@@ -253,10 +253,10 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///check we need to reset data or not
     int tempCount = _dataListOffset;
-    if (tempCount >= lastScreenIndex) {
+    if (tempCount > lastScreenIndex) {
       ///need change offset
       double needChangeOffset = 0;
-      for (int s = lastScreenIndex; s <= tempCount; s++) {
+      for (int s = lastScreenIndex; s < tempCount; s++) {
         final itemHeight = _itemsRectHolder[s]?.rectHeight();
         if (itemHeight == null) {
           return;
