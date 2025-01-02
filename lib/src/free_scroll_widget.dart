@@ -94,26 +94,26 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   /// Notify negative height
   void _setHeaderViewHeight(double height) {
-    _headerViewHeight = height;
+    _headerViewHeight = height.removeTinyFraction();
     if (hasClients && position is _NegativedScrollPosition) {
       final negativedPosition = position as _NegativedScrollPosition;
       if (_negativeHeight == negativeInfinityValue) {
         negativedPosition.minScrollExtend = _negativeHeight;
       } else {
-        negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
+        negativedPosition.minScrollExtend = (_negativeHeight - _headerViewHeight).removeTinyFraction();
       }
     }
   }
 
   /// Set negative height
   void _setNegativeHeight(double height) {
-    _negativeHeight = height;
+    _negativeHeight = height.removeTinyFraction();
     if (hasClients && position is _NegativedScrollPosition) {
       final negativedPosition = position as _NegativedScrollPosition;
       if (_negativeHeight == negativeInfinityValue) {
         negativedPosition.minScrollExtend = _negativeHeight;
       } else {
-        negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
+        negativedPosition.minScrollExtend = (_negativeHeight - _headerViewHeight).removeTinyFraction();
       }
     }
   }
