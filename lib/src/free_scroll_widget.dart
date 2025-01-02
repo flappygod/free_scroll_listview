@@ -1198,9 +1198,6 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
   ///set min scroll extend
   set minScrollExtend(double data) {
-    if (hasContentDimensions && data >= maxScrollExtent) {
-      return;
-    }
     _minScrollExtend = data;
     _callback = () {
       if (hasPixels &&
