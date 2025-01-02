@@ -145,8 +145,6 @@ class FreeScrollListViewController<T> extends ScrollController {
           _setNegativeHeight(
             min(holderCurrent.rectTop()!, holderFirst.rectTop()!),
           );
-        } else {
-          _setNegativeHeight(double.negativeInfinity);
         }
       }
     }
