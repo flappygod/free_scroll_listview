@@ -22,6 +22,9 @@ typedef FreeScrollListSyncListener = void Function(
   dynamic data,
 });
 
+///use a negative value for min scroll
+const double negativeInfinityValue = -100000000;
+
 ///free scroll listview controller
 class FreeScrollListViewController<T> extends ScrollController {
   //lock
@@ -56,7 +59,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   double _headerViewHeight = 0;
 
   //negative height total
-  double _negativeHeight = double.negativeInfinity;
+  double _negativeHeight = negativeInfinityValue;
 
   //global key
   final GlobalKey _listViewKey = GlobalKey();
@@ -94,7 +97,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     _headerViewHeight = height;
     if (hasClients && position is _NegativedScrollPosition) {
       final negativedPosition = position as _NegativedScrollPosition;
-      if (_negativeHeight.isInfinite && _negativeHeight < 0) {
+      if (_negativeHeight == negativeInfinityValue) {
         negativedPosition.minScrollExtend = _negativeHeight;
       } else {
         negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
@@ -107,7 +110,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     _negativeHeight = height;
     if (hasClients && position is _NegativedScrollPosition) {
       final negativedPosition = position as _NegativedScrollPosition;
-      if (_negativeHeight.isInfinite && _negativeHeight < 0) {
+      if (_negativeHeight == negativeInfinityValue) {
         negativedPosition.minScrollExtend = _negativeHeight;
       } else {
         negativedPosition.minScrollExtend = _negativeHeight - _headerViewHeight;
@@ -153,7 +156,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///remove rect on screen
   void notifyItemRectRemoveOnScreen(int index) {
     if (index == 0) {
-      _setNegativeHeight(double.negativeInfinity);
+      _setNegativeHeight(negativeInfinityValue);
     }
   }
 
@@ -206,7 +209,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataListOffset = lastScreenIndex;
 
       ///we remove all
-      _setNegativeHeight(double.negativeInfinity);
+      _setNegativeHeight(negativeInfinityValue);
       _itemsRectHolder.clear();
 
       ///notify offset
@@ -270,7 +273,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataListOffset = lastScreenIndex;
 
       ///we remove all
-      _setNegativeHeight(double.negativeInfinity);
+      _setNegativeHeight(negativeInfinityValue);
       _itemsRectHolder.clear();
 
       ///notify offset
@@ -376,7 +379,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
       ///set data if not init
       else {
-        _setNegativeHeight(double.negativeInfinity);
+        _setNegativeHeight(negativeInfinityValue);
         _itemsRectHolder.clear();
         _dataList.clear();
         _dataList.addAll(dataList);
@@ -416,7 +419,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataListOffset = _dataListOffset + dataList.length;
 
       ///preview the height and add it to negative height
-      if (!_negativeHeight.isInfinite) {
+      if (_negativeHeight != negativeInfinityValue) {
         double previewHeight =
             await _previewController.previewItemsHeight(dataList);
 
@@ -442,7 +445,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) {
     return _lock.synchronized(() async {
       ///insert all data
-      _setNegativeHeight(double.negativeInfinity);
+      _setNegativeHeight(negativeInfinityValue);
       _itemsRectHolder.clear();
       _dataList.clear();
       _dataList.addAll(dataList);
@@ -462,7 +465,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) {
-    if (_negativeHeight.isInfinite && _negativeHeight < 0) {
+    if (_negativeHeight == negativeInfinityValue) {
       return scrollToIndexSkipAlign(
         0,
         align: FreeScrollAlign.bottomToTop,
@@ -480,7 +483,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///jump to top
   void jumpToTop() {
-    if (_negativeHeight.isInfinite && _negativeHeight < 0) {
+    if (_negativeHeight == negativeInfinityValue) {
       scrollToIndexSkipAlign(
         0,
         align: FreeScrollAlign.directJumpTo,
@@ -534,9 +537,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///when animating the rect may not actual
     if (holder != null && holder.isOnScreen && !_isAnimating) {
       double toOffset = holder.rectTop()! + _anchorOffset;
-      if (hasClients &&
-          position.maxScrollExtent != double.infinity &&
-          position.maxScrollExtent != double.maxFinite) {
+      if (hasClients && position.maxScrollExtent != double.maxFinite) {
         toOffset = min(position.maxScrollExtent, toOffset);
       }
       return _handleAnimation(animateTo(
@@ -597,7 +598,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
   }) {
     //Clear existing data and cached maps
-    _setNegativeHeight(double.negativeInfinity);
+    _setNegativeHeight(negativeInfinityValue);
     _itemsRectHolder.clear();
     _dataListOffset = index;
 
@@ -867,7 +868,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       int maxIndex = widget.controller._dataList.length - 1;
       if (data.align == FreeScrollAlign.topToBottom &&
           offsetTo > maxScrollExtent &&
-          maxScrollExtent != double.infinity &&
           maxScrollExtent != double.maxFinite &&
           widget.controller.hasClients &&
           widget.controller.position.hasPixels &&
@@ -1182,7 +1182,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 ///negatived scroll position
 class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   ///min scroll extend
-  double _minScrollExtend = double.negativeInfinity;
+  double _minScrollExtend = negativeInfinityValue;
 
   ///callback
   late VoidCallback _callback;
@@ -1204,7 +1204,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     _minScrollExtend = data;
     _callback = () {
       if (hasPixels &&
-          !_minScrollExtend.isInfinite &&
+          _minScrollExtend != negativeInfinityValue &&
           pixels < _minScrollExtend - 100) {
         jumpTo(_minScrollExtend - 100);
       }
