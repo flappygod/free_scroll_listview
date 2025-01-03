@@ -297,7 +297,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///data list
   List<T> get dataList {
-    return _dataList;
+    return List.from(_dataList);
   }
 
   ///set data list
