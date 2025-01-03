@@ -173,6 +173,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///can scroll
   void _resetIndexIfNeeded() {
     int maxIndex = dataList.length - 1;
+    double currentListViewHeight = listViewHeight;
     double lastScreenHeight = 0;
     int? lastScreenIndex;
 
@@ -183,7 +184,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         return;
       }
       lastScreenHeight += itemHeight;
-      if (lastScreenHeight >= listViewHeight) {
+      if (lastScreenHeight >= currentListViewHeight) {
         lastScreenIndex = s;
         break;
       }
