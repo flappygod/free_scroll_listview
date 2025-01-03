@@ -1132,6 +1132,14 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   ///set min scroll extend
   set minScrollExtend(double data) {
     _minScrollExtend = data;
+
+    ///if current pixels smaller than _minScrollExtend
+    ///trigger resilience
+    if (pixels < _minScrollExtend) {
+      jumpTo(pixels);
+    }
+
+    ///add listener
     _callback = () {
       if (hasPixels &&
           _minScrollExtend != negativeInfinityValue &&
