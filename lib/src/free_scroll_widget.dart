@@ -130,7 +130,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///add anchor item state
   void notifyItemRectShowOnScreen(int index) {
     ///check when animating
-    if (isAnimating) {
+    if (isAnimating && position.maxScrollExtent > 0) {
       _checkAndResetIndexIfNeed();
     }
 
