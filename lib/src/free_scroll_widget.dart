@@ -176,7 +176,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     double lastScreenHeight = 0;
     int? lastScreenIndex;
 
-    /// Calculate the last screen index
+    ///calculate the last screen index
     for (int s = maxIndex; s >= 0; s--) {
       final double? itemHeight = _itemsRectHolder[s]?.rectHeight();
       if (itemHeight == null) {
@@ -190,13 +190,13 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
     lastScreenIndex ??= 0;
 
-    /// Do not need to reset index
+    ///do not need to reset index
     int tempCount = _dataListOffset;
     if (tempCount <= lastScreenIndex) {
       return;
     }
 
-    /// Calculate the offset needed to reset the index
+    ///calculate the offset needed to reset the index
     double needChangeOffset = 0;
     for (int s = lastScreenIndex; s < tempCount; s++) {
       final itemHeight = _itemsRectHolder[s]?.rectHeight();
@@ -206,18 +206,16 @@ class FreeScrollListViewController<T> extends ScrollController {
       needChangeOffset += itemHeight;
     }
 
-    /// Reset index and update state
+    ///reset index and update state
     _dataListOffset = lastScreenIndex;
     _itemsRectHolder.clear();
     _correctNegativeHeight(needChangeOffset);
-    position.jumpTo(position.pixels + needChangeOffset);
     notifyActionSyncListeners(
       FreeScrollListViewActionType.notifyAnimOffset,
       data: needChangeOffset,
     );
-    notifyActionSyncListeners(
-      FreeScrollListViewActionType.notifyData,
-    );
+    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+    position.jumpTo(position.pixels + needChangeOffset);
   }
 
   ///add check rect listener
