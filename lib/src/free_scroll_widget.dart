@@ -130,8 +130,8 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///add anchor item state
   void notifyItemRectShowOnScreen(int index) {
     ///check when animating
-    if (isAnimating && position.maxScrollExtent > 0) {
-      _checkAndResetIndexIfNeed();
+    if (isAnimating) {
+      _resetIndexIfNeeded();
     }
 
     ///if is first, set negative height
@@ -170,22 +170,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
-  ///check and reset index if need
-  ///check and reset index if need
-  void _checkAndResetIndexIfNeed() {
-    ///if can scroll, we reset the last screen
-    if (position.maxScrollExtent > 0) {
-      _resetIndexIfNeeded(canScroll: true);
-    }
-
-    ///the list view can't scroll
-    else {
-      _resetIndexIfNeeded(canScroll: false);
-    }
-  }
-
   ///can scroll
-  void _resetIndexIfNeeded({required bool canScroll}) {
+  void _resetIndexIfNeeded() {
     int maxIndex = dataList.length - 1;
     double lastScreenHeight = 0;
     int? lastScreenIndex;
@@ -202,14 +188,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         break;
       }
     }
-
-    if (!canScroll) {
-      lastScreenIndex ??= 0;
-    }
-
-    if (lastScreenIndex == null) {
-      return;
-    }
+    lastScreenIndex ??= 0;
 
     /// Do not need to reset index
     int tempCount = _dataListOffset;
@@ -1041,7 +1020,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
     ///滚动结束的时候检查是否到达最大
     if (notification is ScrollEndNotification) {
-      widget.controller._checkAndResetIndexIfNeed();
+      widget.controller._resetIndexIfNeeded();
     }
 
     ///通知消息被展示
