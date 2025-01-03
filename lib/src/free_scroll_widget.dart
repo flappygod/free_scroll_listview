@@ -231,14 +231,14 @@ class FreeScrollListViewController<T> extends ScrollController {
     _dataListOffset = lastScreenIndex;
     _itemsRectHolder.clear();
     _correctNegativeHeight(needChangeOffset);
-    notifyActionSyncListeners(
-      FreeScrollListViewActionType.notifyData,
-    );
+    position.jumpTo(position.pixels + needChangeOffset);
     notifyActionSyncListeners(
       FreeScrollListViewActionType.notifyAnimOffset,
       data: needChangeOffset,
     );
-    position.jumpTo(position.pixels + needChangeOffset);
+    notifyActionSyncListeners(
+      FreeScrollListViewActionType.notifyData,
+    );
   }
 
   ///add check rect listener
