@@ -1,3 +1,3 @@
-## 1.2.6
+## 1.2.7
 
-* Data structure modification.
+* Current index bug fixed.
