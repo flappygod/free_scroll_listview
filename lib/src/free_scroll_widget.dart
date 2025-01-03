@@ -502,7 +502,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         if (holder != null && holder.isOnScreen) {
           double offsetTop = holder.rectTop()! - pixels;
           double offsetBottom = holder.rectBottom()! - pixels;
-          if (offsetTop.round() <= 0 && offsetBottom.round() >= 0) {
+          if (offsetTop.round() <= 0 && offsetBottom.round() > 0) {
             currentIndex = key;
           }
         }
@@ -1089,7 +1089,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       RectHolder? holder = widget.controller._itemsRectHolder[key];
       if (holder != null && holder.isOnScreen) {
         double offsetBottom = holder.rectBottom()! - pixels;
-        if (offsetBottom.round() >= 0) {
+        if (offsetBottom.round() > 0) {
           int index = key;
           if (widget.controller._currentIndex != index) {
             widget.controller._currentIndex = index;
