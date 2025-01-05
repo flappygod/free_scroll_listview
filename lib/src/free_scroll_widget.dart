@@ -131,7 +131,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   void notifyItemRectShowOnScreen(int index) {
     ///check when animating
     if (isAnimating) {
-      _resetIndexIfNeeded();
+      _resetIndexInAnimate();
     }
 
     ///if is first, set negative height
@@ -168,6 +168,57 @@ class FreeScrollListViewController<T> extends ScrollController {
     if (index == 0) {
       _setNegativeHeight(negativeInfinityValue);
     }
+  }
+
+  ///reset index when animating
+  void _resetIndexInAnimate() {
+    int maxIndex = dataList.length - 1;
+    double currentListViewHeight = listViewHeight;
+    double lastScreenHeight = 0;
+    int? lastScreenIndex;
+
+    ///calculate the last screen index
+    for (int s = maxIndex; s >= 0; s--) {
+      final double? itemHeight = _itemsRectHolder[s]?.rectHeight();
+      if (itemHeight == null) {
+        return;
+      }
+      lastScreenHeight += itemHeight;
+      if (lastScreenHeight >= currentListViewHeight) {
+        lastScreenIndex = s;
+        break;
+      }
+    }
+    if (lastScreenIndex == null) {
+      return;
+    }
+
+    ///do not need to reset index
+    int tempCount = _dataListOffset;
+    if (tempCount <= lastScreenIndex) {
+      return;
+    }
+
+    ///calculate the offset needed to reset the index
+    double needChangeOffset = 0;
+    for (int s = lastScreenIndex; s < tempCount; s++) {
+      final itemHeight = _itemsRectHolder[s]?.rectHeight();
+      if (itemHeight == null) {
+        return;
+      }
+      needChangeOffset += itemHeight;
+    }
+
+    ///reset index and update state
+    _dataListOffset = lastScreenIndex;
+    _itemsRectHolder.clear();
+    _correctNegativeHeight(needChangeOffset);
+    notifyActionSyncListeners(
+      FreeScrollListViewActionType.notifyAnimOffset,
+      data: needChangeOffset,
+    );
+    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+    position.correctBy(needChangeOffset);
   }
 
   ///can scroll
@@ -762,6 +813,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     animationController.addStatusListener((status) {
       if (!animationController.isAnimating) {
         completer.complete();
+        widget.controller._resetIndexIfNeeded();
       }
     });
 
@@ -1012,7 +1064,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     }
 
     ///动画过程中不需要处理
-    ///bool isAnimating = _animationController?.isAnimating ?? false;
     if (widget.controller.isAnimating) {
       return false;
     }
