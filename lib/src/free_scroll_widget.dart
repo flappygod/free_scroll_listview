@@ -189,7 +189,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         break;
       }
     }
-    if (lastScreenIndex == null) {
+    if (lastScreenIndex == null || lastScreenIndex == 0) {
       return;
     }
 
