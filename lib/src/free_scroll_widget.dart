@@ -208,7 +208,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       }
       needChangeOffset += itemHeight;
     }
-    if(position.pixels<position.minScrollExtent+needChangeOffset){
+    if (position.pixels < position.minScrollExtent + needChangeOffset) {
       return;
     }
 
@@ -633,6 +633,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     _isAnimating = true;
     return futureFunction.whenComplete(() {
       _isAnimating = false;
+      _resetIndexIfNeeded();
       notifyActionASyncListeners(
         FreeScrollListViewActionType.notifyJump,
       );
@@ -816,7 +817,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     animationController.addStatusListener((status) {
       if (!animationController.isAnimating) {
         completer.complete();
-        widget.controller._resetIndexIfNeeded();
       }
     });
 
