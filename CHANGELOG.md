@@ -1,3 +1,3 @@
-## 1.2.7
+## 1.2.8
 
-* Current index bug fixed.
+* Add range check when scroll to index.

@@ -380,12 +380,11 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///update data
   void updateData(T t, int index) {
+    assert(index >= 0 && index < dataList.length);
     _lock.synchronized(() {
       ///negative data replace
-      if (index < _dataList.length) {
-        _dataList[index] = t;
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-      }
+      _dataList[index] = t;
+      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     });
   }
 
@@ -431,6 +430,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) {
+    assert(index >= 0 && index < dataList.length);
     return _lock.synchronized(() async {
       ///insert all data
       _setNegativeHeight(negativeInfinityValue);
@@ -504,6 +504,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) async {
+    assert(index >= 0 && index < dataList.length);
+
     ///stop the former animations
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
 
@@ -585,7 +587,9 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
   }) {
-    //Clear existing data and cached maps
+    assert(index >= 0 && index < dataList.length);
+
+    ///Clear existing data and cached maps
     _setNegativeHeight(negativeInfinityValue);
     _itemsRectHolder.clear();
     _dataListOffset = index;
