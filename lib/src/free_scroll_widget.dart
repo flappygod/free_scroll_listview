@@ -189,7 +189,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         break;
       }
     }
-    if (lastScreenIndex == null || lastScreenIndex == 0) {
+    if (lastScreenIndex == null) {
       return;
     }
 
@@ -207,6 +207,9 @@ class FreeScrollListViewController<T> extends ScrollController {
         return;
       }
       needChangeOffset += itemHeight;
+    }
+    if(position.pixels<position.minScrollExtent+needChangeOffset){
+      return;
     }
 
     ///reset index and update state
