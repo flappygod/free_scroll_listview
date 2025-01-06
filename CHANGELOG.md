@@ -1,3 +1,3 @@
-## 1.2.8
+## 1.2.9
 
-* Add range check when scroll to index.
+* Avoid negative position when delete items .
