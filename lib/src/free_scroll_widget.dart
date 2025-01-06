@@ -139,6 +139,9 @@ class FreeScrollListViewController<T> extends ScrollController {
       RectHolder? holder = _itemsRectHolder[0];
       if (holder != null && holder.isOnScreen) {
         _setNegativeHeight(holder.rectTop()!);
+        if (position.pixels < holder.rectTop()!) {
+          position.jumpTo(position.pixels);
+        }
       }
     }
 
