@@ -439,9 +439,6 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) {
     assert(index >= 0 && index < dataList.length);
     return _lock.synchronized(() async {
-      ///insert all data
-      _setNegativeHeight(negativeInfinityValue);
-      _itemsRectHolder.clear();
       _dataList.clear();
       _dataList.addAll(dataList);
 
