@@ -439,8 +439,14 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) {
     assert(index >= 0 && index < dataList.length);
     return _lock.synchronized(() async {
+
+      ///clear data
       _dataList.clear();
       _dataList.addAll(dataList);
+
+      ///refresh
+      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+      await Future.delayed(const Duration(milliseconds: 30));
 
       ///notify data
       await scrollToIndexSkipAlign(
