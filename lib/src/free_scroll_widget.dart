@@ -59,7 +59,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   double _headerViewHeight = 0;
 
   //negative height total
-  double _negativeHeight = double.negativeInfinity;
+  double _negativeHeight = -1000000000;
 
   //global key
   final GlobalKey _listViewKey = GlobalKey();
@@ -595,6 +595,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     _dataListOffset = index;
 
     ///refresh and wait
+    notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     await waitForPostFrameCallback();
 
