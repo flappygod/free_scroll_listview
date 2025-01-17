@@ -441,9 +441,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     _dataList.addAll(dataList);
 
     ///notify data
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-
-    ///notify data
     return scrollToIndexSkipAlign(
       index,
       align: align,
