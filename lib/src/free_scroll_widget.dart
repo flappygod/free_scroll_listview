@@ -513,6 +513,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///stop the former animations
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+    position.jumpTo(position.pixels);
 
     ///all visible items refresh
     for (RectHolder holder in _itemsRectHolder.values) {
@@ -596,6 +597,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///refresh and wait
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+    position.jumpTo(position.pixels);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     await waitForPostFrameCallback();
 
