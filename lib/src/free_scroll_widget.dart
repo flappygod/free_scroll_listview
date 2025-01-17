@@ -595,12 +595,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     _itemsRectHolder.clear();
     _dataListOffset = index;
 
-    ///refresh and wait
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
-    position.jumpTo(position.pixels);
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-    await waitForPostFrameCallback();
-
     switch (align) {
       case FreeScrollAlign.bottomToTop:
         AnimationData data = AnimationData(
@@ -610,6 +604,14 @@ class FreeScrollListViewController<T> extends ScrollController {
           0 + _anchorOffset,
           FreeScrollAlign.bottomToTop,
         );
+
+        ///refresh and wait
+        position.jumpTo(data.startPosition);
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+        await waitForPostFrameCallback();
+
+        ///start animation
         return _handleAnimation(notifyActionASyncListeners(
           FreeScrollListViewActionType.notifyAnimStart,
           data: data,
@@ -622,6 +624,14 @@ class FreeScrollListViewController<T> extends ScrollController {
           0 + _anchorOffset,
           FreeScrollAlign.topToBottom,
         );
+
+        ///refresh and wait
+        position.jumpTo(data.startPosition);
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+        await waitForPostFrameCallback();
+
+        ///start animation
         return _handleAnimation(notifyActionASyncListeners(
           FreeScrollListViewActionType.notifyAnimStart,
           data: data,
