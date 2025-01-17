@@ -26,7 +26,7 @@ typedef FreeScrollListSyncListener = void Function(
 const double negativeInfinityValue = double.negativeInfinity;
 
 ///a frame milliseconds
-const int aFrameMilliseconds = 35;
+const int aFrameMilliseconds = 42;
 
 ///free scroll listview controller
 class FreeScrollListViewController<T> extends ScrollController {
@@ -600,7 +600,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///refresh
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
 
-    ///wait 30 milliseconds
+    ///wait aFrameMilliseconds milliseconds
     await Future.delayed(const Duration(milliseconds: aFrameMilliseconds));
 
     switch (align) {
