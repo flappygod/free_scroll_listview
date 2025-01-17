@@ -505,6 +505,12 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     assert(index >= 0 && index < dataList.length);
 
+    ///notify data
+    position.jumpTo(position.pixels);
+    notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+    await waitForPostFrameCallback();
+
     ///all visible items refresh
     for (RectHolder holder in _itemsRectHolder.values) {
       holder.isOnScreen = false;
@@ -1221,9 +1227,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 Future<void> waitForPostFrameCallback() async {
   final Completer<void> completer = Completer<void>();
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    Future.delayed(const Duration(milliseconds: 20)).then((_) {
-      completer.complete();
-    });
+    completer.complete();
   });
   return completer.future;
 }
