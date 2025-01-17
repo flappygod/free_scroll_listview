@@ -59,7 +59,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   double _headerViewHeight = 0;
 
   //negative height total
-  double _negativeHeight = -1000000000;
+  double _negativeHeight = -1000000000.0;
 
   //global key
   final GlobalKey _listViewKey = GlobalKey();

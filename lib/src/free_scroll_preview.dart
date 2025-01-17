@@ -96,7 +96,8 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
         maxHeight: 65535,
         child: ObserveHeightWidget(
           listener: (Size size) {
-            if (!widget.controller._offsetPreviewCompleter.isCompleted) {
+            if (!widget.controller._offsetPreviewCompleter.isCompleted &&
+                !size.height.isNaN) {
               widget.controller._offsetPreviewCompleter.complete(size.height);
             }
           },
