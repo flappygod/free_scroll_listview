@@ -23,7 +23,10 @@ typedef FreeScrollListSyncListener = void Function(
 });
 
 ///use a negative value for min scroll
-const double negativeInfinityValue = -100000000;
+const double negativeInfinityValue = double.negativeInfinity;
+
+///a frame milliseconds
+const int aFrameMilliseconds = 35;
 
 ///free scroll listview controller
 class FreeScrollListViewController<T> extends ScrollController {
@@ -439,14 +442,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) {
     assert(index >= 0 && index < dataList.length);
     return _lock.synchronized(() async {
-
       ///clear data
       _dataList.clear();
       _dataList.addAll(dataList);
-
-      ///refresh
-      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-      await Future.delayed(const Duration(milliseconds: 30));
 
       ///notify data
       await scrollToIndexSkipAlign(
@@ -518,11 +516,6 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///stop the former animations
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
-
-    ///wait
-    await _lock.synchronized(() {
-      return Future.delayed(const Duration(milliseconds: 30));
-    });
 
     ///all visible items refresh
     for (RectHolder holder in _itemsRectHolder.values) {
@@ -596,7 +589,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     required FreeScrollAlign align,
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
-  }) {
+  }) async {
     assert(index >= 0 && index < dataList.length);
 
     ///Clear existing data and cached maps
@@ -606,6 +599,9 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///refresh
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+
+    ///wait 30 milliseconds
+    await Future.delayed(const Duration(milliseconds: aFrameMilliseconds));
 
     switch (align) {
       case FreeScrollAlign.bottomToTop:
@@ -801,7 +797,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
         ///start animation
         case FreeScrollListViewActionType.notifyJump:
-          await Future.delayed(const Duration(milliseconds: 50)).then((_) {
+          await Future.delayed(const Duration(milliseconds: aFrameMilliseconds))
+              .then((_) {
             _notifyIndex();
             _notifyOnShow();
           });
@@ -904,7 +901,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void _initHeight() {
     ///get height
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 50)).then((_) {
+      Future.delayed(const Duration(milliseconds: aFrameMilliseconds))
+          .then((_) {
         _notifyIndex();
         _notifyOnShow();
       });
