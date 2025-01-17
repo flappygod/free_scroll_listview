@@ -590,15 +590,16 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     assert(index >= 0 && index < dataList.length);
 
+    ///Clear existing data and cached maps
+    _setNegativeHeight(negativeInfinityValue);
+    _itemsRectHolder.clear();
+    _dataListOffset = index;
+
     ///notify data
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     await waitForPostFrameCallback();
 
-    ///Clear existing data and cached maps
-    _setNegativeHeight(negativeInfinityValue);
-    _itemsRectHolder.clear();
-    _dataListOffset = index;
     switch (align) {
       case FreeScrollAlign.bottomToTop:
         AnimationData data = AnimationData(
