@@ -25,9 +25,6 @@ typedef FreeScrollListSyncListener = void Function(
 ///use a negative value for min scroll
 const double negativeInfinityValue = double.negativeInfinity;
 
-///a frame milliseconds
-const int aFrameMilliseconds = 42;
-
 ///free scroll listview controller
 class FreeScrollListViewController<T> extends ScrollController {
   //lock
@@ -597,11 +594,9 @@ class FreeScrollListViewController<T> extends ScrollController {
     _itemsRectHolder.clear();
     _dataListOffset = index;
 
-    ///refresh
+    ///refresh and wait
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-
-    ///wait aFrameMilliseconds milliseconds
-    await Future.delayed(const Duration(milliseconds: aFrameMilliseconds));
+    await waitForPostFrameCallback();
 
     switch (align) {
       case FreeScrollAlign.bottomToTop:
@@ -797,8 +792,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
         ///start animation
         case FreeScrollListViewActionType.notifyJump:
-          await Future.delayed(const Duration(milliseconds: aFrameMilliseconds))
-              .then((_) {
+          await Future.delayed(const Duration(milliseconds: 35)).then((_) {
             _notifyIndex();
             _notifyOnShow();
           });
@@ -901,8 +895,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void _initHeight() {
     ///get height
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: aFrameMilliseconds))
-          .then((_) {
+      Future.delayed(const Duration(milliseconds: 35)).then((_) {
         _notifyIndex();
         _notifyOnShow();
       });
@@ -1226,4 +1219,13 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
   @override
   double get minScrollExtent => _minScrollExtend;
+}
+
+///wait
+Future<void> waitForPostFrameCallback() async {
+  final Completer<void> completer = Completer<void>();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    completer.complete();
+  });
+  return completer.future;
 }
