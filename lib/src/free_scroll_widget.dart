@@ -361,45 +361,37 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///set data list
-  Future<void> setData(List<T> dataList) {
-    return _lock.synchronized(() async {
-      ///set data if is init
-      if (_dataList.isEmpty) {
-        _setNegativeHeight(0);
-        _itemsRectHolder.clear();
-        _dataList.clear();
-        _dataList.addAll(dataList);
-        _dataListOffset = 0;
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-        await waitForPostFrameCallback();
-      }
+  set dataList(List<T> dataList) {
+    ///set data if is init
+    if (_dataList.isEmpty) {
+      _setNegativeHeight(0);
+      _itemsRectHolder.clear();
+      _dataList.clear();
+      _dataList.addAll(dataList);
+      _dataListOffset = 0;
+      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+    }
 
-      ///set data if not init
-      else {
-        _setNegativeHeight(negativeInfinityValue);
-        _itemsRectHolder.clear();
-        _dataList.clear();
-        _dataList.addAll(dataList);
-        _dataListOffset = min(_dataListOffset, dataList.length);
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-        await waitForPostFrameCallback();
-      }
-    });
+    ///set data if not init
+    else {
+      _setNegativeHeight(negativeInfinityValue);
+      _itemsRectHolder.clear();
+      _dataList.clear();
+      _dataList.addAll(dataList);
+      _dataListOffset = min(_dataListOffset, dataList.length);
+      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+    }
   }
 
   ///update data
   void updateData(T t, int index) {
     assert(index >= 0 && index < dataList.length);
-    _lock.synchronized(() async {
-      ///negative data replace
-      _dataList[index] = t;
-      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-      await waitForPostFrameCallback();
-    });
+    _dataList[index] = t;
+    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
   }
 
   ///add data to tail
-  Future addDataToTail(List<T> dataList) {
+  Future<void> addDataToTail(List<T> dataList) {
     return _lock.synchronized(() async {
       _dataList.addAll(dataList);
       notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
@@ -443,23 +435,21 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
   }) {
     assert(index >= 0 && index < dataList.length);
-    return _lock.synchronized(() async {
-      ///clear data
-      _dataList.clear();
-      _dataList.addAll(dataList);
 
-      ///notify data
-      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-      await waitForPostFrameCallback();
+    ///clear data
+    _dataList.clear();
+    _dataList.addAll(dataList);
 
-      ///notify data
-      await scrollToIndexSkipAlign(
-        index,
-        align: align,
-        curve: curve,
-        duration: duration,
-      );
-    });
+    ///notify data
+    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+
+    ///notify data
+    return scrollToIndexSkipAlign(
+      index,
+      align: align,
+      curve: curve,
+      duration: duration,
+    );
   }
 
   ///scroll to top
@@ -599,6 +589,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
   }) async {
     assert(index >= 0 && index < dataList.length);
+
+    ///notify data
+    notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+    await waitForPostFrameCallback();
 
     ///Clear existing data and cached maps
     _setNegativeHeight(negativeInfinityValue);
@@ -1235,7 +1230,9 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 Future<void> waitForPostFrameCallback() async {
   final Completer<void> completer = Completer<void>();
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    completer.complete();
+    Future.delayed(const Duration(milliseconds: 32)).then((_) {
+      completer.complete();
+    });
   });
   return completer.future;
 }

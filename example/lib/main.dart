@@ -55,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int s = 0; s < 100; s++) {
       dataList.add((s).toString());
     }
-    _controller.setData(dataList);
+    _controller.dataList = dataList;
     super.initState();
   }
 
