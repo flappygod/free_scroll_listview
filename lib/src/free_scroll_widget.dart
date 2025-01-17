@@ -395,7 +395,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _lock.synchronized(() async {
       _dataList.addAll(dataList);
       notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-      await waitForPostFrameCallback();
     });
   }
 
@@ -422,7 +421,6 @@ class FreeScrollListViewController<T> extends ScrollController {
 
       ///notify data
       notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-      await waitForPostFrameCallback();
     });
   }
 
@@ -506,11 +504,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
   }) async {
     assert(index >= 0 && index < dataList.length);
-
-    ///stop and ensure data correct
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-    await waitForPostFrameCallback();
 
     ///all visible items refresh
     for (RectHolder holder in _itemsRectHolder.values) {
@@ -1228,7 +1221,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 Future<void> waitForPostFrameCallback() async {
   final Completer<void> completer = Completer<void>();
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    Future.delayed(const Duration(milliseconds: 32)).then((_) {
+    Future.delayed(const Duration(milliseconds: 20)).then((_) {
       completer.complete();
     });
   });
