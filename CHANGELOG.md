@@ -1,3 +1,4 @@
-## 1.2.9
+## 1.2.10
 
-* Avoid negative position when delete items .
+* Improve stability .
+* Clean up unnecessary code. 
