@@ -361,8 +361,8 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///set data list
-  set dataList(List<T> dataList) {
-    _lock.synchronized(() {
+  Future<void> setData(List<T> dataList) {
+    return _lock.synchronized(() {
       ///set data if is init
       if (_dataList.isEmpty) {
         _setNegativeHeight(0);
