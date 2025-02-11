@@ -362,7 +362,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///set data list
   set dataList(List<T> dataList) {
-    ///set data if is init
+    ///set data if not init
     if (_dataList.isEmpty) {
       _setNegativeHeight(0);
       _itemsRectHolder.clear();
@@ -372,7 +372,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     }
 
-    ///set data if not init
+    ///set data if is init
     else {
       _setNegativeHeight(negativeInfinityValue);
       _itemsRectHolder.clear();
@@ -399,7 +399,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///add data to head
-  Future addDataToHead(List<T> dataList) {
+  Future<void> addDataToHead(List<T> dataList) {
     return _lock.synchronized(() async {
       ///formers
       double formerTopData = _negativeHeight;
