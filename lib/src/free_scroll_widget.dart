@@ -127,49 +127,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
-  ///add anchor item state
-  void notifyItemRectShowOnScreen(int index) {
-    ///check when animating
-    if (isAnimating) {
-      _resetIndexInAnimate();
-    }
-
-    ///if is first, set negative height
-    if (index == 0) {
-      RectHolder? holder = _itemsRectHolder[0];
-      if (holder != null && holder.isOnScreen) {
-        _setNegativeHeight(holder.rectTop()!);
-
-        ///when delete some item
-        if (!position.isScrollingNotifier.value &&
-            !isAnimating &&
-            position.pixels < holder.rectTop()!) {
-          position.jumpTo(position.pixels);
-        }
-      }
-    }
-
-    ///else check the 0 holder top is min
-    else {
-      RectHolder? holderCurrent = _itemsRectHolder[index];
-      RectHolder? holderFirst = _itemsRectHolder[0];
-      _NegativedScrollPosition? currentPosition =
-          position as _NegativedScrollPosition?;
-      if (holderCurrent != null &&
-          holderCurrent.rectTop() != null &&
-          holderCurrent.isOnScreen &&
-          currentPosition != null &&
-          currentPosition.minScrollExtent > holderCurrent.rectTop()!) {
-        if (holderFirst != null) {
-          _setNegativeHeight(
-              min(holderCurrent.rectTop()!, holderFirst.rectTop()!));
-        } else {
-          _setNegativeHeight(negativeInfinityValue);
-        }
-      }
-    }
-  }
-
   ///remove rect on screen
   void notifyItemRectRemoveOnScreen(int index) {
     if (index == 0) {
@@ -177,8 +134,16 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
+  ///add anchor item state
+  void notifyItemRectShowOnScreen(int index) {
+    ///check when animating
+    _checkResetCurrentIndex();
+    _checkResetScrollExtend();
+    _checkDeleteLastItem(index);
+  }
+
   ///reset index when animating
-  void _resetIndexInAnimate() {
+  void _checkResetCurrentIndex() {
     int maxIndex = dataList.length - 1;
     double currentListViewHeight = listViewHeight;
     double lastScreenHeight = 0;
@@ -229,6 +194,68 @@ class FreeScrollListViewController<T> extends ScrollController {
     );
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     position.correctBy(needChangeOffset);
+  }
+
+  ///check reset scroll extend
+  void _checkResetScrollExtend() {
+    //Do nothing if _itemsRectHolder is empty
+    if (_itemsRectHolder.isEmpty) {
+      return;
+    }
+
+    //Get the first RectHolder and its rectTop
+    RectHolder? firstHolder = _itemsRectHolder[0];
+    double? firstHolderRectTop = firstHolder?.rectTop();
+
+    //Safely cast the position to _NegativedScrollPosition
+    _NegativedScrollPosition? currentPosition =
+        position is _NegativedScrollPosition
+            ? position as _NegativedScrollPosition
+            : null;
+
+    //Find the minimum rectTop from _itemsRectHolder
+    double? minRectTop = _findMinRectTop();
+
+    //Determine and set the negative height based on conditions
+    if (firstHolderRectTop != null && minRectTop == firstHolderRectTop) {
+      //If the minimum rectTop is the firstHolder's rectTop
+      _setNegativeHeight(firstHolderRectTop);
+    } else if (currentPosition != null && minRectTop != null) {
+      //If firstHolder does not exist, compare currentPosition.minScrollExtent with minRectTop
+      _setNegativeHeight(min(currentPosition.minScrollExtent, minRectTop));
+    } else {
+      //If no valid minimum rectTop is found, set to negative infinity
+      _setNegativeHeight(negativeInfinityValue);
+    }
+  }
+
+  ///Helper method to find the minimum rectTop from _itemsRectHolder
+  double? _findMinRectTop() {
+    double? minRectTop;
+    //Iterate through all RectHolders in _itemsRectHolder
+    for (RectHolder holder in _itemsRectHolder.values) {
+      final rectTop = holder.rectTop();
+      if (rectTop != null) {
+        //Update minRectTop if a smaller value is found
+        if (minRectTop == null || rectTop < minRectTop) {
+          minRectTop = rectTop;
+        }
+      }
+    }
+    return minRectTop;
+  }
+
+  ///when delete some item
+  void _checkDeleteLastItem(int index) {
+    RectHolder? firstHolder = _itemsRectHolder[0];
+    if (!position.isScrollingNotifier.value &&
+        !isAnimating &&
+        index == 0 &&
+        firstHolder != null &&
+        firstHolder.rectTop() != null &&
+        position.pixels < firstHolder.rectTop()!) {
+      position.jumpTo(position.pixels);
+    }
   }
 
   ///can scroll
@@ -823,8 +850,13 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
     ///add status listener
     animationController.addStatusListener((status) {
-      if (!animationController.isAnimating) {
-        completer.complete();
+      //监听动画状态
+      if (status == AnimationStatus.completed ||
+          status == AnimationStatus.dismissed) {
+        //动画自然完成时，调用 completer.complete()
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
       }
     });
 
@@ -1027,7 +1059,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                             widget.controller._itemsRectHolder[actualIndex] =
                                 rectHolder;
                             return AnchorItemWrapper(
-                              key: GlobalKey(),
                               reverse: widget.reverse,
                               actualIndex: actualIndex,
                               listViewState: this,
@@ -1055,7 +1086,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   ///handle notification
   bool _handleNotification(ScrollNotification notification) {
-    ///cancel animation if need
+    ///滚动开始而且有触摸事件
     if (notification is ScrollStartNotification &&
         notification.dragDetails != null) {
       _cancelAnimation();
@@ -1082,10 +1113,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     ///滚动结束的时候检查是否到达最大
     if (notification is ScrollEndNotification) {
       widget.controller._resetIndexIfNeeded();
-    }
-
-    ///通知消息被展示
-    if (notification is ScrollEndNotification) {
       _notifyOnShow();
     }
 

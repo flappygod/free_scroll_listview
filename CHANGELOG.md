@@ -1,4 +1,3 @@
-## 1.2.10
+## 1.2.11
 
-* Improve stability .
-* Clean up unnecessary code. 
+* Reduce the minimum version constraint.
