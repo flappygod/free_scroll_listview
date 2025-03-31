@@ -539,9 +539,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     await waitForPostFrameCallback();
 
     ///all visible items refresh
-    for (RectHolder holder in _itemsRectHolder.values) {
-      holder.isOnScreen = false;
-    }
     notifyCheckRectListeners();
 
     ///get the rect for the index

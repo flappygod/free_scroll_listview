@@ -42,7 +42,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   late VoidCallback _checkRectListener;
 
   ///refresh rect
-  void _refreshRectItems(RectHolder holder, int index) {
+  void _refreshRectItems() {
     ///item
     if (!mounted ||
         !widget.controller.hasClients ||
@@ -72,8 +72,6 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     if (widget.reverse) {
       double dy = (offset + height - offsetItem.dy - itemBox.size.height);
       _addFrameRect(
-        holder,
-        index,
         Rect.fromLTWH(
           offsetItem.dx.removeTinyFraction(),
           (dy + pixels).removeTinyFraction(),
@@ -83,8 +81,6 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
       );
     } else {
       _addFrameRect(
-        holder,
-        index,
         Rect.fromLTWH(
           offsetItem.dx.removeTinyFraction(),
           (offsetItem.dy - offset + pixels).removeTinyFraction(),
@@ -96,66 +92,83 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   }
 
   ///update scroll rect to controller
-  void _updateScrollRectToController(RectHolder holder, int index) {
+  void _updateScrollRectToController() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshRectItems(holder, index);
+      _refreshRectItems();
     });
   }
 
   ///add to rect
-  void _addFrameRect(RectHolder holder, int index, Rect rect) {
-    if (widget.rectHolder == holder && widget.actualIndex == index) {
-      holder.rect = rect;
-      holder.isOnScreen = true;
-      widget.controller.notifyItemRectShowOnScreen(index);
+  void _addFrameRect(Rect rect) {
+    if (widget.rectHolder.wrapperHash == hashCode) {
+      widget.rectHolder.rect = rect;
+      widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
     }
   }
 
   ///remove rect
   void _removeFrameRect(RectHolder holder, int index) {
-    holder.isOnScreen = false;
+    holder.wrapperHash = null;
     widget.controller.notifyItemRectRemoveOnScreen(index);
   }
 
   @override
   void initState() {
+    ///init listener
     _checkRectListener = () {
-      _refreshRectItems(widget.rectHolder, widget.actualIndex);
+      _refreshRectItems();
     };
     widget.controller.addCheckRectListener(_checkRectListener);
-    _removeFrameRect(widget.rectHolder, widget.actualIndex);
-    _updateScrollRectToController(
-      widget.rectHolder,
-      widget.actualIndex,
-    );
+
+    ///set wrapper hash
+    widget.rectHolder.wrapperHash = hashCode;
+    widget.rectHolder.rect = null;
+
+    ///refresh
+    _updateScrollRectToController();
     super.initState();
   }
 
   @override
-  void dispose() {
-    _removeFrameRect(widget.rectHolder, widget.actualIndex);
-    widget.controller.removeCheckRectListener(_checkRectListener);
-    super.dispose();
-  }
-
-  @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
-    //check listener reinit
+    ///check rect listener changed
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeCheckRectListener(_checkRectListener);
       widget.controller.addCheckRectListener(_checkRectListener);
     }
-    //remove frame rect
-    if (widget.rectHolder != oldWidget.rectHolder ||
-        widget.actualIndex != oldWidget.actualIndex) {
-      _removeFrameRect(oldWidget.rectHolder, oldWidget.actualIndex);
-      _removeFrameRect(widget.rectHolder, widget.actualIndex);
+
+    ///remove former wrapper hash and rect
+    if (oldWidget.rectHolder.wrapperHash == hashCode &&
+        oldWidget.rectHolder != widget.rectHolder) {
+      _removeFrameRect(
+        oldWidget.rectHolder,
+        oldWidget.actualIndex,
+      );
     }
-    _updateScrollRectToController(
-      widget.rectHolder,
-      widget.actualIndex,
-    );
+
+    ///set current wrapper hash and rect
+    widget.rectHolder.wrapperHash = hashCode;
+
+    ///refresh
+    _updateScrollRectToController();
+
     super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void dispose() {
+    ///check rect listener
+    widget.controller.removeCheckRectListener(_checkRectListener);
+
+    ///remove wrapper hash if is equal
+    if (widget.rectHolder.wrapperHash == hashCode) {
+      _removeFrameRect(
+        widget.rectHolder,
+        widget.actualIndex,
+      );
+    }
+
+    super.dispose();
   }
 
   @override
