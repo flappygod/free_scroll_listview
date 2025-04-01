@@ -53,8 +53,7 @@ class AdditionPreview<T> extends StatefulWidget {
 }
 
 /// addition preview state
-class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
-    with SingleTickerProviderStateMixin {
+class _AdditionPreviewState<T> extends State<AdditionPreview<T>> with SingleTickerProviderStateMixin {
   //listener
   late VoidCallback _listener;
 
@@ -96,9 +95,10 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
         maxHeight: 65535,
         child: ObserveHeightWidget(
           listener: (Size size) {
-            if (!widget.controller._offsetPreviewCompleter.isCompleted &&
-                !size.height.isNaN) {
+            if (!widget.controller._offsetPreviewCompleter.isCompleted && !size.height.isNaN) {
               widget.controller._offsetPreviewCompleter.complete(size.height);
+              widget.controller._dataList.clear();
+              setState(() {});
             }
           },
           child: Visibility(
