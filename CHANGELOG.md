@@ -1,3 +1,3 @@
-## 1.2.12
+## 1.2.13
 
-* change wrapper to provide more actual position.
+* fix bugs for hero animation items
