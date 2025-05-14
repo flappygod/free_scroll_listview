@@ -220,8 +220,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     if (firstHolderRectTop != null && minRectTop == firstHolderRectTop) {
       //If the minimum rectTop is the firstHolder's rectTop
       _setNegativeHeight(firstHolderRectTop);
-    }
-    else if (currentPosition != null && minRectTop != null) {
+    } else if (currentPosition != null && minRectTop != null) {
       //If firstHolder does not exist, compare currentPosition.minScrollExtent with minRectTop
       _setNegativeHeight(min(currentPosition.minScrollExtent, minRectTop));
     } else {
@@ -1217,9 +1216,8 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
   ///set min scroll extend
   set minScrollExtend(double data) {
-
     ///已经赋值了
-    if(_minScrollExtend==data){
+    if (_minScrollExtend == data) {
       return;
     }
     _minScrollExtend = data;
