@@ -1,3 +1,3 @@
-## 1.2.13
+## 1.2.14
 
-* fix bugs for hero animation items
+* fix bugs for addHeadData.
