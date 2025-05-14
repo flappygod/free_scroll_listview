@@ -414,6 +414,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   void updateData(T t, int index) {
     assert(index >= 0 && index < dataList.length);
     _dataList[index] = t;
+    _itemsRectHolder.clear();
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
   }
 
@@ -421,6 +422,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   Future<void> addDataToTail(List<T> dataList) {
     return _lock.synchronized(() async {
       _dataList.addAll(dataList);
+      _itemsRectHolder.clear();
       notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     });
   }
@@ -431,6 +433,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///insert all data
       _dataList.insertAll(0, dataList);
       _dataListOffset = _dataListOffset + dataList.length;
+      _itemsRectHolder.clear();
 
       ///preview the height and add it to negative height
       double formerTopData = _negativeHeight;
