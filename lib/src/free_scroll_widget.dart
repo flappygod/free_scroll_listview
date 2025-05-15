@@ -1007,118 +1007,120 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
               int positiveDataLength = widget.controller._dataList.length -
                   widget.controller._dataListOffset;
 
-              return Stack(
-                clipBehavior: Clip.none,
-                children: <Widget>[
-                  ///preview items widget
-                  AdditionPreview(
-                    itemBuilder: widget.builder,
-                    controller: widget.controller._previewController,
+              ///negative
+              List<Widget> sliverNegative = <Widget>[
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      int actualIndex = negativeDataLength - index - 1;
+                      RectHolder rectHolder = RectHolder();
+                      widget.controller._itemsRectHolder[actualIndex] =
+                          rectHolder;
+                      return AnchorItemWrapper(
+                        reverse: widget.reverse,
+                        actualIndex: actualIndex,
+                        listViewState: this,
+                        controller: widget.controller,
+                        rectHolder: rectHolder,
+                        child: widget.builder(context, actualIndex),
+                      );
+                    },
+                    childCount: negativeDataLength,
                   ),
-
-                  ///negative
-                  Viewport(
-                    axisDirection: flipAxisDirection(axisDirection),
-                    anchor: 1.0,
-                    offset: negativeOffset,
-                    cacheExtent: widget.cacheExtent,
-                    slivers: <Widget>[
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            int actualIndex = negativeDataLength - index - 1;
-                            RectHolder rectHolder = RectHolder();
-                            widget.controller._itemsRectHolder[actualIndex] =
-                                rectHolder;
-                            return AnchorItemWrapper(
-                              reverse: widget.reverse,
-                              actualIndex: actualIndex,
-                              listViewState: this,
-                              controller: widget.controller,
-                              rectHolder: rectHolder,
-                              child: widget.builder(context, actualIndex),
-                            );
-                          },
-                          childCount: negativeDataLength,
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: ObserveHeightWidget(
-                          child: widget.headerView ?? const SizedBox(),
-                          listener: (size) {
-                            widget.controller._setHeaderViewHeight(size.height);
-                          },
-                        ),
-                      ),
-                    ],
+                ),
+                SliverToBoxAdapter(
+                  child: ObserveHeightWidget(
+                    child: widget.headerView ?? const SizedBox(),
+                    listener: (size) {
+                      widget.controller._setHeaderViewHeight(size.height);
+                    },
                   ),
+                ),
+              ];
 
-                  ///positive data list
-                  if (widget.shrinkWrap)
-                    ShrinkWrappingViewport(
-                      axisDirection: axisDirection,
-                      clipBehavior: widget.clipBehavior,
-                      offset: offset,
-                      slivers: <Widget>[
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              int actualIndex = negativeDataLength + index;
-                              RectHolder rectHolder = RectHolder();
-                              widget.controller._itemsRectHolder[actualIndex] =
-                                  rectHolder;
-                              return AnchorItemWrapper(
-                                reverse: widget.reverse,
-                                actualIndex: actualIndex,
-                                listViewState: this,
-                                controller: widget.controller,
-                                rectHolder: rectHolder,
-                                child: widget.builder(context, actualIndex),
-                              );
-                            },
-                            childCount: positiveDataLength,
+              ///positive
+              List<Widget> sliverPositive = <Widget>[
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      int actualIndex = negativeDataLength + index;
+                      RectHolder rectHolder = RectHolder();
+                      widget.controller._itemsRectHolder[actualIndex] =
+                          rectHolder;
+                      return AnchorItemWrapper(
+                        reverse: widget.reverse,
+                        actualIndex: actualIndex,
+                        listViewState: this,
+                        controller: widget.controller,
+                        rectHolder: rectHolder,
+                        child: widget.builder(context, actualIndex),
+                      );
+                    },
+                    childCount: positiveDataLength,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: widget.footerView,
+                ),
+              ];
+
+              return widget.shrinkWrap
+                  ? Stack(
+                      clipBehavior: Clip.none,
+                      children: <Widget>[
+                        ///preview items widget
+                        AdditionPreview(
+                          itemBuilder: widget.builder,
+                          controller: widget.controller._previewController,
+                        ),
+
+                        ///negative
+                        if (widget.controller._anchorOffset > 0)
+                          Viewport(
+                            axisDirection: flipAxisDirection(axisDirection),
+                            anchor: 1.0,
+                            offset: negativeOffset,
+                            cacheExtent: widget.cacheExtent,
+                            slivers: sliverNegative,
                           ),
-                        ),
-                        SliverToBoxAdapter(
-                          child: widget.footerView,
+
+                        ///positive
+                        ShrinkWrappingViewport(
+                          axisDirection: axisDirection,
+                          clipBehavior: widget.clipBehavior,
+                          offset: offset,
+                          slivers: sliverPositive,
                         ),
                       ],
                     )
-
-                  ///positive data list
-                  else
-                    Viewport(
-                      offset: offset,
-                      axisDirection: axisDirection,
-                      cacheExtent: widget.cacheExtent,
-                      clipBehavior: widget.clipBehavior,
-                      slivers: <Widget>[
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              int actualIndex = negativeDataLength + index;
-                              RectHolder rectHolder = RectHolder();
-                              widget.controller._itemsRectHolder[actualIndex] =
-                                  rectHolder;
-                              return AnchorItemWrapper(
-                                reverse: widget.reverse,
-                                actualIndex: actualIndex,
-                                listViewState: this,
-                                controller: widget.controller,
-                                rectHolder: rectHolder,
-                                child: widget.builder(context, actualIndex),
-                              );
-                            },
-                            childCount: positiveDataLength,
-                          ),
+                  : Stack(
+                      clipBehavior: Clip.none,
+                      children: <Widget>[
+                        ///preview items widget
+                        AdditionPreview(
+                          itemBuilder: widget.builder,
+                          controller: widget.controller._previewController,
                         ),
-                        SliverToBoxAdapter(
-                          child: widget.footerView,
+
+                        ///negative
+                        Viewport(
+                          axisDirection: flipAxisDirection(axisDirection),
+                          anchor: 1.0,
+                          offset: negativeOffset,
+                          cacheExtent: widget.cacheExtent,
+                          slivers: sliverNegative,
+                        ),
+
+                        ///positive
+                        Viewport(
+                          offset: offset,
+                          axisDirection: axisDirection,
+                          cacheExtent: widget.cacheExtent,
+                          clipBehavior: widget.clipBehavior,
+                          slivers: sliverPositive,
                         ),
                       ],
-                    ),
-                ],
-              );
+                    );
             },
           );
         },
