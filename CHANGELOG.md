@@ -1,3 +1,3 @@
 ## 1.2.15
 
-* add s
+* add shrinkWrap support.
