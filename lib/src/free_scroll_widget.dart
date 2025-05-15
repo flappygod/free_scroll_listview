@@ -960,6 +960,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       widget.controller.addSyncActionListener(_syncListener);
       widget.controller.addASyncActionListener(_aSyncListener);
     }
+    widget.controller._resetIndexIfNeeded();
     _initHeight();
     super.didUpdateWidget(oldWidget);
   }
