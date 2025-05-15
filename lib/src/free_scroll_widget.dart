@@ -1075,7 +1075,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                         ),
 
                         ///negative
-                        if (widget.controller._anchorOffset > 0)
+                        if (widget.controller._dataListOffset > 0)
                           Viewport(
                             axisDirection: flipAxisDirection(axisDirection),
                             anchor: 1.0,
