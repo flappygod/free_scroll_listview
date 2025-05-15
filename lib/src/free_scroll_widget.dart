@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'free_scroll_viewport.dart';
 import 'free_scroll_wrapper.dart';
 import 'free_scroll_base.dart';
 import 'dart:async';
@@ -1086,7 +1085,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                           ),
 
                         ///positive
-                        FreeShrinkWrappingViewport(
+                        ShrinkWrappingViewport(
                           axisDirection: axisDirection,
                           clipBehavior: widget.clipBehavior,
                           offset: offset,
