@@ -430,22 +430,31 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///add data to head
   Future<void> addDataToHead(List<T> dataList) {
     return _lock.synchronized(() async {
-      ///insert all data
-      _dataList.insertAll(0, dataList);
-      _dataListOffset = _dataListOffset + dataList.length;
-      _itemsRectHolder.clear();
+      ///if can scroll
+      if (position.maxScrollExtent > 0) {
+        ///insert all data
+        _dataList.insertAll(0, dataList);
+        _dataListOffset = _dataListOffset + dataList.length;
+        _itemsRectHolder.clear();
 
-      ///preview the height and add it to negative height
-      double formerTopData = _negativeHeight;
-      if (_negativeHeight != negativeInfinityValue) {
-        double previewHeight = await _previewController.previewItemsHeight(
-          dataList,
-        );
-        _setNegativeHeight(formerTopData - previewHeight);
+        ///preview the height and add it to negative height
+        double formerTopData = _negativeHeight;
+        if (_negativeHeight != negativeInfinityValue) {
+          double previewHeight = await _previewController.previewItemsHeight(
+            dataList,
+          );
+          _setNegativeHeight(formerTopData - previewHeight);
+        }
+
+        ///notify data
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+      } else {
+        _dataList.insertAll(0, dataList);
+        _itemsRectHolder.clear();
+
+        ///notify data
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
       }
-
-      ///notify data
-      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     });
   }
 
@@ -731,6 +740,9 @@ class FreeScrollListView<T> extends StatefulWidget {
   ///footer view
   final Widget? footerView;
 
+  ///shrinkWrap
+  final bool shrinkWrap;
+
   ///item show
   final FreeScrollOnItemShow? onItemShow;
 
@@ -753,6 +765,7 @@ class FreeScrollListView<T> extends StatefulWidget {
     this.footerView,
     this.onItemShow,
     this.onIndexChange,
+    this.shrinkWrap = false,
   });
 
   @override
@@ -1040,36 +1053,69 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                   ),
 
                   ///positive data list
-                  Viewport(
-                    offset: offset,
-                    axisDirection: axisDirection,
-                    cacheExtent: widget.cacheExtent,
-                    clipBehavior: widget.clipBehavior,
-                    slivers: <Widget>[
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            int actualIndex = negativeDataLength + index;
-                            RectHolder rectHolder = RectHolder();
-                            widget.controller._itemsRectHolder[actualIndex] =
-                                rectHolder;
-                            return AnchorItemWrapper(
-                              reverse: widget.reverse,
-                              actualIndex: actualIndex,
-                              listViewState: this,
-                              controller: widget.controller,
-                              rectHolder: rectHolder,
-                              child: widget.builder(context, actualIndex),
-                            );
-                          },
-                          childCount: positiveDataLength,
+                  if (widget.shrinkWrap)
+                    ShrinkWrappingViewport(
+                      axisDirection: axisDirection,
+                      clipBehavior: widget.clipBehavior,
+                      offset: offset,
+                      slivers: <Widget>[
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              int actualIndex = negativeDataLength + index;
+                              RectHolder rectHolder = RectHolder();
+                              widget.controller._itemsRectHolder[actualIndex] =
+                                  rectHolder;
+                              return AnchorItemWrapper(
+                                reverse: widget.reverse,
+                                actualIndex: actualIndex,
+                                listViewState: this,
+                                controller: widget.controller,
+                                rectHolder: rectHolder,
+                                child: widget.builder(context, actualIndex),
+                              );
+                            },
+                            childCount: positiveDataLength,
+                          ),
                         ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: widget.footerView,
-                      ),
-                    ],
-                  ),
+                        SliverToBoxAdapter(
+                          child: widget.footerView,
+                        ),
+                      ],
+                    )
+
+                  ///positive data list
+                  else
+                    Viewport(
+                      offset: offset,
+                      axisDirection: axisDirection,
+                      cacheExtent: widget.cacheExtent,
+                      clipBehavior: widget.clipBehavior,
+                      slivers: <Widget>[
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              int actualIndex = negativeDataLength + index;
+                              RectHolder rectHolder = RectHolder();
+                              widget.controller._itemsRectHolder[actualIndex] =
+                                  rectHolder;
+                              return AnchorItemWrapper(
+                                reverse: widget.reverse,
+                                actualIndex: actualIndex,
+                                listViewState: this,
+                                controller: widget.controller,
+                                rectHolder: rectHolder,
+                                child: widget.builder(context, actualIndex),
+                              );
+                            },
+                            childCount: positiveDataLength,
+                          ),
+                        ),
+                        SliverToBoxAdapter(
+                          child: widget.footerView,
+                        ),
+                      ],
+                    ),
                 ],
               );
             },
