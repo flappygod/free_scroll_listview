@@ -41,13 +41,13 @@ class FreeScrollListViewController<T> extends ScrollController {
   final double _anchorOffset;
 
   //listeners
-  final List<FreeScrollListSyncListener> _syncListeners = [];
+  final Set<FreeScrollListSyncListener> _syncListeners = {};
 
   //listeners
-  final List<FreeScrollListASyncListener> _asyncListeners = [];
+  final Set<FreeScrollListASyncListener> _asyncListeners = {};
 
   //check rect listeners
-  final List<VoidCallback> _checkRectListeners = [];
+  final Set<VoidCallback> _checkRectListeners = {};
 
   //controller
   final AdditionPreviewController<T> _previewController =
@@ -263,14 +263,15 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///when delete some item
   void _checkDeleteLastItem(int index) {
     RectHolder? firstHolder = _itemsRectHolder[0];
-    if (!position.isScrollingNotifier.value &&
-        !isAnimating &&
-        index == 0 &&
-        firstHolder != null &&
-        firstHolder.rectTop() != null &&
-        position.pixels < firstHolder.rectTop()!) {
-      position.jumpTo(position.pixels);
+    if (position.isScrollingNotifier.value ||
+        isAnimating ||
+        index != 0 ||
+        firstHolder == null ||
+        firstHolder.rectTop() == null ||
+        position.pixels >= firstHolder.rectTop()!) {
+      return;
     }
+    position.jumpTo(position.pixels);
   }
 
   ///can scroll
@@ -324,9 +325,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///add check rect listener
   void addCheckRectListener(VoidCallback listener) {
-    if (!_checkRectListeners.contains(listener)) {
-      _checkRectListeners.add(listener);
-    }
+    _checkRectListeners.add(listener);
   }
 
   ///remove check rect listener
@@ -336,9 +335,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///add listener
   void addSyncActionListener(FreeScrollListSyncListener listener) {
-    if (!_syncListeners.contains(listener)) {
-      _syncListeners.add(listener);
-    }
+    _syncListeners.add(listener);
   }
 
   ///remove listener
@@ -348,9 +345,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///add listener
   void addASyncActionListener(FreeScrollListASyncListener listener) {
-    if (!_asyncListeners.contains(listener)) {
-      _asyncListeners.add(listener);
-    }
+    _asyncListeners.add(listener);
   }
 
   ///remove listener
