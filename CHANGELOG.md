@@ -1,3 +1,3 @@
-## 1.2.15
+## 1.2.16
 
-* add shrinkWrap support.
+* add onEndIndexChange support and getItemRectList.

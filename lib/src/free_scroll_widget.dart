@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'free_scroll_wrapper.dart';
 import 'free_scroll_base.dart';
+import 'dart:collection';
 import 'dart:async';
 import 'dart:math';
 
@@ -53,7 +54,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       AdditionPreviewController<T>();
 
   //item maps
-  final Map<int, RectHolder> _itemsRectHolder = {};
+  final SplayTreeMap<int, RectHolder> _itemsRectHolder =
+      SplayTreeMap<int, RectHolder>();
 
   //header view height
   double _headerViewHeight = 0;
@@ -65,7 +67,10 @@ class FreeScrollListViewController<T> extends ScrollController {
   final GlobalKey _listViewKey = GlobalKey();
 
   //current index
-  int _currentIndex = 0;
+  int _currentStartIndex = -1;
+
+  //current index
+  int _currentEndIndex = -1;
 
   //is animating
   bool _isAnimating = false;
@@ -75,9 +80,19 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _isAnimating;
   }
 
-  //get current index
-  int get currentIndex {
-    return _currentIndex;
+  //get current start index
+  int get currentStartIndex {
+    return _currentStartIndex;
+  }
+
+  //get current end index
+  int get currentEndIndex {
+    return _currentEndIndex;
+  }
+
+  ///get items rect on screen
+  Map<int, RectHolder> getItemRectList() {
+    return _itemsRectHolder;
   }
 
   /// ListView height
@@ -746,8 +761,11 @@ class FreeScrollListView<T> extends StatefulWidget {
   ///item show
   final FreeScrollOnItemShow? onItemShow;
 
-  ///index changed
-  final FreeScrollOnIndexChange? onIndexChange;
+  ///start index changed
+  final FreeScrollOnIndexChange? onStartIndexChange;
+
+  ///end index changed
+  final FreeScrollOnIndexChange? onEndIndexChange;
 
   const FreeScrollListView({
     super.key,
@@ -764,7 +782,8 @@ class FreeScrollListView<T> extends StatefulWidget {
     this.headerView,
     this.footerView,
     this.onItemShow,
-    this.onIndexChange,
+    this.onStartIndexChange,
+    this.onEndIndexChange,
     this.shrinkWrap = false,
   });
 
@@ -1212,26 +1231,55 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       return;
     }
 
-    ///offset count
     double pixels = widget.controller.position.pixels;
 
-    ///keys
-    List<int> sortedKeys = widget.controller._itemsRectHolder.keys.toList()
-      ..sort();
+    ///get sorted key
+    List<int> sortedKeys = widget.controller._itemsRectHolder.keys.toList();
+
+    ///开始
     for (int key in sortedKeys) {
       RectHolder? holder = widget.controller._itemsRectHolder[key];
-      if (holder != null && holder.isOnScreen) {
-        double offsetBottom = holder.rectBottom()! - pixels;
-        if (offsetBottom.round() > 0) {
-          int index = key;
-          if (widget.controller._currentIndex != index) {
-            widget.controller._currentIndex = index;
-            if (widget.onIndexChange != null) {
-              widget.onIndexChange!(index);
-            }
-          }
-          break;
+      if (holder == null || !holder.isOnScreen) {
+        continue;
+      }
+
+      double? rectBottom = holder.rectBottom();
+      if (rectBottom == null) {
+        continue;
+      }
+
+      double offsetBottom = rectBottom - pixels;
+      if (offsetBottom.round() > 0) {
+        int index = key;
+        if (widget.controller._currentStartIndex != index) {
+          widget.controller._currentStartIndex = index;
+          widget.onStartIndexChange?.call(index);
         }
+        break;
+      }
+    }
+
+    ///开始
+    for (int s = sortedKeys.length - 1; s >= 0; s--) {
+      int key = sortedKeys[s];
+      RectHolder? holder = widget.controller._itemsRectHolder[key];
+      if (holder == null || !holder.isOnScreen) {
+        continue;
+      }
+
+      double? rectTop = holder.rectTop();
+      if (rectTop == null) {
+        continue;
+      }
+
+      double offsetTop = rectTop - pixels;
+      if (offsetTop.round() < widget.controller.listViewHeight) {
+        int index = key;
+        if (widget.controller._currentEndIndex != index) {
+          widget.controller._currentEndIndex = index;
+          widget.onEndIndexChange?.call(index);
+        }
+        break;
       }
     }
   }
