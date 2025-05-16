@@ -585,9 +585,6 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///get align
       FreeScrollAlign align = FreeScrollAlign.topToBottom;
       List<int> keys = _itemsRectHolder.keys.toList();
-      keys.sort((one, two) {
-        return one.compareTo(two);
-      });
 
       if (keys.isEmpty) {
         return Future.delayed(Duration.zero);
