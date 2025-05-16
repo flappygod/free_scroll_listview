@@ -37,9 +37,6 @@ class FreeScrollListViewController<T> extends ScrollController {
   //data list offset
   int _dataListOffset;
 
-  //anchor offset
-  final double _anchorOffset;
-
   //listeners
   final Set<FreeScrollListSyncListener> _syncListeners = {};
 
@@ -389,8 +386,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     double? anchorOffset,
     int index = 0,
   })  : _dataList = List.from(dataList ?? []),
-        _dataListOffset = index,
-        _anchorOffset = anchorOffset ?? 0;
+        _dataListOffset = index;
 
   ///data list
   List<T> get dataList {
@@ -475,6 +471,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     FreeScrollAlign align = FreeScrollAlign.bottomToTop,
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
+    double anchorOffset = 0,
   }) {
     assert(index >= 0 && index < dataList.length);
 
@@ -488,6 +485,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       align: align,
       curve: curve,
       duration: duration,
+      anchorOffset: anchorOffset,
     );
   }
 
@@ -546,6 +544,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     int index, {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
+    double anchorOffset = 0,
   }) async {
     assert(index >= 0 && index < dataList.length);
 
@@ -564,7 +563,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///if index is exists and is not animating
     ///when animating the rect may not actual
     if (holder != null && holder.isOnScreen && !_isAnimating) {
-      double toOffset = holder.rectTop()! + _anchorOffset;
+      double toOffset = holder.rectTop()! + anchorOffset;
       if (hasClients && position.maxScrollExtent != double.maxFinite) {
         toOffset = min(position.maxScrollExtent, toOffset);
       }
@@ -611,6 +610,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         align: align,
         curve: curve,
         duration: duration,
+        anchorOffset: anchorOffset,
       );
     }
   }
@@ -621,6 +621,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     required FreeScrollAlign align,
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
+    double anchorOffset = 0,
   }) async {
     assert(index >= 0 && index < dataList.length);
 
@@ -640,8 +641,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         AnimationData data = AnimationData(
           duration,
           curve,
-          listViewHeight + _anchorOffset,
-          0 + _anchorOffset,
+          listViewHeight + anchorOffset,
+          0 + anchorOffset,
           FreeScrollAlign.bottomToTop,
         );
 
@@ -654,8 +655,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         AnimationData data = AnimationData(
           duration,
           curve,
-          -listViewHeight + _anchorOffset,
-          0 + _anchorOffset,
+          -listViewHeight + anchorOffset,
+          0 + anchorOffset,
           FreeScrollAlign.topToBottom,
         );
 
