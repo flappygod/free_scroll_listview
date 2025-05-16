@@ -1,3 +1,3 @@
-## 1.2.16
+## 1.2.17
 
-* add onEndIndexChange support and getItemRectList.
+* change anchorOffset type.

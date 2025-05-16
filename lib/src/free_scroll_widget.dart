@@ -667,7 +667,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         ));
       case FreeScrollAlign.directJumpTo:
         if (hasClients && position.hasPixels) {
-          jumpTo(0+anchorOffset);
+          jumpTo(0 + anchorOffset);
         }
         return notifyActionASyncListeners(
           FreeScrollListViewActionType.notifyJump,
