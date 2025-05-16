@@ -631,7 +631,9 @@ class FreeScrollListViewController<T> extends ScrollController {
     _dataListOffset = index;
 
     ///notify data
-    position.jumpTo(position.pixels);
+    if(hasClients){
+      position.jumpTo(position.pixels);
+    }
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     await waitForPostFrameCallback();
