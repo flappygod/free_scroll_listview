@@ -434,7 +434,8 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///add data to head
-  Future<void> addDataToHead(List<T> dataList) {
+  ///previewHeight measure add item height or not
+  Future<void> addDataToHead(List<T> dataList, {bool measureHeight = true}) {
     return _lock.synchronized(() async {
       ///if can scroll
       if (position.maxScrollExtent > 0) {
@@ -445,7 +446,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///preview the height and add it to negative height
         double formerTopData = _negativeHeight;
-        if (_negativeHeight != negativeInfinityValue) {
+        if (_negativeHeight != negativeInfinityValue && measureHeight) {
           double previewHeight = await _previewController.previewItemsHeight(
             dataList,
           );
@@ -631,7 +632,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     _dataListOffset = index;
 
     ///notify data
-    if(hasClients){
+    if (hasClients) {
       position.jumpTo(position.pixels);
     }
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);

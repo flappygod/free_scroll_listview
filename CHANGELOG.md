@@ -1,3 +1,3 @@
-## 1.2.17
+## 1.2.18
 
-* change anchorOffset type.
+* add measureHeight to measure Height.
