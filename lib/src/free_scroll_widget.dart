@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:free_scroll_listview/src/free_scroll_observe.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
 import 'package:synchronized/synchronized.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'free_scroll_physis.dart';
 import 'free_scroll_wrapper.dart';
 import 'free_scroll_base.dart';
 import 'dart:collection';
@@ -553,7 +555,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     position.jumpTo(position.pixels);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-    await waitForPostFrameCallback();
+    await SchedulerBinding.instance.endOfFrame;
 
     ///all visible items refresh
     notifyCheckRectListeners();
@@ -637,7 +639,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-    await waitForPostFrameCallback();
+    await SchedulerBinding.instance.endOfFrame;
 
     switch (align) {
       case FreeScrollAlign.bottomToTop:
@@ -716,7 +718,7 @@ class FreeScrollListView<T> extends StatefulWidget {
   final NullableIndexedWidgetBuilder builder;
 
   /// See: [ScrollView.physics]
-  final ScrollPhysics physics;
+  final ScrollPhysics? physics;
 
   ///direction
   final Axis scrollDirection;
@@ -769,7 +771,7 @@ class FreeScrollListView<T> extends StatefulWidget {
     required this.builder,
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
-    this.physics = const AlwaysScrollableScrollPhysics(),
+    this.physics,
     this.clipBehavior = Clip.hardEdge,
     this.cacheExtent,
     this.loadOffset = 100,
@@ -1007,7 +1009,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
               final ScrollableState state = Scrollable.of(context);
               final _NegativedScrollPosition negativeOffset =
                   _NegativedScrollPosition(
-                physics: widget.physics,
+                physics: widget.physics ??
+                    FreeLimitShrinkOverScrollPhysics(
+                      controller: widget.controller,
+                    ),
                 context: state,
                 initialPixels: -offset.pixels,
                 keepScrollOffset: false,
@@ -1341,13 +1346,4 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
   @override
   double get minScrollExtent => _minScrollExtend;
-}
-
-///wait
-Future<void> waitForPostFrameCallback() async {
-  final Completer<void> completer = Completer<void>();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    completer.complete();
-  });
-  return completer.future;
 }
