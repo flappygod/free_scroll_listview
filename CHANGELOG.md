@@ -1,3 +1,3 @@
-## 1.2.18
+## 1.2.19
 
-* add measureHeight to measure Height.
+* limit scroll  when use default physics,and maxScrollExtent == 0.
