@@ -994,13 +994,19 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   Widget build(BuildContext context) {
     ///get direction
     AxisDirection axisDirection = _getDirection(context);
+
+    ScrollPhysics physics = widget.physics ??
+        FreeLimitShrinkOverScrollPhysics(
+          controller: widget.controller,
+        );
+
     return NotificationListener<ScrollNotification>(
       onNotification: _handleNotification,
       child: Scrollable(
         key: widget.controller._listViewKey,
         axisDirection: axisDirection,
         controller: widget.controller,
-        physics: widget.physics,
+        physics: physics,
         clipBehavior: widget.clipBehavior,
         viewportBuilder: (BuildContext context, ViewportOffset offset) {
           return Builder(
@@ -1009,10 +1015,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
               final ScrollableState state = Scrollable.of(context);
               final _NegativedScrollPosition negativeOffset =
                   _NegativedScrollPosition(
-                physics: widget.physics ??
-                    FreeLimitShrinkOverScrollPhysics(
-                      controller: widget.controller,
-                    ),
+                physics: physics,
                 context: state,
                 initialPixels: -offset.pixels,
                 keepScrollOffset: false,
