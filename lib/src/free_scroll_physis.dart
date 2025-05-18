@@ -18,6 +18,12 @@ class FreeLimitShrinkOverScrollPhysics extends ScrollPhysics {
   }
 
   @override
+  bool shouldAcceptUserOffset(ScrollMetrics position) {
+    // 判断是否允许用户滚动
+    return controller.position.maxScrollExtent > 0;
+  }
+
+  @override
   double applyBoundaryConditions(ScrollMetrics position, double value) {
     if (controller.position.maxScrollExtent <= 0) {
       return value - position.pixels;
