@@ -23,11 +23,11 @@ class FreeLimitShrinkOverScrollPhysics extends ScrollPhysics {
     return controller.position.maxScrollExtent > 0;
   }
 
-  @override
+  /*@override
   double applyBoundaryConditions(ScrollMetrics position, double value) {
     if (controller.position.maxScrollExtent <= 0) {
       return value - position.pixels;
     }
     return super.applyBoundaryConditions(position, value);
-  }
+  }*/
 }
