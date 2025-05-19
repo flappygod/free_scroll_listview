@@ -1,3 +1,3 @@
-## 1.2.19
+## 1.2.20
 
-* limit scroll  when use default physics,and maxScrollExtent == 0.
+* fault-tolerant processing.
