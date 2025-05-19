@@ -790,6 +790,12 @@ class FreeScrollListView<T> extends StatefulWidget {
   ///shrinkWrap
   final bool shrinkWrap;
 
+  ///notify item show when gesture scroll
+  final bool notifyItemShowWhenGestureScroll;
+
+  ///notify item show when gesture scroll
+  final bool notifyItemShowWhenAllTypeScroll;
+
   ///item show
   final FreeScrollOnItemShow? onItemShow;
 
@@ -817,6 +823,8 @@ class FreeScrollListView<T> extends StatefulWidget {
     this.onStartIndexChange,
     this.onEndIndexChange,
     this.shrinkWrap = false,
+    this.notifyItemShowWhenGestureScroll = false,
+    this.notifyItemShowWhenAllTypeScroll = false,
   });
 
   @override
@@ -1214,6 +1222,14 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     ///滚动结束的时候检查是否到达最大
     if (notification is ScrollEndNotification) {
       widget.controller._resetIndexIfNeeded();
+    }
+
+    ///滚动结束的时候检查是否到达最大
+    if (notification is ScrollEndNotification ||
+        (widget.notifyItemShowWhenGestureScroll &&
+            notification is ScrollUpdateNotification &&
+            notification.dragDetails != null) ||
+        widget.notifyItemShowWhenAllTypeScroll) {
       _notifyOnShow();
     }
 
