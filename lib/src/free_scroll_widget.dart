@@ -1,7 +1,7 @@
-import 'package:flutter/scheduler.dart';
 import 'package:free_scroll_listview/src/free_scroll_observe.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
 import 'package:synchronized/synchronized.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
@@ -92,6 +92,40 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///get items rect on screen
   Map<int, RectHolder> getItemRectList() {
     return _itemsRectHolder;
+  }
+
+  ///get item top scroll offset
+  double? getItemTopScrollOffset(int index) {
+    if (!position.hasPixels) {
+      return null;
+    }
+    RectHolder? rect = _itemsRectHolder[index];
+    if (rect == null) {
+      return null;
+    }
+    double? offsetOne = rect.rectTop();
+    double offsetTwo = position.pixels;
+    if (offsetOne == null) {
+      return null;
+    }
+    return offsetTwo - offsetOne;
+  }
+
+  ///get item top scroll offset
+  double? getItemBottomScrollOffset(int index) {
+    if (!position.hasPixels) {
+      return null;
+    }
+    RectHolder? rect = _itemsRectHolder[index];
+    if (rect == null) {
+      return null;
+    }
+    double? offsetOne = rect.rectTop();
+    double offsetTwo = position.pixels;
+    if (offsetOne == null) {
+      return null;
+    }
+    return offsetTwo - offsetOne - (rect.rectHeight() ?? 0);
   }
 
   /// ListView height
