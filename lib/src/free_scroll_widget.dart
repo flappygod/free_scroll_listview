@@ -474,7 +474,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   Future<void> addDataToHead(List<T> dataList, {bool measureHeight = true}) {
     return _lock.synchronized(() async {
       ///if can scroll
-      if (position.maxScrollExtent > 0) {
+      if (hasClients && position.maxScrollExtent > 0) {
         ///insert all data
         _dataList.insertAll(0, dataList);
         _dataListOffset = _dataListOffset + dataList.length;
