@@ -1,3 +1,3 @@
-## 1.2.20
+## 1.2.21
 
-* fault-tolerant processing.
+* add getItemTopScrollOffset and getItemBottomScrollOffset.
