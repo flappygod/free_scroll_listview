@@ -1,3 +1,3 @@
-## 1.2.21
+## 1.2.22
 
-* add getItemTopScrollOffset and getItemBottomScrollOffset.
+* add notifyItemShowWhenAllTypeScroll and notifyItemShowWhenGestureScroll setting.
