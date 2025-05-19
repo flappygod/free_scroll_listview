@@ -1,3 +1,3 @@
-## 1.2.23
+## 1.2.24
 
-* add Throttler for notify showing indexes.
+* add RepaintBoundary for scroll items.
