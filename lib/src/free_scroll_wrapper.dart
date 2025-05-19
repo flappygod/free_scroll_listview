@@ -173,6 +173,8 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.child ?? const SizedBox();
+    return RepaintBoundary(
+      child: widget.child ?? const SizedBox(),
+    );
   }
 }
