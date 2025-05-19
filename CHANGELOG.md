@@ -1,3 +1,3 @@
-## 1.2.22
+## 1.2.23
 
-* add notifyItemShowWhenAllTypeScroll and notifyItemShowWhenGestureScroll setting.
+* add Throttler for notify showing indexes.

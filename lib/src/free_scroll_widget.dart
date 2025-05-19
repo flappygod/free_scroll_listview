@@ -1,5 +1,6 @@
 import 'package:free_scroll_listview/src/free_scroll_observe.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
+import 'package:free_scroll_listview/src/free_scroll_throttller.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/cupertino.dart';
@@ -796,6 +797,9 @@ class FreeScrollListView<T> extends StatefulWidget {
   ///notify item show when gesture scroll
   final bool notifyItemShowWhenAllTypeScroll;
 
+  ///duration for throttler
+  final Duration notifyItemShowThrottlerDuration;
+
   ///item show
   final FreeScrollOnItemShow? onItemShow;
 
@@ -825,6 +829,7 @@ class FreeScrollListView<T> extends StatefulWidget {
     this.shrinkWrap = false,
     this.notifyItemShowWhenGestureScroll = false,
     this.notifyItemShowWhenAllTypeScroll = false,
+    this.notifyItemShowThrottlerDuration = const Duration(milliseconds: 120),
   });
 
   @override
@@ -836,6 +841,9 @@ class FreeScrollListView<T> extends StatefulWidget {
 ///free scroll listview state
 class FreeScrollListViewState<T> extends State<FreeScrollListView>
     with TickerProviderStateMixin {
+  ///throttler
+  late Throttler _throttler;
+
   ///function listener
   late FreeScrollListSyncListener _syncListener;
 
@@ -1006,6 +1014,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   @override
   void initState() {
+    _throttler = Throttler(duration: widget.notifyItemShowThrottlerDuration);
     _initListener();
     _initHeight();
     super.initState();
@@ -1230,7 +1239,13 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
             notification is ScrollUpdateNotification &&
             notification.dragDetails != null) ||
         widget.notifyItemShowWhenAllTypeScroll) {
-      _notifyOnShow();
+      if (_throttler.duration == Duration.zero) {
+        _notifyOnShow();
+      } else {
+        _throttler.throttle(() {
+          _notifyOnShow();
+        });
+      }
     }
 
     ///通知Index
