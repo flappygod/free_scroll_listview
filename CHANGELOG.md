@@ -1,3 +1,3 @@
-## 1.2.25
+## 1.2.26
 
-* Fix a little bug for _notifyOnShow.
+* Bugs fixed when use scrollToIndex in an error mode.
