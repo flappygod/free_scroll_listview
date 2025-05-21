@@ -1,3 +1,3 @@
-## 1.2.24
+## 1.2.25
 
-* add RepaintBoundary for scroll items.
+* Fix a little bug for _notifyOnShow.

@@ -1231,12 +1231,12 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     ///滚动结束的时候检查是否到达最大
     if (notification is ScrollEndNotification) {
       widget.controller._resetIndexIfNeeded();
+      _notifyOnShow();
     }
 
     ///滚动结束的时候检查是否到达最大
-    if (notification is ScrollEndNotification ||
-        (widget.notifyItemShowWhenGestureScroll &&
-            notification is ScrollUpdateNotification &&
+    if ((notification is ScrollUpdateNotification &&
+            widget.notifyItemShowWhenGestureScroll &&
             notification.dragDetails != null) ||
         widget.notifyItemShowWhenAllTypeScroll) {
       if (_throttler.duration == Duration.zero) {
