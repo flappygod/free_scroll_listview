@@ -586,6 +586,10 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     assert(index >= 0 && index < dataList.length);
 
+    if(!hasClients){
+      return;
+    }
+
     ///notify data
     position.jumpTo(position.pixels);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
