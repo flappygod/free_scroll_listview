@@ -94,7 +94,9 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   ///update scroll rect to controller
   void _updateScrollRectToController() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshRectItems();
+      if (mounted) {
+        _refreshRectItems();
+      }
     });
   }
 

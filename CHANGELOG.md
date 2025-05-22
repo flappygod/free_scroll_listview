@@ -1,3 +1,3 @@
-## 1.2.26
+## 1.2.27
 
-* Bugs fixed when use scrollToIndex in an error mode.
+* Check for existing issues using gpt.

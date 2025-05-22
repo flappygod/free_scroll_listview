@@ -1,7 +1,8 @@
+import 'package:free_scroll_listview/src/free_scroll_throttller.dart';
 import 'package:free_scroll_listview/src/free_scroll_observe.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
-import 'package:free_scroll_listview/src/free_scroll_throttller.dart';
 import 'package:synchronized/synchronized.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
@@ -402,7 +403,13 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     List<FreeScrollListSyncListener> listeners = List.from(_syncListeners);
     for (FreeScrollListSyncListener listener in listeners) {
-      listener(event, data: data);
+      try {
+        listener(event, data: data);
+      } catch (e) {
+        if (kDebugMode) {
+          print(e.toString());
+        }
+      }
     }
   }
 
@@ -413,7 +420,13 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     List<FreeScrollListASyncListener> listeners = List.from(_asyncListeners);
     for (FreeScrollListASyncListener listener in listeners) {
-      await listener(event, data: data);
+      try {
+        await listener(event, data: data);
+      } catch (e) {
+        if (kDebugMode) {
+          print(e.toString());
+        }
+      }
     }
   }
 
@@ -1009,10 +1022,14 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void _initHeight() {
     ///get height
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 35)).then((_) {
-        _notifyIndex();
-        _notifyOnShow();
-      });
+      if (mounted) {
+        Future.delayed(const Duration(milliseconds: 35)).then((_) {
+          if (mounted) {
+            _notifyIndex();
+            _notifyOnShow();
+          }
+        });
+      }
     });
   }
 
@@ -1040,7 +1057,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   @override
   void dispose() {
     super.dispose();
-    _cancelAnimation();
+    _animationController?.dispose();
+    _animationController = null;
     widget.controller.removeSyncActionListener(_syncListener);
     widget.controller.removeASyncActionListener(_aSyncListener);
   }

@@ -29,7 +29,9 @@ class _ObserveHeightWidgetState extends State<ObserveHeightWidget> {
   //addPostFrameCallback
   void _setListener() {
     WidgetsBinding.instance.addPostFrameCallback((mag) {
-      widget.listener(_observeKey.currentContext?.size ?? const Size(0, 0));
+      if (mounted) {
+        widget.listener(_observeKey.currentContext?.size ?? const Size(0, 0));
+      }
     });
   }
 
