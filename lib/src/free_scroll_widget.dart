@@ -81,6 +81,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _isAnimating;
   }
 
+  //data list offset
+  int dataListOffset() {
+    return _dataListOffset;
+  }
+
   //get current start index
   int get currentStartIndex {
     return _currentStartIndex;

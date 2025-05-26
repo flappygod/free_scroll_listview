@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:free_scroll_listview/free_scroll_listview.dart';
 
 ///获取使用了shrinkWrap,当没有滚动距离时不响应用户输入事件
 class FreeLimitShrinkOverScrollPhysics extends ScrollPhysics {
@@ -19,18 +20,17 @@ class FreeLimitShrinkOverScrollPhysics extends ScrollPhysics {
 
   @override
   bool shouldAcceptUserOffset(ScrollMetrics position) {
-    // 判断是否允许用户滚动
-    if (controller.hasClients && controller.position.hasContentDimensions) {
-      return controller.position.maxScrollExtent > 0;
+    if (controller is FreeScrollListViewController) {
+      FreeScrollListViewController ctl =
+          controller as FreeScrollListViewController;
+      if (ctl.hasClients &&
+          ctl.position.hasContentDimensions &&
+          ctl.dataListOffset() == 0) {
+        return controller.position.maxScrollExtent > 0;
+      } else {
+        return true;
+      }
     }
-    return false;
+    return true;
   }
-
-  /*@override
-  double applyBoundaryConditions(ScrollMetrics position, double value) {
-    if (controller.position.maxScrollExtent <= 0) {
-      return value - position.pixels;
-    }
-    return super.applyBoundaryConditions(position, value);
-  }*/
 }
