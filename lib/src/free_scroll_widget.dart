@@ -198,9 +198,8 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///reset index when animating
   void _checkResetCurrentIndex() {
-
     ///when animating
-    if(!_isAnimating){
+    if (!_isAnimating) {
       return;
     }
 
