@@ -58,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     _controller.setDataAndScrollTo(
       dataList,
-      index: 99,
+      index: 70,
       duration: Duration.zero,
       align: FreeScrollAlign.directJumpTo,
     );
@@ -148,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
               alignment: Alignment.topCenter,
               child: FreeScrollListView(
                 reverse: true,
-                shrinkWrap: false,
+                shrinkWrap: true,
                 controller: _controller,
                 headerView: Container(
                   height: 60,

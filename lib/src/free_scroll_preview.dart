@@ -1,26 +1,58 @@
-import 'package:free_scroll_listview/src/free_scroll_base.dart';
 import 'package:flutter/cupertino.dart';
-import 'free_scroll_observe.dart';
 import 'dart:async';
+
+///preview model
+class PreviewModel {
+  bool allPreviewed = true;
+  double totalHeight = 0;
+  Map<int, double> itemHeights = {};
+}
 
 /// addition preview controller
 class AdditionPreviewController<T> extends ChangeNotifier {
-  //offset preview global key
-  final GlobalKey _offsetPreviewKey = GlobalKey();
+  //preview offset keys
+  final Map<int, GlobalKey> _previewKeys = {};
 
-  //_data list
-  final List<T> _dataList = [];
+  //preview data list
+  final List<Widget> _previewWidgetList = [];
 
   //offset preview completer
-  Completer<double> _offsetPreviewCompleter = Completer();
+  Completer<PreviewModel?>? _offsetPreviewCompleter;
+
+  //preview count
+  int _previewCount = 0;
+
+  //preview reverse or not
+  bool _previewReverse = false;
+
+  //preview extent
+  double _previewExtent = 0;
 
   //preview items height
-  Future<double> previewItemsHeight(List<T> dataList) {
+  Future<PreviewModel?> previewItemsHeight(
+    int previewCount, {
+    double previewExtent = 0,
+    bool previewReverse = false,
+  }) {
+    //return null if preview is already gone
+    if (_offsetPreviewCompleter != null &&
+        !_offsetPreviewCompleter!.isCompleted) {
+      return Future.delayed(
+        const Duration(milliseconds: 0),
+        () => null,
+      );
+    }
+
+    //preview setting
+    _previewCount = previewCount;
+    _previewExtent = previewExtent;
+    _previewReverse = previewReverse;
+
+    _previewKeys.clear();
+    _previewWidgetList.clear();
     _offsetPreviewCompleter = Completer();
-    _dataList.clear();
-    _dataList.addAll(dataList);
     notifyListeners();
-    return _offsetPreviewCompleter.future;
+    return _offsetPreviewCompleter!.future;
   }
 }
 
@@ -82,42 +114,81 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
     widget.controller.removeListener(_listener);
   }
 
+  //check preview height
+  void _checkPreviewHeight() {
+    //do nothing if not set
+    if (widget.controller._offsetPreviewCompleter == null ||
+        widget.controller._offsetPreviewCompleter!.isCompleted) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ///get preview completer at first
+      Completer<PreviewModel?>? completer =
+          widget.controller._offsetPreviewCompleter;
+
+      ///is completed
+      if (completer == null || completer.isCompleted) {
+        return;
+      }
+
+      ///create preview model
+      PreviewModel previewModel = PreviewModel();
+
+      ///all
+      for (int s = 0; s < widget.controller._previewCount; s++) {
+        ///get context
+        final BuildContext? context =
+            widget.controller._previewKeys[s]?.currentContext;
+
+        ///anyone is empty, preview failure
+        final RenderBox? box = context?.findRenderObject() as RenderBox?;
+
+        ///get size
+        if (box != null) {
+          double itemHeight = box.size.height;
+          previewModel.totalHeight += itemHeight;
+          previewModel.itemHeights[s] = itemHeight;
+        } else {
+          previewModel.allPreviewed = false;
+        }
+      }
+
+      ///clear preview completer
+      widget.controller._offsetPreviewCompleter = null;
+
+      ///complete
+      completer.complete(previewModel);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      key: widget.controller._offsetPreviewKey,
-      width: double.infinity,
-      margin: widget.margin,
-      padding: widget.padding,
-      height: 0.001,
-      child: OverflowBox(
-        alignment: Alignment.topCenter,
-        minHeight: 0,
-        maxHeight: 65535,
-        child: ObserveHeightWidget(
-          listener: (Size size) {
-            if (!widget.controller._offsetPreviewCompleter.isCompleted &&
-                !size.height.isNaN) {
-              widget.controller._offsetPreviewCompleter.complete(size.height);
-              widget.controller._dataList.clear();
-              setState(() {});
-            }
-          },
-          child: Visibility(
-            visible: false,
-            maintainState: true,
-            maintainInteractivity: true,
-            maintainAnimation: true,
-            maintainSemantics: true,
-            maintainSize: true,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: widget.controller._dataList.mapIndexed((index, e) {
-                return widget.itemBuilder(context, index) ?? const SizedBox();
-              }).toList(),
-            ),
-          ),
-        ),
+    _checkPreviewHeight();
+    return Visibility(
+      visible: false,
+      maintainSize: true,
+      maintainAnimation: true,
+      maintainState: true,
+      maintainSemantics: true,
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: widget.controller._previewCount,
+        cacheExtent: widget.controller._previewExtent,
+        itemBuilder: (context, index) {
+          int trueIndex = widget.controller._previewReverse
+              ? (widget.controller._previewCount - 1 - index)
+              : index;
+          Widget item =
+              widget.itemBuilder(context, trueIndex) ?? const SizedBox();
+          widget.controller._previewWidgetList[trueIndex] = item;
+          widget.controller._previewKeys[trueIndex] = GlobalKey();
+          return SizedBox(
+            key: widget.controller._previewKeys[trueIndex],
+            child: item,
+          );
+        },
+        padding: widget.padding,
       ),
     );
   }
