@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:free_scroll_listview/free_scroll_listview.dart';
+import 'package:flutter/material.dart';
 
 ///获取使用了shrinkWrap,当没有滚动距离时不响应用户输入事件
 class FreeLimitShrinkOverScrollPhysics extends ScrollPhysics {
