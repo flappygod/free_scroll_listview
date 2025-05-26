@@ -787,10 +787,10 @@ class FreeScrollListViewController<T> extends ScrollController {
             notifyActionSyncListeners(
                 FreeScrollListViewActionType.notifyAnimStop);
             notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-            await waitForPostFrameCallback();
             if (hasClients && position.hasPixels) {
               jumpTo(testOffset);
             }
+            await waitForPostFrameCallback();
             return notifyActionASyncListeners(
               FreeScrollListViewActionType.notifyJump,
             );
@@ -803,10 +803,10 @@ class FreeScrollListViewController<T> extends ScrollController {
         _dataListOffset = index;
         notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
         notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-        await waitForPostFrameCallback();
         if (hasClients && position.hasPixels) {
           jumpTo(anchorOffset);
         }
+        await waitForPostFrameCallback();
         return notifyActionASyncListeners(
           FreeScrollListViewActionType.notifyJump,
         );
