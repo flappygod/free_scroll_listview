@@ -148,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
               alignment: Alignment.topCenter,
               child: FreeScrollListView(
                 reverse: true,
-                shrinkWrap: true,
+                shrinkWrap: false,
                 controller: _controller,
                 headerView: Container(
                   height: 60,
