@@ -1207,18 +1207,12 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                     childCount: negativeDataLength,
                   ),
                 ),
-                SliverToBoxAdapter(
-                  child: ObserveHeightWidget(
-                    child: widget.headerView ?? const SizedBox(),
-                    listener: (size) {
-                      widget.controller._setHeaderViewHeight(size.height);
-                    },
-                  ),
-                ),
+                if (widget.controller._dataListOffset != 0) _buildHeader(),
               ];
 
               ///positive
               List<Widget> sliverPositive = <Widget>[
+                if (widget.controller._dataListOffset == 0) _buildHeader(),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -1238,9 +1232,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                     childCount: positiveDataLength,
                   ),
                 ),
-                SliverToBoxAdapter(
-                  child: widget.footerView,
-                ),
+                _buildFooter(),
               ];
 
               return widget.shrinkWrap
@@ -1303,6 +1295,28 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           );
         },
       ),
+    );
+  }
+
+  ///header
+  Widget _buildHeader() {
+    return SliverToBoxAdapter(
+      child: Visibility(
+        visible: widget.controller._dataListOffset == 0,
+        child: ObserveHeightWidget(
+          child: widget.headerView ?? const SizedBox(),
+          listener: (size) {
+            widget.controller._setHeaderViewHeight(size.height);
+          },
+        ),
+      ),
+    );
+  }
+
+  ///footer
+  Widget _buildFooter() {
+    return SliverToBoxAdapter(
+      child: widget.footerView,
     );
   }
 
