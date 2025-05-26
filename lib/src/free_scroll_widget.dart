@@ -623,7 +623,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
 
     ///notify data
-    position.jumpTo(position.pixels);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
     await waitForPostFrameCallback();
@@ -699,21 +698,17 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     assert(index >= 0 && index < dataList.length);
 
-    ///Clear existing data and cached maps
-    _setNegativeHeight(negativeInfinityValue);
-    _itemsRectHolder.clear();
-    _dataListOffset = index;
-
-    ///notify data
-    if (hasClients) {
-      position.jumpTo(position.pixels);
-    }
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-    await waitForPostFrameCallback();
-
     switch (align) {
       case FreeScrollAlign.bottomToTop:
+
+        ///Clear existing data and cached maps
+        _setNegativeHeight(negativeInfinityValue);
+        _itemsRectHolder.clear();
+        _dataListOffset = index;
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+        await waitForPostFrameCallback();
+
         AnimationData data = AnimationData(
           duration,
           curve,
@@ -728,6 +723,15 @@ class FreeScrollListViewController<T> extends ScrollController {
           data: data,
         ));
       case FreeScrollAlign.topToBottom:
+
+        ///Clear existing data and cached maps
+        _setNegativeHeight(negativeInfinityValue);
+        _itemsRectHolder.clear();
+        _dataListOffset = index;
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+        await waitForPostFrameCallback();
+
         AnimationData data = AnimationData(
           duration,
           curve,
@@ -742,8 +746,66 @@ class FreeScrollListViewController<T> extends ScrollController {
           data: data,
         ));
       case FreeScrollAlign.directJumpTo:
+
+        ///preview data model
+        PreviewModel? previewModel =
+            await _previewController.previewItemsHeight(
+          dataList.length,
+          previewReverse: true,
+          previewExtent: anchorOffset.abs(),
+        );
+        double listviewHeight = listViewHeight;
+
+        ///previewed
+        if (previewModel != null) {
+          ///get height remain
+          double height = 0;
+          for (int s = dataList.length - 1; s >= index; s--) {
+            height = (previewModel.itemHeights[s] ?? 0) + height;
+          }
+
+          ///no enough space
+          if (height - anchorOffset - listviewHeight < 0) {
+            double testHeight = 0;
+            int testIndex = 0;
+            double testOffset = 0;
+
+            ///check max jump
+            for (int s = dataList.length - 1; s >= 0; s--) {
+              testHeight = (previewModel.itemHeights[s] ?? 0) + testHeight;
+              if (testHeight > listviewHeight) {
+                testIndex = s;
+                testOffset = testHeight - listviewHeight;
+                break;
+              }
+            }
+
+            ///set jump index
+            _setNegativeHeight(negativeInfinityValue);
+            _itemsRectHolder.clear();
+            _dataListOffset = testIndex;
+            notifyActionSyncListeners(
+                FreeScrollListViewActionType.notifyAnimStop);
+            notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+            await waitForPostFrameCallback();
+            if (hasClients && position.hasPixels) {
+              jumpTo(testOffset);
+            }
+            return notifyActionASyncListeners(
+              FreeScrollListViewActionType.notifyJump,
+            );
+          }
+        }
+
+        ///other kind
+        _setNegativeHeight(negativeInfinityValue);
+        _itemsRectHolder.clear();
+        _dataListOffset = index;
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
+        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+        await waitForPostFrameCallback();
         if (hasClients && position.hasPixels) {
-          jumpTo(0 + anchorOffset);
+          jumpTo(anchorOffset);
         }
         return notifyActionASyncListeners(
           FreeScrollListViewActionType.notifyJump,
@@ -910,6 +972,11 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         ///stop animation
         case FreeScrollListViewActionType.notifyAnimStop:
           _cancelAnimation();
+          if (widget.controller.hasClients &&
+              widget.controller.position.hasPixels) {
+            widget.controller.position
+                .jumpTo(widget.controller.position.pixels);
+          }
           break;
 
         ///start animation
