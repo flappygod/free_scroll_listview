@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:free_scroll_listview/free_scroll_listview.dart';
 import 'package:flutter/material.dart';
 
@@ -87,7 +88,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 94,
+      index: 99,
+      duration: Duration.zero,
       align: FreeScrollAlign.directJumpTo,
     );
   }
@@ -122,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
               behavior: HitTestBehavior.translucent,
               onTap: () {
                 _controller.scrollToIndex(
-                  91,
+                  99,
                 );
               },
               child: Container(
@@ -149,13 +151,19 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               reverse: true,
               onStartIndexChange: (int index) {
-                print("A" + index.toString());
+                if (kDebugMode) {
+                  print("A$index");
+                }
               },
               onEndIndexChange: (int index) {
-                print("B" + index.toString());
+                if (kDebugMode) {
+                  print("B$index");
+                }
               },
               onItemShow: (List<int> dataList) {
-                print(dataList);
+                if (kDebugMode) {
+                  print(dataList);
+                }
               },
               /*willReachTail: () {
                 return _checkAddTail();
