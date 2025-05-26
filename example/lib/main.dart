@@ -56,7 +56,12 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int s = 0; s < 100; s++) {
       dataList.add((s).toString());
     }
-    _controller.dataList = dataList;
+    _controller.setDataAndScrollTo(
+      dataList,
+      index: 99,
+      duration: Duration.zero,
+      align: FreeScrollAlign.directJumpTo,
+    );
     super.initState();
   }
 
@@ -139,55 +144,59 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           Expanded(
-            child: FreeScrollListView(
-              controller: _controller,
-              headerView: Container(
-                height: 60,
-                color: Colors.redAccent,
-              ),
-              footerView: Container(
-                height: 60,
-                color: Colors.blue,
-              ),
-              reverse: true,
-              onStartIndexChange: (int index) {
-                if (kDebugMode) {
-                  print("A$index");
-                }
-              },
-              onEndIndexChange: (int index) {
-                if (kDebugMode) {
-                  print("B$index");
-                }
-              },
-              onItemShow: (List<int> dataList) {
-                if (kDebugMode) {
-                  print(dataList);
-                }
-              },
-              /*willReachTail: () {
+            child: Container(
+              alignment: Alignment.topCenter,
+              child: FreeScrollListView(
+                reverse: true,
+                shrinkWrap: true,
+                controller: _controller,
+                headerView: Container(
+                  height: 60,
+                  color: Colors.redAccent,
+                ),
+                footerView: Container(
+                  height: 60,
+                  color: Colors.blue,
+                ),
+                onStartIndexChange: (int index) {
+                  if (kDebugMode) {
+                    print("A$index");
+                  }
+                },
+                onEndIndexChange: (int index) {
+                  if (kDebugMode) {
+                    print("B$index");
+                  }
+                },
+                onItemShow: (List<int> dataList) {
+                  if (kDebugMode) {
+                    print(dataList);
+                  }
+                },
+                /*willReachTail: () {
                 return _checkAddTail();
               },
               willReachHead: () {
                 return _checkAddHead();
               },*/
-              builder: (context, index) {
-                return Container(
-                  height: 75,
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.black.withAlpha(20),
-                        width: 0.5,
+                builder: (context, index) {
+                  return Container(
+                    height: 75,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.black.withAlpha(20),
+                          width: 0.5,
+                        ),
                       ),
                     ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    _controller.dataList[index],
-                  ),
-                );
-              },
+                    alignment: Alignment.center,
+                    child: Text(
+                      _controller.dataList[index],
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],

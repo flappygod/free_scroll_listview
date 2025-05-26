@@ -923,9 +923,11 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
         ///start animation
         case FreeScrollListViewActionType.notifyJump:
-          await Future.delayed(const Duration(milliseconds: 35)).then((_) {
-            _notifyIndex();
-            _notifyOnShow();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _notifyIndex();
+              _notifyOnShow();
+            }
           });
           break;
         default:
@@ -1029,15 +1031,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   ///init height
   void _initHeight() {
-    ///get height
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        Future.delayed(const Duration(milliseconds: 35)).then((_) {
-          if (mounted) {
-            _notifyIndex();
-            _notifyOnShow();
-          }
-        });
+        _notifyIndex();
+        _notifyOnShow();
       }
     });
   }
@@ -1180,14 +1177,13 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                         ),
 
                         ///negative
-                        if (widget.controller._dataListOffset > 0)
-                          Viewport(
-                            axisDirection: flipAxisDirection(axisDirection),
-                            anchor: 1.0,
-                            offset: negativeOffset,
-                            cacheExtent: widget.cacheExtent,
-                            slivers: sliverNegative,
-                          ),
+                        Viewport(
+                          axisDirection: flipAxisDirection(axisDirection),
+                          anchor: 1.0,
+                          offset: negativeOffset,
+                          cacheExtent: widget.cacheExtent,
+                          slivers: sliverNegative,
+                        ),
 
                         ///positive
                         ShrinkWrappingViewport(
