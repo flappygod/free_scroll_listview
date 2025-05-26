@@ -3,7 +3,6 @@ import 'package:free_scroll_listview/src/free_scroll_observe.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
@@ -524,7 +523,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   Future setDataAndScrollTo(
     List<T> dataList, {
     int index = 0,
-    FreeScrollAlign align = FreeScrollAlign.bottomToTop,
+    FreeScrollAlign align = FreeScrollAlign.topToBottom,
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
@@ -612,7 +611,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     position.jumpTo(position.pixels);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-    await SchedulerBinding.instance.endOfFrame;
+    await waitForPostFrameCallback();
 
     ///all visible items refresh
     notifyCheckRectListeners();
@@ -696,7 +695,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
     notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
-    await SchedulerBinding.instance.endOfFrame;
+    await waitForPostFrameCallback();
 
     switch (align) {
       case FreeScrollAlign.bottomToTop:
@@ -1441,4 +1440,13 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
   @override
   double get minScrollExtent => _minScrollExtend;
+}
+
+///wait
+Future<void> waitForPostFrameCallback() async {
+  final Completer<void> completer = Completer<void>();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    completer.complete();
+  });
+  return completer.future;
 }
