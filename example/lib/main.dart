@@ -58,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     _controller.setDataAndScrollTo(
       dataList,
-      index: 99,
+      index: 80,
       duration: Duration.zero,
       align: FreeScrollAlign.directJumpTo,
     );
@@ -94,8 +94,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return _controller.setDataAndScrollTo(
       dataList.toList(),
       index: 99,
-      duration: Duration.zero,
-      align: FreeScrollAlign.directJumpTo,
+      /*duration: Duration.zero,
+      align: FreeScrollAlign.directJumpTo,*/
     );
   }
 
