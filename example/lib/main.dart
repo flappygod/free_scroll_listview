@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future _checkAddTail() {
     int last = int.tryParse(_controller.dataList.last) ?? 0;
     List<String> dataList = [];
-    for (int s = 0; s < 100; s++) {
+    for (int s = 0; s < 5; s++) {
       dataList.add((s + last + 1).toString());
     }
     return _controller.addDataToTail(dataList);
@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future _checkAddHead() {
     int first = int.tryParse(_controller.dataList.first) ?? 0;
     List<String> dataList = [];
-    for (int s = 0; s < 100; s++) {
+    for (int s = 0; s < 5; s++) {
       dataList.add((first - s - 1).toString());
     }
     return _controller.addDataToHead(dataList.reversed.toList());
@@ -173,12 +173,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     print(dataList);
                   }
                 },
-                /*willReachTail: () {
-                return _checkAddTail();
-              },
-              willReachHead: () {
-                return _checkAddHead();
-              },*/
+                willReachTail: () {
+                  return _checkAddTail();
+                },
+                willReachHead: () {
+                  return _checkAddHead();
+                },
                 builder: (context, index) {
                   return Container(
                     height: 75,

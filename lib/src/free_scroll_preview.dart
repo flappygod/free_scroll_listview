@@ -14,7 +14,7 @@ class AdditionPreviewController<T> extends ChangeNotifier {
   final Map<int, GlobalKey> _previewKeys = {};
 
   //preview data list
-  final List<Widget> _previewWidgetList = [];
+  final Map<int, Widget> _previewWidgetList = {};
 
   //offset preview completer
   Completer<PreviewModel?>? _offsetPreviewCompleter;
@@ -156,6 +156,12 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
 
       ///clear preview completer
       widget.controller._offsetPreviewCompleter = null;
+      widget.controller._previewCount = 0;
+      widget.controller._previewReverse = false;
+      widget.controller._previewExtent = 0;
+      if (mounted) {
+        setState(() {});
+      }
 
       ///complete
       completer.complete(previewModel);
@@ -165,31 +171,31 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
   @override
   Widget build(BuildContext context) {
     _checkPreviewHeight();
-    return Visibility(
-      visible: false,
-      maintainSize: true,
-      maintainAnimation: true,
-      maintainState: true,
-      maintainSemantics: true,
-      child: ListView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: widget.controller._previewCount,
-        cacheExtent: widget.controller._previewExtent,
-        itemBuilder: (context, index) {
-          int trueIndex = widget.controller._previewReverse
-              ? (widget.controller._previewCount - 1 - index)
-              : index;
-          Widget item =
-              widget.itemBuilder(context, trueIndex) ?? const SizedBox();
-          widget.controller._previewWidgetList[trueIndex] = item;
-          widget.controller._previewKeys[trueIndex] = GlobalKey();
-          return SizedBox(
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: widget.controller._previewCount,
+      cacheExtent: widget.controller._previewExtent,
+      itemBuilder: (context, index) {
+        int trueIndex = widget.controller._previewReverse
+            ? (widget.controller._previewCount - 1 - index)
+            : index;
+        Widget item =
+            widget.itemBuilder(context, trueIndex) ?? const SizedBox();
+        widget.controller._previewWidgetList[trueIndex] = item;
+        widget.controller._previewKeys[trueIndex] = GlobalKey();
+        return Visibility(
+          visible: false,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainState: true,
+          maintainSemantics: true,
+          child: SizedBox(
             key: widget.controller._previewKeys[trueIndex],
             child: item,
-          );
-        },
-        padding: widget.padding,
-      ),
+          ),
+        );
+      },
+      padding: widget.padding,
     );
   }
 }
