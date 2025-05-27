@@ -1,3 +1,3 @@
-## 1.2.34
+## 1.2.35
 
-* Bugs fixed which item used hero tag.
+* Bugs fixed which may cause wrong shrinkWrap height.
