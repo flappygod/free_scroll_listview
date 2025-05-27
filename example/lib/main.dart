@@ -53,12 +53,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     List<String> dataList = [];
-    for (int s = 0; s < 20; s++) {
+    for (int s = 0; s < 5; s++) {
       dataList.add((s).toString());
     }
     _controller.setDataAndScrollTo(
       dataList,
-      index: 12,
+      index: 4,
       duration: Duration.zero,
       align: FreeScrollType.directJumpTo,
     );
@@ -94,8 +94,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return _controller.setDataAndScrollTo(
       dataList.toList(),
       index: 94,
-      /*duration: Duration.zero,
-      align: FreeScrollAlign.directJumpTo,*/
+      duration: Duration.zero,
+      align: FreeScrollType.directJumpTo,
     );
   }
 

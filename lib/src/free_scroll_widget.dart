@@ -1,5 +1,4 @@
 import 'package:free_scroll_listview/src/free_scroll_throttller.dart';
-import 'package:free_scroll_listview/src/free_scroll_observe.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:flutter/foundation.dart';
@@ -31,6 +30,15 @@ const double negativeInfinityValue = -100000000.0;
 
 ///free scroll listview controller
 class FreeScrollListViewController<T> extends ScrollController {
+  //global key
+  final GlobalKey _listViewKey = GlobalKey();
+
+  //header key
+  final GlobalKey _headerKey = GlobalKey();
+
+  //footer key
+  final GlobalKey _footerKey = GlobalKey();
+
   //lock
   final Lock _lock = Lock();
 
@@ -57,14 +65,8 @@ class FreeScrollListViewController<T> extends ScrollController {
   final SplayTreeMap<int, RectHolder> _itemsRectHolder =
       SplayTreeMap<int, RectHolder>();
 
-  //header view height
-  double _headerViewHeight = 0;
-
   //negative height total
   double _negativeHeight = negativeInfinityValue;
-
-  //global key
-  final GlobalKey _listViewKey = GlobalKey();
 
   //current index
   int _currentStartIndex = -1;
@@ -146,18 +148,16 @@ class FreeScrollListViewController<T> extends ScrollController {
     return box?.localToGlobal(Offset.zero).dy ?? 0.0;
   }
 
-  /// Notify negative height
-  void _setHeaderViewHeight(double height) {
-    _headerViewHeight = height.removeTinyFraction();
-    if (hasClients && position is _NegativedScrollPosition) {
-      final negativedPosition = position as _NegativedScrollPosition;
-      if (_negativeHeight == negativeInfinityValue) {
-        negativedPosition.minScrollExtend = _negativeHeight;
-      } else {
-        negativedPosition.minScrollExtend =
-            (_negativeHeight - _headerViewHeight).removeTinyFraction();
-      }
-    }
+  ///get header view height
+  double get headerViewHeight {
+    final box = _headerKey.currentContext?.findRenderObject() as RenderBox?;
+    return box?.size.height ?? 0.0;
+  }
+
+  ///get footer view height
+  double get footerViewHeight {
+    final box = _footerKey.currentContext?.findRenderObject() as RenderBox?;
+    return box?.size.height ?? 0.0;
   }
 
   ///correct negative height
@@ -176,7 +176,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         negativedPosition.minScrollExtend = _negativeHeight;
       } else {
         negativedPosition.minScrollExtend =
-            (_negativeHeight - _headerViewHeight).removeTinyFraction();
+            (_negativeHeight - headerViewHeight).removeTinyFraction();
       }
     }
   }
@@ -192,13 +192,13 @@ class FreeScrollListViewController<T> extends ScrollController {
   void notifyItemRectShowOnScreen(int index) {
     ///check when animating
     _checkResetCurrentIndex();
-    _checkResetScrollExtend();
+    _checkResetMinScrollExtend();
     _checkDeleteLastItem(index);
   }
 
-  ///reset index when animating
+  ///reset index when animating,this is triggered by when jump index has no enough positive space to lay on one screen.
   void _checkResetCurrentIndex() {
-    ///when animating
+    ///when not animating,return
     if (!_isAnimating) {
       return;
     }
@@ -256,7 +256,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///check reset scroll extend
-  void _checkResetScrollExtend() {
+  void _checkResetMinScrollExtend() {
     //Do nothing if _itemsRectHolder is empty
     if (_itemsRectHolder.isEmpty) {
       return;
@@ -573,7 +573,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       );
     } else {
       return _handleAnimation(animateTo(
-        _negativeHeight - _headerViewHeight,
+        _negativeHeight - headerViewHeight,
         duration: duration,
         curve: curve,
       ));
@@ -588,7 +588,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         align: FreeScrollType.directJumpTo,
       );
     } else {
-      jumpTo(_negativeHeight - _headerViewHeight);
+      jumpTo(_negativeHeight - headerViewHeight);
     }
   }
 
@@ -766,7 +766,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
           ///no enough space
           if (height - anchorOffset - listviewHeight < 0) {
-            double testHeight = 0;
+            double testHeight = headerViewHeight;
             int testIndex = 0;
             double testOffset = 0;
 
@@ -1074,7 +1074,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
       ///only top to bottom need this
       int maxIndex = widget.controller._dataList.length - 1;
-      if (data.align == FreeScrollType.topToBottom &&
+      if (data.type == FreeScrollType.topToBottom &&
           offsetTo > maxScrollExtent &&
           maxScrollExtent != double.maxFinite &&
           widget.controller.hasClients &&
@@ -1130,6 +1130,11 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       oldWidget.controller.removeASyncActionListener(_aSyncListener);
       widget.controller.addSyncActionListener(_syncListener);
       widget.controller.addASyncActionListener(_aSyncListener);
+    }
+    if (widget.controller.hasClients &&
+        widget.controller.position.hasPixels &&
+        widget.controller.position.maxScrollExtent == 0) {
+      widget.controller._resetIndexIfNeeded();
     }
     widget.controller._resetIndexIfNeeded();
     _initHeight();
@@ -1300,14 +1305,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   ///header
   Widget _buildHeader() {
     return SliverToBoxAdapter(
-      child: Visibility(
-        visible: widget.controller._dataListOffset == 0,
-        child: ObserveHeightWidget(
-          child: widget.headerView ?? const SizedBox(),
-          listener: (size) {
-            widget.controller._setHeaderViewHeight(size.height);
-          },
-        ),
+      child: SizedBox(
+        key: widget.controller._headerKey,
+        child: widget.headerView ?? const SizedBox(),
       ),
     );
   }
@@ -1315,7 +1315,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   ///footer
   Widget _buildFooter() {
     return SliverToBoxAdapter(
-      child: widget.footerView,
+      child: SizedBox(
+        key: widget.controller._footerKey,
+        child: widget.footerView ?? const SizedBox(),
+      ),
     );
   }
 
@@ -1340,18 +1343,18 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       _timeStampDebouncer.run(widget.willReachHead);
     }
 
-    ///动画过程中不需要处理
+    ///when animating do noting
     if (widget.controller.isAnimating) {
       return false;
     }
 
-    ///滚动结束的时候检查是否到达最大
+    ///scroll end, check need reset index or not
     if (notification is ScrollEndNotification) {
       widget.controller._resetIndexIfNeeded();
       _notifyOnShow();
     }
 
-    ///滚动结束的时候检查是否到达最大
+    ///notify the on show
     if ((notification is ScrollUpdateNotification &&
             widget.notifyItemShowWhenGestureScroll &&
             notification.dragDetails != null) ||
@@ -1365,7 +1368,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       }
     }
 
-    ///通知Index
+    ///notify index
     if (notification is ScrollUpdateNotification ||
         notification is ScrollEndNotification) {
       _notifyIndex();
@@ -1422,7 +1425,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     ///get sorted key
     List<int> sortedKeys = widget.controller._itemsRectHolder.keys.toList();
 
-    ///开始
+    ///start index
     for (int key in sortedKeys) {
       RectHolder? holder = widget.controller._itemsRectHolder[key];
       if (holder == null || !holder.isOnScreen) {
@@ -1445,7 +1448,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       }
     }
 
-    ///开始
+    ///end index
     for (int s = sortedKeys.length - 1; s >= 0; s--) {
       int key = sortedKeys[s];
       RectHolder? holder = widget.controller._itemsRectHolder[key];

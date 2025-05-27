@@ -60,14 +60,14 @@ class AnimationData {
   late Curve curve;
   late double startPosition;
   late double endPosition;
-  late FreeScrollType align;
+  late FreeScrollType type;
 
   AnimationData(
     this.duration,
     this.curve,
     this.startPosition,
     this.endPosition,
-    this.align,
+    this.type,
   );
 }
 
