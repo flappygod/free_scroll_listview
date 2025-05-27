@@ -757,7 +757,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         double listviewHeight = listViewHeight;
 
         ///previewed
-        if (previewModel != null) {
+        if (previewModel != null && previewModel.itemHeights[index] != null) {
           ///get height remain
           double height = 0;
           for (int s = dataList.length - 1; s >= index; s--) {
