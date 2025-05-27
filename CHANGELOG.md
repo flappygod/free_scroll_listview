@@ -1,3 +1,3 @@
-## 1.2.32
+## 1.2.33
 
-* Bugs fixed int directJump.
+* remove un need .
