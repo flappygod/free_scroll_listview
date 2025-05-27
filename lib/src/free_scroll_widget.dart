@@ -1249,13 +1249,14 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                         ),
 
                         ///negative
-                        Viewport(
-                          axisDirection: flipAxisDirection(axisDirection),
-                          anchor: 1.0,
-                          offset: negativeOffset,
-                          cacheExtent: widget.cacheExtent,
-                          slivers: sliverNegative,
-                        ),
+                        if (widget.controller._dataListOffset > 0)
+                          Viewport(
+                            axisDirection: flipAxisDirection(axisDirection),
+                            anchor: 1.0,
+                            offset: negativeOffset,
+                            cacheExtent: widget.cacheExtent,
+                            slivers: sliverNegative,
+                          ),
 
                         ///positive
                         ShrinkWrappingViewport(
