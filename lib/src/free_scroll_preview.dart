@@ -189,9 +189,12 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
           maintainAnimation: true,
           maintainState: true,
           maintainSemantics: true,
-          child: SizedBox(
-            key: widget.controller._previewKeys[trueIndex],
-            child: item,
+          child: HeroMode(
+            enabled: false,
+            child: SizedBox(
+              key: widget.controller._previewKeys[trueIndex],
+              child: item,
+            ),
           ),
         );
       },
