@@ -1135,7 +1135,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         widget.controller.position.maxScrollExtent == 0) {
       widget.controller._resetIndexIfNeeded();
     }
-    widget.controller._resetIndexIfNeeded();
     _initHeight();
     super.didUpdateWidget(oldWidget);
   }
