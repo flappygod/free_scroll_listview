@@ -53,12 +53,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     List<String> dataList = [];
-    for (int s = 0; s < 5; s++) {
+    for (int s = 0; s < 100; s++) {
       dataList.add((s).toString());
     }
     _controller.setDataAndScrollTo(
       dataList,
-      index: 4,
+      index: 97,
       duration: Duration.zero,
       align: FreeScrollType.directJumpTo,
     );

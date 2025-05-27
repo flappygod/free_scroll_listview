@@ -1489,7 +1489,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   double _minScrollExtend = negativeInfinityValue;
 
   ///callback
-  late VoidCallback _callback;
+  /*late VoidCallback _callback;*/
 
   _NegativedScrollPosition({
     required super.physics,
@@ -1508,16 +1508,17 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     }
     _minScrollExtend = data;
 
-    ///add listener
+    /*///add listener
     _callback = () {
       if (hasPixels &&
           _minScrollExtend != negativeInfinityValue &&
-          pixels < _minScrollExtend - 100) {
+          pixels < _minScrollExtend - 100 &&
+          maxScrollExtent > 0) {
         jumpTo(_minScrollExtend - 100);
       }
     };
     removeListener(_callback);
-    addListener(_callback);
+    addListener(_callback);*/
   }
 
   ///min scroll extend
@@ -1533,7 +1534,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   }
 
   @override
-  double get minScrollExtent => _minScrollExtend;
+  double get minScrollExtent => min(_minScrollExtend, maxScrollExtent);
 }
 
 ///wait
