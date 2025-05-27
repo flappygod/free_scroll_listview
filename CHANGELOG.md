@@ -1,3 +1,3 @@
-## 1.2.31
+## 1.2.32
 
-* add addRepaintBoundary param and set default to false.
+* Bugs fixed int directJump.
