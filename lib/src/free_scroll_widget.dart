@@ -982,9 +982,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         case FreeScrollActionSyncType.notifyAnimOffset:
           _animationOffset = data;
           break;
-
-        default:
-          break;
       }
     };
     _aSyncListener = (
@@ -1005,8 +1002,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
               _notifyOnShow();
             }
           });
-          break;
-        default:
           break;
       }
     };
@@ -1489,7 +1484,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   double _minScrollExtend = negativeInfinityValue;
 
   ///callback
-  /*late VoidCallback _callback;*/
+  late VoidCallback _callback;
 
   _NegativedScrollPosition({
     required super.physics,
@@ -1508,17 +1503,18 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     }
     _minScrollExtend = data;
 
-    /*///add listener
+    ///add listener
     _callback = () {
-      if (hasPixels &&
-          _minScrollExtend != negativeInfinityValue &&
-          pixels < _minScrollExtend - 100 &&
-          maxScrollExtent > 0) {
-        jumpTo(_minScrollExtend - 100);
+      if (!hasPixels ||
+          _minScrollExtend == negativeInfinityValue ||
+          pixels > _minScrollExtend - 100 ||
+          minScrollExtend > maxScrollExtent) {
+        return;
       }
+      jumpTo(min(_minScrollExtend - 100, 0));
     };
     removeListener(_callback);
-    addListener(_callback);*/
+    addListener(_callback);
   }
 
   ///min scroll extend
