@@ -1,3 +1,3 @@
-## 1.2.28
+## 1.2.29
 
-* Check for existing issues using gpt.
+* Fix bugs when set shrinkWarp true.
