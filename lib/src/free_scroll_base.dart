@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
 ///free scroll listview action type
-enum FreeScrollListViewActionType {
-  notifyData,
+enum FreeScrollActionAsyncType {
   notifyAnimStart,
+  notifyJump,
+}
+
+///free scroll listview action type
+enum FreeScrollActionSyncType {
+  notifyData,
   notifyAnimStop,
   notifyAnimOffset,
-  notifyJump,
 }
 
 ///time stamp debouncer
@@ -44,13 +48,6 @@ extension IterableExtensions<E> on Iterable<E> {
 ///will reach callback
 typedef WillReachCallback = Future Function();
 
-///offset rect list
-void offsetRectList(Map<int, Rect> rectMap, double offset) {
-  rectMap.updateAll((key, rect) {
-    return rect.shift(Offset(0, offset));
-  });
-}
-
 ///on item show
 typedef FreeScrollOnItemShow = void Function(List<int> data);
 
@@ -63,7 +60,7 @@ class AnimationData {
   late Curve curve;
   late double startPosition;
   late double endPosition;
-  late FreeScrollAlign align;
+  late FreeScrollType align;
 
   AnimationData(
     this.duration,
@@ -75,7 +72,7 @@ class AnimationData {
 }
 
 ///free scroll align
-enum FreeScrollAlign {
+enum FreeScrollType {
   topToBottom,
   bottomToTop,
   directJumpTo,

@@ -14,15 +14,15 @@ import 'dart:collection';
 import 'dart:async';
 import 'dart:math';
 
-///addition controller
+///async listeners
 typedef FreeScrollListASyncListener = Future Function(
-  FreeScrollListViewActionType type, {
+  FreeScrollActionAsyncType type, {
   dynamic data,
 });
 
-///addition controller
+///sync listeners
 typedef FreeScrollListSyncListener = void Function(
-  FreeScrollListViewActionType type, {
+  FreeScrollActionSyncType type, {
   dynamic data,
 });
 
@@ -248,10 +248,10 @@ class FreeScrollListViewController<T> extends ScrollController {
     _itemsRectHolder.clear();
     _correctNegativeHeight(needChangeOffset);
     notifyActionSyncListeners(
-      FreeScrollListViewActionType.notifyAnimOffset,
+      FreeScrollActionSyncType.notifyAnimOffset,
       data: needChangeOffset,
     );
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+    notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
     position.correctBy(needChangeOffset);
   }
 
@@ -360,10 +360,10 @@ class FreeScrollListViewController<T> extends ScrollController {
     _itemsRectHolder.clear();
     _correctNegativeHeight(needChangeOffset);
     notifyActionSyncListeners(
-      FreeScrollListViewActionType.notifyAnimOffset,
+      FreeScrollActionSyncType.notifyAnimOffset,
       data: needChangeOffset,
     );
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+    notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
     position.jumpTo(position.pixels + needChangeOffset);
   }
 
@@ -407,7 +407,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///notify listeners
   void notifyActionSyncListeners(
-    FreeScrollListViewActionType event, {
+    FreeScrollActionSyncType event, {
     dynamic data,
   }) async {
     List<FreeScrollListSyncListener> listeners = List.from(_syncListeners);
@@ -424,7 +424,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///notify listeners
   Future<void> notifyActionASyncListeners(
-    FreeScrollListViewActionType event, {
+    FreeScrollActionAsyncType event, {
     dynamic data,
   }) async {
     List<FreeScrollListASyncListener> listeners = List.from(_asyncListeners);
@@ -461,7 +461,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataList.clear();
       _dataList.addAll(dataList);
       _dataListOffset = 0;
-      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
     }
 
     ///set data if is init
@@ -471,7 +471,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataList.clear();
       _dataList.addAll(dataList);
       _dataListOffset = min(_dataListOffset, dataList.length);
-      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
     }
   }
 
@@ -480,7 +480,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     assert(index >= 0 && index < dataList.length);
     _dataList[index] = t;
     _itemsRectHolder.clear();
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+    notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
   }
 
   ///add data to tail
@@ -488,7 +488,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _lock.synchronized(() async {
       _dataList.addAll(dataList);
       _itemsRectHolder.clear();
-      notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
     });
   }
 
@@ -522,14 +522,14 @@ class FreeScrollListViewController<T> extends ScrollController {
         }
 
         ///notify data
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+        notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       } else {
         _dataList.insertAll(0, dataList);
         _dataListOffset = _dataListOffset + dataList.length;
         _itemsRectHolder.clear();
 
         ///notify data
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+        notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       }
     });
   }
@@ -538,7 +538,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   Future setDataAndScrollTo(
     List<T> dataList, {
     int index = 0,
-    FreeScrollAlign align = FreeScrollAlign.topToBottom,
+    FreeScrollType align = FreeScrollType.topToBottom,
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
@@ -567,7 +567,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     if (_negativeHeight == negativeInfinityValue) {
       return scrollToIndexSkipAlign(
         0,
-        align: FreeScrollAlign.bottomToTop,
+        align: FreeScrollType.bottomToTop,
         curve: curve,
         duration: duration,
       );
@@ -585,7 +585,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     if (_negativeHeight == negativeInfinityValue) {
       scrollToIndexSkipAlign(
         0,
-        align: FreeScrollAlign.directJumpTo,
+        align: FreeScrollType.directJumpTo,
       );
     } else {
       jumpTo(_negativeHeight - _headerViewHeight);
@@ -623,8 +623,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
 
     ///notify data
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
-    notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+    notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
+    notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
     await waitForPostFrameCallback();
 
     ///all visible items refresh
@@ -650,7 +650,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///if index is not exists
     else {
       ///get align
-      FreeScrollAlign align = FreeScrollAlign.topToBottom;
+      FreeScrollType align = FreeScrollType.topToBottom;
       List<int> keys = _itemsRectHolder.keys.toList();
 
       if (keys.isEmpty) {
@@ -673,9 +673,9 @@ class FreeScrollListViewController<T> extends ScrollController {
 
       ///first
       if (index < currentIndex || index == 0) {
-        align = FreeScrollAlign.bottomToTop;
+        align = FreeScrollType.bottomToTop;
       } else {
-        align = FreeScrollAlign.topToBottom;
+        align = FreeScrollType.topToBottom;
       }
 
       return scrollToIndexSkipAlign(
@@ -691,7 +691,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///scroll to index just by align
   Future scrollToIndexSkipAlign(
     int index, {
-    required FreeScrollAlign align,
+    required FreeScrollType align,
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
@@ -699,14 +699,14 @@ class FreeScrollListViewController<T> extends ScrollController {
     assert(index >= 0 && index < dataList.length);
 
     switch (align) {
-      case FreeScrollAlign.bottomToTop:
+      case FreeScrollType.bottomToTop:
 
         ///Clear existing data and cached maps
         _setNegativeHeight(negativeInfinityValue);
         _itemsRectHolder.clear();
         _dataListOffset = index;
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+        notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
+        notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         await waitForPostFrameCallback();
 
         AnimationData data = AnimationData(
@@ -714,22 +714,22 @@ class FreeScrollListViewController<T> extends ScrollController {
           curve,
           listViewHeight + anchorOffset,
           0 + anchorOffset,
-          FreeScrollAlign.bottomToTop,
+          FreeScrollType.bottomToTop,
         );
 
         ///start animation
         return _handleAnimation(notifyActionASyncListeners(
-          FreeScrollListViewActionType.notifyAnimStart,
+          FreeScrollActionAsyncType.notifyAnimStart,
           data: data,
         ));
-      case FreeScrollAlign.topToBottom:
+      case FreeScrollType.topToBottom:
 
         ///Clear existing data and cached maps
         _setNegativeHeight(negativeInfinityValue);
         _itemsRectHolder.clear();
         _dataListOffset = index;
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+        notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
+        notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         await waitForPostFrameCallback();
 
         AnimationData data = AnimationData(
@@ -737,15 +737,15 @@ class FreeScrollListViewController<T> extends ScrollController {
           curve,
           -listViewHeight + anchorOffset,
           0 + anchorOffset,
-          FreeScrollAlign.topToBottom,
+          FreeScrollType.topToBottom,
         );
 
         ///start animation
         return _handleAnimation(notifyActionASyncListeners(
-          FreeScrollListViewActionType.notifyAnimStart,
+          FreeScrollActionAsyncType.notifyAnimStart,
           data: data,
         ));
-      case FreeScrollAlign.directJumpTo:
+      case FreeScrollType.directJumpTo:
 
         ///preview data model
         PreviewModel? previewModel =
@@ -784,15 +784,14 @@ class FreeScrollListViewController<T> extends ScrollController {
             _setNegativeHeight(negativeInfinityValue);
             _itemsRectHolder.clear();
             _dataListOffset = testIndex;
-            notifyActionSyncListeners(
-                FreeScrollListViewActionType.notifyAnimStop);
-            notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+            notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
+            notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
             if (hasClients && position.hasPixels) {
               jumpTo(testOffset);
             }
             await waitForPostFrameCallback();
             return notifyActionASyncListeners(
-              FreeScrollListViewActionType.notifyJump,
+              FreeScrollActionAsyncType.notifyJump,
             );
           }
         }
@@ -801,14 +800,14 @@ class FreeScrollListViewController<T> extends ScrollController {
         _setNegativeHeight(negativeInfinityValue);
         _itemsRectHolder.clear();
         _dataListOffset = index;
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyAnimStop);
-        notifyActionSyncListeners(FreeScrollListViewActionType.notifyData);
+        notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
+        notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         if (hasClients && position.hasPixels) {
           jumpTo(anchorOffset);
         }
         await waitForPostFrameCallback();
         return notifyActionASyncListeners(
-          FreeScrollListViewActionType.notifyJump,
+          FreeScrollActionAsyncType.notifyJump,
         );
     }
   }
@@ -820,7 +819,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _isAnimating = false;
       _resetIndexIfNeeded();
       notifyActionASyncListeners(
-        FreeScrollListViewActionType.notifyJump,
+        FreeScrollActionAsyncType.notifyJump,
       );
     });
   }
@@ -958,19 +957,19 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   ///init listener
   void _initListener() {
     _syncListener = (
-      FreeScrollListViewActionType event, {
+      FreeScrollActionSyncType event, {
       dynamic data,
     }) {
       switch (event) {
         ///set state
-        case FreeScrollListViewActionType.notifyData:
+        case FreeScrollActionSyncType.notifyData:
           if (mounted) {
             setState(() {});
           }
           break;
 
         ///stop animation
-        case FreeScrollListViewActionType.notifyAnimStop:
+        case FreeScrollActionSyncType.notifyAnimStop:
           _cancelAnimation();
           if (widget.controller.hasClients &&
               widget.controller.position.hasPixels) {
@@ -980,7 +979,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           break;
 
         ///start animation
-        case FreeScrollListViewActionType.notifyAnimOffset:
+        case FreeScrollActionSyncType.notifyAnimOffset:
           _animationOffset = data;
           break;
 
@@ -989,17 +988,17 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       }
     };
     _aSyncListener = (
-      FreeScrollListViewActionType event, {
+      FreeScrollActionAsyncType event, {
       dynamic data,
     }) async {
       switch (event) {
         ///start animation
-        case FreeScrollListViewActionType.notifyAnimStart:
+        case FreeScrollActionAsyncType.notifyAnimStart:
           await _startAnimation(data);
           break;
 
         ///start animation
-        case FreeScrollListViewActionType.notifyJump:
+        case FreeScrollActionAsyncType.notifyJump:
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               _notifyIndex();
@@ -1075,7 +1074,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
       ///only top to bottom need this
       int maxIndex = widget.controller._dataList.length - 1;
-      if (data.align == FreeScrollAlign.topToBottom &&
+      if (data.align == FreeScrollType.topToBottom &&
           offsetTo > maxScrollExtent &&
           maxScrollExtent != double.maxFinite &&
           widget.controller.hasClients &&

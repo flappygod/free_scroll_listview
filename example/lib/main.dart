@@ -60,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
       dataList,
       index: 12,
       duration: Duration.zero,
-      align: FreeScrollAlign.directJumpTo,
+      align: FreeScrollType.directJumpTo,
     );
     super.initState();
   }
