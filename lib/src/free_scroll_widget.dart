@@ -906,6 +906,9 @@ class FreeScrollListView<T> extends StatefulWidget {
   ///end index changed
   final FreeScrollOnIndexChange? onEndIndexChange;
 
+  ///add repaint boundary or not
+  final bool addRepaintBoundary;
+
   const FreeScrollListView({
     super.key,
     required this.controller,
@@ -927,6 +930,7 @@ class FreeScrollListView<T> extends StatefulWidget {
     this.notifyItemShowWhenGestureScroll = false,
     this.notifyItemShowWhenAllTypeScroll = false,
     this.notifyItemShowThrottlerDuration = const Duration(milliseconds: 120),
+    this.addRepaintBoundary = false,
   });
 
   @override
@@ -1200,6 +1204,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                         listViewState: this,
                         controller: widget.controller,
                         rectHolder: rectHolder,
+                        addRepaintBoundary: widget.addRepaintBoundary,
                         child: widget.builder(context, actualIndex),
                       );
                     },
@@ -1225,6 +1230,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                         listViewState: this,
                         controller: widget.controller,
                         rectHolder: rectHolder,
+                        addRepaintBoundary: widget.addRepaintBoundary,
                         child: widget.builder(context, actualIndex),
                       );
                     },

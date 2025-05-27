@@ -9,6 +9,7 @@ class AnchorItemWrapper extends StatefulWidget {
     required this.controller,
     required this.rectHolder,
     this.reverse = false,
+    this.addRepaintBoundary = false,
     this.listViewState,
     this.child,
     super.key,
@@ -31,6 +32,9 @@ class AnchorItemWrapper extends StatefulWidget {
 
   //reverse
   final bool reverse;
+
+  //add repaint boundary
+  final bool addRepaintBoundary;
 
   @override
   AnchorItemWrapperState createState() => AnchorItemWrapperState();
@@ -175,8 +179,12 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: widget.child ?? const SizedBox(),
-    );
+    if (widget.addRepaintBoundary) {
+      return RepaintBoundary(
+        child: widget.child ?? const SizedBox(),
+      );
+    } else {
+      return widget.child ?? const SizedBox();
+    }
   }
 }

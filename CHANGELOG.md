@@ -1,3 +1,3 @@
-## 1.2.30
+## 1.2.31
 
-* Fix bugs that may cause overscroll.
+* add addRepaintBoundary param and set default to false.
