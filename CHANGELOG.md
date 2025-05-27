@@ -1,3 +1,3 @@
 ## 1.2.33
 
-* remove un need .
+* Bugs fixed in add data to head.
