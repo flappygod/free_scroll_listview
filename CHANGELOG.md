@@ -1,3 +1,3 @@
-## 1.2.33
+## 1.2.34
 
-* Bugs fixed in add data to head.
+* Bugs fixed which item used hero tag.
