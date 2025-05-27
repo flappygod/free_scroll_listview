@@ -175,6 +175,7 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
       physics: const NeverScrollableScrollPhysics(),
       itemCount: widget.controller._previewCount,
       cacheExtent: widget.controller._previewExtent,
+      shrinkWrap: true,
       itemBuilder: (context, index) {
         int trueIndex = widget.controller._previewReverse
             ? (widget.controller._previewCount - 1 - index)
