@@ -1,3 +1,3 @@
-## 1.2.29
+## 1.2.30
 
-* Fix bugs when set shrinkWarp true.
+* Fix bugs that may cause overscroll.
