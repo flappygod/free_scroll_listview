@@ -617,8 +617,20 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     assert(index >= 0 && index < dataList.length);
 
+    ///no clients
     if (!hasClients) {
       return;
+    }
+
+    ///time is not enough
+    if (duration.inMilliseconds < 50) {
+      return scrollToIndexSkipAlign(
+        index,
+        align: FreeScrollType.directJumpTo,
+        curve: curve,
+        duration: duration,
+        anchorOffset: anchorOffset,
+      );
     }
 
     ///notify data

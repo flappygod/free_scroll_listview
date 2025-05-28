@@ -53,14 +53,14 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     List<String> dataList = [];
-    for (int s = 0; s < 5; s++) {
+    for (int s = 0; s < 100; s++) {
       dataList.add((s).toString());
     }
     _controller.setDataAndScrollTo(
       dataList,
-      index: 4,
-/*      duration: Duration.zero,
-      align: FreeScrollType.directJumpTo,*/
+      index: 50,
+      duration: Duration.zero,
+      align: FreeScrollType.directJumpTo,
     );
     super.initState();
   }
@@ -129,7 +129,9 @@ class _MyHomePageState extends State<MyHomePage> {
               behavior: HitTestBehavior.translucent,
               onTap: () {
                 _controller.scrollToIndex(
-                  99,
+                  96,
+                  duration: const Duration(milliseconds: 30),
+                  //align: FreeScrollType.directJumpTo,
                 );
               },
               child: Container(
