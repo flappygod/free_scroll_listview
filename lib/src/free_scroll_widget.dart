@@ -567,6 +567,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       return scrollToIndexSkipAlign(
         0,
         align: FreeScrollType.bottomToTop,
+        anchorOffset: -headerViewHeight,
         curve: curve,
         duration: duration,
       );
@@ -585,9 +586,12 @@ class FreeScrollListViewController<T> extends ScrollController {
       scrollToIndexSkipAlign(
         0,
         align: FreeScrollType.directJumpTo,
+        anchorOffset: -headerViewHeight,
       );
     } else {
-      jumpTo(_negativeHeight - headerViewHeight);
+      jumpTo(
+        _negativeHeight - headerViewHeight,
+      );
     }
   }
 
@@ -709,6 +713,10 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     assert(index >= 0 && index < dataList.length);
 
+    ///header view height
+    double trueAnchorOffset =
+        (index == 0) ? (anchorOffset + headerViewHeight) : anchorOffset;
+
     switch (align) {
       case FreeScrollType.bottomToTop:
 
@@ -723,8 +731,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         AnimationData data = AnimationData(
           duration,
           curve,
-          listViewHeight + anchorOffset,
-          0 + anchorOffset,
+          listViewHeight + trueAnchorOffset,
+          0 + trueAnchorOffset,
           FreeScrollType.bottomToTop,
         );
 
@@ -746,8 +754,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         AnimationData data = AnimationData(
           duration,
           curve,
-          -listViewHeight + anchorOffset,
-          0 + anchorOffset,
+          -listViewHeight + trueAnchorOffset,
+          0 + trueAnchorOffset,
           FreeScrollType.topToBottom,
         );
 
@@ -763,7 +771,7 @@ class FreeScrollListViewController<T> extends ScrollController {
             await _previewController.previewItemsHeight(
           dataList.length,
           previewReverse: true,
-          previewExtent: anchorOffset.abs(),
+          previewExtent: max(0, trueAnchorOffset),
         );
         double listviewHeight = listViewHeight;
 
@@ -776,7 +784,7 @@ class FreeScrollListViewController<T> extends ScrollController {
           }
 
           ///no enough space
-          if (height - anchorOffset - listviewHeight < 0) {
+          if (height - trueAnchorOffset - listviewHeight < 0) {
             double testHeight = footerViewHeight;
             int testIndex = 0;
             double testOffset = 0;
@@ -814,7 +822,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         if (hasClients && position.hasPixels) {
-          jumpTo(anchorOffset);
+          jumpTo(trueAnchorOffset);
         }
         await waitForPostFrameCallback();
         return notifyActionASyncListeners(
