@@ -1355,10 +1355,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     }
 
     ///notify the on show
-    if ((notification is ScrollUpdateNotification &&
-            widget.notifyItemShowWhenGestureScroll &&
-            notification.dragDetails != null) ||
-        widget.notifyItemShowWhenAllTypeScroll) {
+    if ((notification is ScrollUpdateNotification) &&
+        (widget.notifyItemShowWhenAllTypeScroll ||
+            (widget.notifyItemShowWhenGestureScroll &&
+                notification.dragDetails != null))) {
       if (_throttler.duration == Duration.zero) {
         _notifyOnShow();
       } else {

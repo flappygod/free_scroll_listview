@@ -15,25 +15,21 @@ enum FreeScrollActionSyncType {
 
 ///time stamp debouncer
 class TimeStampDebouncer {
+  //is action
   bool _isAction = false;
 
   TimeStampDebouncer();
 
   void run(WillReachCallback? action) {
-    if (_isAction) {
+    if (action == null || _isAction) {
       return;
-    } else {
-      _isAction = true;
-      if (action != null) {
-        action().then((_) {
-          _isAction = false;
-        }).catchError((error) {
-          _isAction = false;
-        });
-      } else {
-        _isAction = false;
-      }
     }
+    _isAction = true;
+    action().then((_) {
+      _isAction = false;
+    }).catchError((error) {
+      _isAction = false;
+    });
   }
 }
 
