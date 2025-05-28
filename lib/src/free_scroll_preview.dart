@@ -189,10 +189,17 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
                 widget.itemBuilder(context, trueIndex) ?? const SizedBox();
             widget.controller._previewWidgetList[trueIndex] = item;
             widget.controller._previewKeys[trueIndex] = GlobalKey();
-            return HeroMode(
-              key: widget.controller._previewKeys[trueIndex],
-              enabled: false,
-              child: item,
+            return Visibility(
+              visible: false,
+              maintainSize: true,
+              maintainAnimation: true,
+              maintainState: true,
+              maintainSemantics: true,
+              child: HeroMode(
+                key: widget.controller._previewKeys[trueIndex],
+                enabled: false,
+                child: item,
+              ),
             );
           },
           padding: widget.padding,
