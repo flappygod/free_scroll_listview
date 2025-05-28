@@ -1,3 +1,3 @@
-## 1.2.36
+## 1.2.37
 
-* Change scrollToIndexSkipAlign method to compact headerView and footerView.
+* Fix a bug in free_scroll_preview.
