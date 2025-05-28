@@ -130,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 _controller.scrollToIndex(
                   96,
-                  duration: const Duration(milliseconds: 30),
+                  duration: const Duration(milliseconds: 300),
                   //align: FreeScrollType.directJumpTo,
                 );
               },
