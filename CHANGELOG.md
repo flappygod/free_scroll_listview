@@ -1,3 +1,3 @@
-## 1.2.35
+## 1.2.36
 
-* Bugs fixed which may cause wrong shrinkWrap height.
+* Change scrollToIndexSkipAlign method to compact headerView and footerView.
