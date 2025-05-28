@@ -171,35 +171,33 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
   @override
   Widget build(BuildContext context) {
     _checkPreviewHeight();
-    return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: widget.controller._previewCount,
-      cacheExtent: widget.controller._previewExtent,
-      shrinkWrap: true,
-      itemBuilder: (context, index) {
-        int trueIndex = widget.controller._previewReverse
-            ? (widget.controller._previewCount - 1 - index)
-            : index;
-        Widget item =
-            widget.itemBuilder(context, trueIndex) ?? const SizedBox();
-        widget.controller._previewWidgetList[trueIndex] = item;
-        widget.controller._previewKeys[trueIndex] = GlobalKey();
-        return Visibility(
-          visible: false,
-          maintainSize: true,
-          maintainAnimation: true,
-          maintainState: true,
-          maintainSemantics: true,
-          child: HeroMode(
-            enabled: false,
-            child: SizedBox(
+    return SizedBox(
+      height: 0.01,
+      width: double.infinity,
+      child: OverflowBox(
+        minHeight: MediaQuery.of(context).size.height,
+        maxHeight: MediaQuery.of(context).size.height,
+        child: ListView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: widget.controller._previewCount,
+          cacheExtent: widget.controller._previewExtent,
+          itemBuilder: (context, index) {
+            int trueIndex = widget.controller._previewReverse
+                ? (widget.controller._previewCount - 1 - index)
+                : index;
+            Widget item =
+                widget.itemBuilder(context, trueIndex) ?? const SizedBox();
+            widget.controller._previewWidgetList[trueIndex] = item;
+            widget.controller._previewKeys[trueIndex] = GlobalKey();
+            return HeroMode(
               key: widget.controller._previewKeys[trueIndex],
+              enabled: false,
               child: item,
-            ),
-          ),
-        );
-      },
-      padding: widget.padding,
+            );
+          },
+          padding: widget.padding,
+        ),
+      ),
     );
   }
 }

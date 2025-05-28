@@ -58,10 +58,15 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     _controller.setDataAndScrollTo(
       dataList,
-      index: 50,
+      index: 93,
       duration: Duration.zero,
       align: FreeScrollType.directJumpTo,
     );
+
+    Future.delayed(const Duration(seconds: 2)).then((_) {
+      print(_controller.getItemTopScrollOffset(92));
+    });
+
     super.initState();
   }
 
@@ -152,10 +157,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 reverse: true,
                 shrinkWrap: true,
                 controller: _controller,
-                headerView: Container(
+                /*headerView: Container(
                   height: 60,
                   color: Colors.redAccent,
-                ),
+                ),*/
                 footerView: Container(
                   height: 60,
                   color: Colors.blue,
