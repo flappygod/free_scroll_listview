@@ -319,7 +319,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///start
-  Future<void> _resetIndexByHeightAdd(double height) async {
+  void _resetIndexByHeightAdd(double height)  {
     if (!hasClients || !position.hasPixels) {
       return;
     }
