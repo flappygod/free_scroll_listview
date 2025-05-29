@@ -1,3 +1,3 @@
-## 1.2.39
+## 1.2.40
 
-* Fix a bug when add head to the listview when set shrinkWrap true;
+* Fix bugs;
