@@ -104,6 +104,9 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///get item top scroll offset
   double? getItemTopScrollOffset(int index) {
+    if(!hasClients){
+      return null;
+    }
     if (!position.hasPixels) {
       return null;
     }
