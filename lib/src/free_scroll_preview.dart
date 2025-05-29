@@ -5,6 +5,7 @@ import 'dart:async';
 class PreviewModel {
   bool allPreviewed = true;
   double totalHeight = 0;
+  double listviewHeight = 0;
   Map<int, double> itemHeights = {};
 }
 
@@ -15,6 +16,9 @@ class AdditionPreviewController<T> extends ChangeNotifier {
 
   //preview data list
   final Map<int, Widget> _previewWidgetList = {};
+
+  //preview list height
+  final GlobalKey _previewListKey = GlobalKey();
 
   //offset preview completer
   Completer<PreviewModel?>? _offsetPreviewCompleter;
@@ -154,6 +158,12 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
         }
       }
 
+      ///get listview height
+      final BuildContext? listContext =
+          widget.controller._previewListKey.currentContext;
+      final RenderBox? listBox = listContext?.findRenderObject() as RenderBox?;
+      previewModel.listviewHeight = listBox?.size.height ?? 0;
+
       ///clear preview completer
       widget.controller._offsetPreviewCompleter = null;
       widget.controller._previewCount = 0;
@@ -171,40 +181,33 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
   @override
   Widget build(BuildContext context) {
     _checkPreviewHeight();
-    return SizedBox(
-      height: 0.01,
-      width: double.infinity,
-      child: OverflowBox(
-        minHeight: MediaQuery.of(context).size.height,
-        maxHeight: MediaQuery.of(context).size.height,
-        child: ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: widget.controller._previewCount,
-          cacheExtent: widget.controller._previewExtent,
-          itemBuilder: (context, index) {
-            int trueIndex = widget.controller._previewReverse
-                ? (widget.controller._previewCount - 1 - index)
-                : index;
-            Widget item =
-                widget.itemBuilder(context, trueIndex) ?? const SizedBox();
-            widget.controller._previewWidgetList[trueIndex] = item;
-            widget.controller._previewKeys[trueIndex] = GlobalKey();
-            return Visibility(
-              visible: false,
-              maintainSize: true,
-              maintainAnimation: true,
-              maintainState: true,
-              maintainSemantics: true,
-              child: HeroMode(
-                key: widget.controller._previewKeys[trueIndex],
-                enabled: false,
-                child: item,
-              ),
-            );
-          },
-          padding: widget.padding,
-        ),
-      ),
+    return ListView.builder(
+      key: widget.controller._previewListKey,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: widget.controller._previewCount,
+      cacheExtent: widget.controller._previewExtent,
+      itemBuilder: (context, index) {
+        int trueIndex = widget.controller._previewReverse
+            ? (widget.controller._previewCount - 1 - index)
+            : index;
+        Widget item =
+            widget.itemBuilder(context, trueIndex) ?? const SizedBox();
+        widget.controller._previewWidgetList[trueIndex] = item;
+        widget.controller._previewKeys[trueIndex] = GlobalKey();
+        return Visibility(
+          visible: false,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainState: true,
+          maintainSemantics: true,
+          child: HeroMode(
+            key: widget.controller._previewKeys[trueIndex],
+            enabled: false,
+            child: item,
+          ),
+        );
+      },
+      padding: widget.padding,
     );
   }
 }

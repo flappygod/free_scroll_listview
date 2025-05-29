@@ -529,11 +529,13 @@ class FreeScrollListViewController<T> extends ScrollController {
         ///notify data
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       } else {
-        _dataList.insertAll(0, dataList);
-        _itemsRectHolder.clear();
-
         ///notify data
-        notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+        _itemsRectHolder.clear();
+        setDataAndScrollTo(
+          [...dataList, ..._dataList],
+          index: dataList.length,
+          align: FreeScrollType.directJumpTo,
+        );
       }
     });
   }
@@ -778,7 +780,7 @@ class FreeScrollListViewController<T> extends ScrollController {
           previewReverse: true,
           previewExtent: max(0, trueAnchorOffset),
         );
-        double listviewHeight = listViewHeight;
+        double listviewHeight = previewModel?.listviewHeight ?? listViewHeight;
 
         ///previewed
         if (previewModel != null && previewModel.itemHeights[index] != null) {
