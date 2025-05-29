@@ -1271,6 +1271,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                       children: <Widget>[
                         ///preview items widget
                         AdditionPreview(
+                          padding: EdgeInsets.zero,
                           itemBuilder: widget.builder,
                           controller: widget.controller._previewController,
                         ),
@@ -1299,6 +1300,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                       children: <Widget>[
                         ///preview items widget
                         AdditionPreview(
+                          padding: EdgeInsets.zero,
                           itemBuilder: widget.builder,
                           controller: widget.controller._previewController,
                         ),
