@@ -1,3 +1,3 @@
-## 1.2.38
+## 1.2.39
 
-* Fix a bug when add head data when the listview not layout.
+* Fix a bug when add head to the listview when set shrinkWrap true;
