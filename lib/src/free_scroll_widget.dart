@@ -530,7 +530,6 @@ class FreeScrollListViewController<T> extends ScrollController {
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       } else {
         ///notify data
-        _itemsRectHolder.clear();
         setDataAndScrollTo(
           [...dataList, ..._dataList],
           index: dataList.length,
