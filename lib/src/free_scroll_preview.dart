@@ -5,6 +5,7 @@ import 'dart:async';
 class PreviewModel {
   bool allPreviewed = true;
   double totalHeight = 0;
+  double listviewHeight = 0;
   Map<int, double> itemHeights = {};
 }
 
@@ -16,14 +17,14 @@ class AdditionPreviewController<T> extends ChangeNotifier {
   //preview data list
   final Map<int, Widget> _previewWidgetList = {};
 
+  //preview list height
+  final GlobalKey _previewListKey = GlobalKey();
+
   //offset preview completer
   Completer<PreviewModel?>? _offsetPreviewCompleter;
 
   //preview count
   int _previewCount = 0;
-
-  //preview height
-  double _previewHeight = 0;
 
   //preview reverse or not
   bool _previewReverse = false;
@@ -33,8 +34,7 @@ class AdditionPreviewController<T> extends ChangeNotifier {
 
   //preview items height
   Future<PreviewModel?> previewItemsHeight(
-    int previewCount,
-    double previewHeight, {
+    int previewCount, {
     double previewExtent = 0,
     bool previewReverse = false,
   }) {
@@ -49,7 +49,6 @@ class AdditionPreviewController<T> extends ChangeNotifier {
 
     //preview setting
     _previewCount = previewCount;
-    _previewHeight = previewHeight;
     _previewExtent = previewExtent;
     _previewReverse = previewReverse;
 
@@ -75,10 +74,14 @@ class AdditionPreview<T> extends StatefulWidget {
   //margin
   final EdgeInsetsGeometry? margin;
 
+  //max height
+  final double maxHeight;
+
   const AdditionPreview({
     super.key,
     required this.controller,
     required this.itemBuilder,
+    required this.maxHeight,
     this.padding,
     this.margin,
   });
@@ -159,9 +162,14 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
         }
       }
 
+      ///get listview height
+      final BuildContext? listContext =
+          widget.controller._previewListKey.currentContext;
+      final RenderBox? listBox = listContext?.findRenderObject() as RenderBox?;
+      previewModel.listviewHeight = listBox?.size.height ?? 0;
+
       ///clear preview completer
       widget.controller._offsetPreviewCompleter = null;
-      widget.controller._previewHeight = 0;
       widget.controller._previewCount = 0;
       widget.controller._previewReverse = false;
       widget.controller._previewExtent = 0;
@@ -181,9 +189,10 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
       height: 0.01,
       width: double.infinity,
       child: OverflowBox(
-        minHeight: widget.controller._previewHeight,
-        maxHeight: widget.controller._previewHeight,
+        minHeight: widget.maxHeight,
+        maxHeight: widget.maxHeight,
         child: ListView.builder(
+          key: widget.controller._previewListKey,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: widget.controller._previewCount,
           cacheExtent: widget.controller._previewExtent,

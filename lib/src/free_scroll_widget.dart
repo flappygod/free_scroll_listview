@@ -97,9 +97,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _currentEndIndex;
   }
 
-  ///former widget height
-  double? _listViewMaxHeight;
-
   ///get items rect on screen
   Map<int, RectHolder> getItemRectList() {
     return _itemsRectHolder;
@@ -324,6 +321,24 @@ class FreeScrollListViewController<T> extends ScrollController {
     position.jumpTo(position.pixels);
   }
 
+  ///reset index current
+  void _resetIndexCurrent() {
+    double? offsetOne = getItemTopScrollOffset(currentStartIndex - 1);
+    if (offsetOne != null && _dataListOffset != currentStartIndex - 1) {
+      _dataListOffset = currentStartIndex - 1;
+      _itemsRectHolder.clear();
+      position.jumpTo(-offsetOne);
+      return;
+    }
+    double? offsetTwo = getItemTopScrollOffset(currentStartIndex);
+    if (offsetTwo != null && _dataListOffset != currentStartIndex) {
+      _dataListOffset = currentStartIndex;
+      _itemsRectHolder.clear();
+      position.jumpTo(-offsetTwo);
+      return;
+    }
+  }
+
   ///can scroll
   void _resetIndexIfNeeded() {
     int maxIndex = dataList.length - 1;
@@ -528,7 +543,6 @@ class FreeScrollListViewController<T> extends ScrollController {
           PreviewModel? previewModel =
               await _previewController.previewItemsHeight(
             dataList.length,
-            (_listViewMaxHeight ?? 0),
           );
 
           ///total height
@@ -811,11 +825,10 @@ class FreeScrollListViewController<T> extends ScrollController {
         PreviewModel? previewModel =
             await _previewController.previewItemsHeight(
           dataList.length,
-          _listViewMaxHeight ?? 0,
           previewReverse: true,
           previewExtent: max(0, trueAnchorOffset),
         );
-        double currentListViewHeight = listViewHeight;
+        double listviewHeight = previewModel?.listviewHeight ?? listViewHeight;
 
         ///previewed
         if (previewModel != null && previewModel.itemHeights[index] != null) {
@@ -826,7 +839,7 @@ class FreeScrollListViewController<T> extends ScrollController {
           }
 
           ///no enough space
-          if (height - trueAnchorOffset - currentListViewHeight < 0) {
+          if (height - trueAnchorOffset - listviewHeight < 0) {
             double testHeight = footerViewHeight;
             int testIndex = 0;
             double testOffset = 0;
@@ -834,9 +847,9 @@ class FreeScrollListViewController<T> extends ScrollController {
             ///check max jump
             for (int s = dataList.length - 1; s >= 0; s--) {
               testHeight = (previewModel.itemHeights[s] ?? 0) + testHeight;
-              if (testHeight > currentListViewHeight) {
+              if (testHeight > listviewHeight) {
                 testIndex = s;
-                testOffset = testHeight - currentListViewHeight;
+                testOffset = testHeight - listviewHeight;
                 break;
               }
             }
@@ -1018,6 +1031,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   ///animation controller and offset
   AnimationController? _animationController;
   double _animationOffset = 0;
+
+  ///former max height
+  double? _formerMaxHeight;
 
   ///init listener
   void _initListener() {
@@ -1216,8 +1232,16 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        //max height
-        widget.controller._listViewMaxHeight = constraints.maxHeight;
+        ///set former max height
+        _formerMaxHeight ??= constraints.maxHeight;
+
+        ///check height changed
+        if (_formerMaxHeight != constraints.maxHeight) {
+          if (widget.shrinkWrap) {
+            widget.controller._resetIndexCurrent();
+          }
+          _formerMaxHeight = constraints.maxHeight;
+        }
 
         return NotificationListener<ScrollNotification>(
           onNotification: _handleNotification,
@@ -1307,6 +1331,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                             ///preview items widget
                             AdditionPreview(
                               padding: EdgeInsets.zero,
+                              maxHeight: constraints.maxHeight,
                               itemBuilder: widget.builder,
                               controller: widget.controller._previewController,
                             ),
@@ -1336,6 +1361,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                             ///preview items widget
                             AdditionPreview(
                               padding: EdgeInsets.zero,
+                              maxHeight: constraints.maxHeight,
                               itemBuilder: widget.builder,
                               controller: widget.controller._previewController,
                             ),
