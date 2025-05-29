@@ -1271,9 +1271,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
               return widget.shrinkWrap
                   ? Stack(
                       clipBehavior: Clip.none,
-                      alignment: widget.reverse
-                          ? Alignment.topCenter
-                          : Alignment.bottomCenter,
                       children: <Widget>[
                         ///preview items widget
                         AdditionPreview(
