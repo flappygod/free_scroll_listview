@@ -334,7 +334,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       if (preview == null) {
         return;
       }
-      double heightNeedChange = height - maxExtent;
+      double heightNeedChange = height;
       double heightChanged = 0;
       for (int s = _dataListOffset - 1; s >= 0; s--) {
         heightChanged += (preview.itemHeights[s] ?? 0);
