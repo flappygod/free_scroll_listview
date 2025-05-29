@@ -26,7 +26,7 @@ typedef FreeScrollListSyncListener = void Function(
 });
 
 ///use a negative value for min scroll
-const double negativeInfinityValue = -100000000.0;
+const double negativeInfinityValue = double.negativeInfinity;
 
 ///free scroll listview controller
 class FreeScrollListViewController<T> extends ScrollController {
