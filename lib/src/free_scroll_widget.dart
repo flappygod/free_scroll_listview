@@ -327,14 +327,14 @@ class FreeScrollListViewController<T> extends ScrollController {
     if (offsetOne != null && _dataListOffset!=currentStartIndex-1) {
       _dataListOffset = currentStartIndex-1;
       _itemsRectHolder.clear();
-      position.jumpTo(offsetOne);
+      position.jumpTo(-offsetOne);
       return;
     }
     double? offsetTwo = getItemTopScrollOffset(currentStartIndex);
     if (offsetTwo != null && _dataListOffset!=currentStartIndex) {
       _dataListOffset = currentStartIndex;
       _itemsRectHolder.clear();
-      position.jumpTo(offsetTwo);
+      position.jumpTo(-offsetTwo);
       return;
     }
   }
