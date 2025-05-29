@@ -462,6 +462,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataList.addAll(dataList);
       _dataListOffset = 0;
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      notifyActionSyncListeners(FreeScrollActionSyncType.notifyJump);
     }
 
     ///set data if is init
@@ -472,6 +473,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataList.addAll(dataList);
       _dataListOffset = min(_dataListOffset, dataList.length);
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      notifyActionSyncListeners(FreeScrollActionSyncType.notifyJump);
     }
   }
 
