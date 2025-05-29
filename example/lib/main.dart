@@ -136,7 +136,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 _controller.scrollToIndex(
                   96,
                   duration: const Duration(milliseconds: 300),
-                  //align: FreeScrollType.directJumpTo,
                 );
               },
               child: Container(
