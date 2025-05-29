@@ -548,7 +548,12 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
   }) {
-    assert((index > 0 && index < dataList.length) || index == 0);
+    if(dataList.isNotEmpty && index >= dataList.length) {
+      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    }
+    if(index<0){
+      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    }
 
     ///clear data
     _dataList.clear();
