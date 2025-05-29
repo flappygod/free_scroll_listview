@@ -318,6 +318,16 @@ class FreeScrollListViewController<T> extends ScrollController {
     position.jumpTo(position.pixels);
   }
 
+  ///reset index current
+  void _resetIndexCurrent() {
+    double? offset = getItemTopScrollOffset(currentStartIndex);
+    if (offset != null) {
+      _dataListOffset = currentStartIndex;
+      _itemsRectHolder.clear();
+      position.jumpTo(offset);
+    }
+  }
+
   ///can scroll
   void _resetIndexIfNeeded() {
     int maxIndex = dataList.length - 1;
@@ -1183,13 +1193,16 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       widget.controller.addSyncActionListener(_syncListener);
       widget.controller.addASyncActionListener(_aSyncListener);
     }
-    if (widget.controller.hasClients && widget.controller.position.hasPixels) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        widget.controller._resetIndexIfNeeded();
-      });
-    }
     _initHeight();
     super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.shrinkWrap) {
+      widget.controller._resetIndexCurrent();
+    }
   }
 
   @override
