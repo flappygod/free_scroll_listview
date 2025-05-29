@@ -104,7 +104,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///get item top scroll offset
   double? getItemTopScrollOffset(int index) {
-    if (!hasClients||!position.hasPixels) {
+    if (!hasClients || !position.hasPixels) {
       return null;
     }
     RectHolder? rect = _itemsRectHolder[index];
@@ -121,7 +121,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///get item top scroll offset
   double? getItemBottomScrollOffset(int index) {
-    if (!hasClients||!position.hasPixels) {
+    if (!hasClients || !position.hasPixels) {
       return null;
     }
     RectHolder? rect = _itemsRectHolder[index];
@@ -1184,10 +1184,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       widget.controller.addASyncActionListener(_aSyncListener);
     }
     _notifyIndexAndOnShow();
-    if(widget.shrinkWrap){
-      widget.controller.notifyCheckRectListeners();
-      widget.controller._resetIndexIfNeeded();
-    }
     super.didUpdateWidget(oldWidget);
   }
 
