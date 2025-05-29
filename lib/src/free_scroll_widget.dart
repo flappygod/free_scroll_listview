@@ -1241,7 +1241,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         }
 
         ///listview change to bigger,we need to know the changed height
-        if (_listviewMaxHeight < constraints.maxHeight) {
+        if (_listviewMaxHeight < constraints.maxHeight && widget.shrinkWrap) {
           widget.controller._resetIndexByHeightAdd(
             constraints.maxHeight - _listviewMaxHeight,
           );
