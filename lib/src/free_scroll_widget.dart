@@ -324,7 +324,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       return;
     }
     double maxExtent = position.maxScrollExtent;
-    if (maxExtent < height) {
+    if (maxExtent < height && maxExtent > 0) {
       //preview
       PreviewModel? preview = await _previewController.previewItemsHeight(
         _dataListOffset,
@@ -341,13 +341,13 @@ class FreeScrollListViewController<T> extends ScrollController {
         if (heightChanged > heightNeedChange) {
           _dataListOffset = s;
           _itemsRectHolder.clear();
-          position.correctBy(heightChanged - heightNeedChange);
+          position.jumpTo(position.pixels + heightChanged - heightNeedChange);
           return;
         }
       }
       _dataListOffset = 0;
       _itemsRectHolder.clear();
-      position.correctBy(heightChanged);
+      position.jumpTo(0);
     }
   }
 
