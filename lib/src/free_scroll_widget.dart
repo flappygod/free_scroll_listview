@@ -1183,156 +1183,156 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           controller: widget.controller,
         );
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: _handleNotification,
-      child: Scrollable(
-        key: widget.controller._listViewKey,
-        axisDirection: axisDirection,
-        controller: widget.controller,
-        physics: physics,
-        clipBehavior: widget.clipBehavior,
-        viewportBuilder: (BuildContext context, ViewportOffset offset) {
-          //get max height father
-          final constraints = context.findRenderObject() as RenderBox;
-          final maxHeight = constraints.constraints.maxHeight;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return NotificationListener<ScrollNotification>(
+          onNotification: _handleNotification,
+          child: Scrollable(
+            key: widget.controller._listViewKey,
+            axisDirection: axisDirection,
+            controller: widget.controller,
+            physics: physics,
+            clipBehavior: widget.clipBehavior,
+            viewportBuilder: (BuildContext context, ViewportOffset offset) {
+              return Builder(
+                builder: (context) {
+                  ///Build negative [ScrollPosition] for the negative scrolling [Viewport].
+                  final ScrollableState state = Scrollable.of(context);
+                  final _NegativedScrollPosition negativeOffset =
+                      _NegativedScrollPosition(
+                    physics: physics,
+                    context: state,
+                    initialPixels: -offset.pixels,
+                    keepScrollOffset: false,
+                  );
 
-          return Builder(
-            builder: (context) {
-              ///Build negative [ScrollPosition] for the negative scrolling [Viewport].
-              final ScrollableState state = Scrollable.of(context);
-              final _NegativedScrollPosition negativeOffset =
-                  _NegativedScrollPosition(
-                physics: physics,
-                context: state,
-                initialPixels: -offset.pixels,
-                keepScrollOffset: false,
+                  ///Keep the negative scrolling [Viewport] positioned to the [ScrollPosition].
+                  offset.addListener(() {
+                    negativeOffset._forceNegativePixels(offset.pixels);
+                  });
+
+                  int negativeDataLength = widget.controller._dataListOffset;
+                  int positiveDataLength = widget.controller._dataList.length -
+                      widget.controller._dataListOffset;
+
+                  ///negative
+                  List<Widget> sliverNegative = <Widget>[
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          int actualIndex = negativeDataLength - index - 1;
+                          RectHolder rectHolder = RectHolder();
+                          widget.controller._itemsRectHolder[actualIndex] =
+                              rectHolder;
+                          return AnchorItemWrapper(
+                            reverse: widget.reverse,
+                            actualIndex: actualIndex,
+                            listViewState: this,
+                            controller: widget.controller,
+                            rectHolder: rectHolder,
+                            addRepaintBoundary: widget.addRepaintBoundary,
+                            child: widget.builder(context, actualIndex),
+                          );
+                        },
+                        childCount: negativeDataLength,
+                      ),
+                    ),
+                    if (widget.controller._dataListOffset != 0) _buildHeader(),
+                  ];
+
+                  ///positive
+                  List<Widget> sliverPositive = <Widget>[
+                    if (widget.controller._dataListOffset == 0) _buildHeader(),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          int actualIndex = negativeDataLength + index;
+                          RectHolder rectHolder = RectHolder();
+                          widget.controller._itemsRectHolder[actualIndex] =
+                              rectHolder;
+                          return AnchorItemWrapper(
+                            reverse: widget.reverse,
+                            actualIndex: actualIndex,
+                            listViewState: this,
+                            controller: widget.controller,
+                            rectHolder: rectHolder,
+                            addRepaintBoundary: widget.addRepaintBoundary,
+                            child: widget.builder(context, actualIndex),
+                          );
+                        },
+                        childCount: positiveDataLength,
+                      ),
+                    ),
+                    _buildFooter(),
+                  ];
+
+                  return widget.shrinkWrap
+                      ? Stack(
+                          clipBehavior: Clip.none,
+                          children: <Widget>[
+                            ///preview items widget
+                            AdditionPreview(
+                              padding: EdgeInsets.zero,
+                              maxHeight: constraints.maxHeight,
+                              itemBuilder: widget.builder,
+                              controller: widget.controller._previewController,
+                            ),
+
+                            ///negative
+                            if (widget.controller._dataListOffset > 0)
+                              Viewport(
+                                axisDirection: flipAxisDirection(axisDirection),
+                                anchor: 1.0,
+                                offset: negativeOffset,
+                                cacheExtent: widget.cacheExtent,
+                                slivers: sliverNegative,
+                              ),
+
+                            ///positive
+                            ShrinkWrappingViewport(
+                              axisDirection: axisDirection,
+                              clipBehavior: widget.clipBehavior,
+                              offset: offset,
+                              slivers: sliverPositive,
+                            ),
+                          ],
+                        )
+                      : Stack(
+                          clipBehavior: Clip.none,
+                          children: <Widget>[
+                            ///preview items widget
+                            AdditionPreview(
+                              padding: EdgeInsets.zero,
+                              maxHeight: constraints.maxHeight,
+                              itemBuilder: widget.builder,
+                              controller: widget.controller._previewController,
+                            ),
+
+                            ///negative
+                            Viewport(
+                              axisDirection: flipAxisDirection(axisDirection),
+                              anchor: 1.0,
+                              offset: negativeOffset,
+                              cacheExtent: widget.cacheExtent,
+                              slivers: sliverNegative,
+                            ),
+
+                            ///positive
+                            Viewport(
+                              offset: offset,
+                              axisDirection: axisDirection,
+                              cacheExtent: widget.cacheExtent,
+                              clipBehavior: widget.clipBehavior,
+                              slivers: sliverPositive,
+                            ),
+                          ],
+                        );
+                },
               );
-
-              ///Keep the negative scrolling [Viewport] positioned to the [ScrollPosition].
-              offset.addListener(() {
-                negativeOffset._forceNegativePixels(offset.pixels);
-              });
-
-              int negativeDataLength = widget.controller._dataListOffset;
-              int positiveDataLength = widget.controller._dataList.length -
-                  widget.controller._dataListOffset;
-
-              ///negative
-              List<Widget> sliverNegative = <Widget>[
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      int actualIndex = negativeDataLength - index - 1;
-                      RectHolder rectHolder = RectHolder();
-                      widget.controller._itemsRectHolder[actualIndex] =
-                          rectHolder;
-                      return AnchorItemWrapper(
-                        reverse: widget.reverse,
-                        actualIndex: actualIndex,
-                        listViewState: this,
-                        controller: widget.controller,
-                        rectHolder: rectHolder,
-                        addRepaintBoundary: widget.addRepaintBoundary,
-                        child: widget.builder(context, actualIndex),
-                      );
-                    },
-                    childCount: negativeDataLength,
-                  ),
-                ),
-                if (widget.controller._dataListOffset != 0) _buildHeader(),
-              ];
-
-              ///positive
-              List<Widget> sliverPositive = <Widget>[
-                if (widget.controller._dataListOffset == 0) _buildHeader(),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      int actualIndex = negativeDataLength + index;
-                      RectHolder rectHolder = RectHolder();
-                      widget.controller._itemsRectHolder[actualIndex] =
-                          rectHolder;
-                      return AnchorItemWrapper(
-                        reverse: widget.reverse,
-                        actualIndex: actualIndex,
-                        listViewState: this,
-                        controller: widget.controller,
-                        rectHolder: rectHolder,
-                        addRepaintBoundary: widget.addRepaintBoundary,
-                        child: widget.builder(context, actualIndex),
-                      );
-                    },
-                    childCount: positiveDataLength,
-                  ),
-                ),
-                _buildFooter(),
-              ];
-
-              return widget.shrinkWrap
-                  ? Stack(
-                      clipBehavior: Clip.none,
-                      children: <Widget>[
-                        ///preview items widget
-                        AdditionPreview(
-                          padding: EdgeInsets.zero,
-                          maxHeight: maxHeight,
-                          itemBuilder: widget.builder,
-                          controller: widget.controller._previewController,
-                        ),
-
-                        ///negative
-                        if (widget.controller._dataListOffset > 0)
-                          Viewport(
-                            axisDirection: flipAxisDirection(axisDirection),
-                            anchor: 1.0,
-                            offset: negativeOffset,
-                            cacheExtent: widget.cacheExtent,
-                            slivers: sliverNegative,
-                          ),
-
-                        ///positive
-                        ShrinkWrappingViewport(
-                          axisDirection: axisDirection,
-                          clipBehavior: widget.clipBehavior,
-                          offset: offset,
-                          slivers: sliverPositive,
-                        ),
-                      ],
-                    )
-                  : Stack(
-                      clipBehavior: Clip.none,
-                      children: <Widget>[
-                        ///preview items widget
-                        AdditionPreview(
-                          maxHeight: maxHeight,
-                          padding: EdgeInsets.zero,
-                          itemBuilder: widget.builder,
-                          controller: widget.controller._previewController,
-                        ),
-
-                        ///negative
-                        Viewport(
-                          axisDirection: flipAxisDirection(axisDirection),
-                          anchor: 1.0,
-                          offset: negativeOffset,
-                          cacheExtent: widget.cacheExtent,
-                          slivers: sliverNegative,
-                        ),
-
-                        ///positive
-                        Viewport(
-                          offset: offset,
-                          axisDirection: axisDirection,
-                          cacheExtent: widget.cacheExtent,
-                          clipBehavior: widget.clipBehavior,
-                          slivers: sliverPositive,
-                        ),
-                      ],
-                    );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
