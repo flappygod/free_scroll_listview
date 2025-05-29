@@ -104,7 +104,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///get item top scroll offset
   double? getItemTopScrollOffset(int index) {
-    if(!hasClients){
+    if (!hasClients) {
       return null;
     }
     if (!position.hasPixels) {
@@ -324,7 +324,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///reset index current
   void _resetIndexCurrent() {
     double? offset = getItemTopScrollOffset(currentStartIndex);
-    if (offset != null) {
+    if (offset != null && _dataListOffset != currentStartIndex) {
       _dataListOffset = currentStartIndex;
       _itemsRectHolder.clear();
       position.jumpTo(offset);
@@ -1024,6 +1024,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   AnimationController? _animationController;
   double _animationOffset = 0;
 
+  ///former max height
+  double? _formerMaxHeight;
+
   ///init listener
   void _initListener() {
     _syncListener = (
@@ -1201,14 +1204,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (widget.shrinkWrap) {
-      widget.controller._resetIndexCurrent();
-    }
-  }
-
-  @override
   void dispose() {
     super.dispose();
     _animationController?.dispose();
@@ -1229,6 +1224,17 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        ///set former max height
+        _formerMaxHeight ??= constraints.maxHeight;
+
+        ///check height changed
+        if (_formerMaxHeight != constraints.maxHeight) {
+          if (widget.shrinkWrap) {
+            widget.controller._resetIndexCurrent();
+          }
+          _formerMaxHeight = constraints.maxHeight;
+        }
+
         return NotificationListener<ScrollNotification>(
           onNotification: _handleNotification,
           child: Scrollable(
