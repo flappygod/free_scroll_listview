@@ -1,3 +1,3 @@
-## 1.2.40
+## 1.2.41
 
-* Fix bugs;
+* Fix bugs if the listview was resized and set shrinkWrap true;
