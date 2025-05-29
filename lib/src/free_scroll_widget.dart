@@ -1182,7 +1182,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       widget.controller.addASyncActionListener(_aSyncListener);
     }
     if (widget.controller.hasClients && widget.controller.position.hasPixels) {
-      widget.controller._resetIndexIfNeeded();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.controller._resetIndexIfNeeded();
+      });
     }
     _initHeight();
     super.didUpdateWidget(oldWidget);
