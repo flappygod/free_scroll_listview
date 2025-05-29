@@ -325,19 +325,10 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
     double maxExtent = position.maxScrollExtent;
     if (maxExtent < height && maxExtent > 0) {
-      //preview
-      PreviewModel? preview = await _previewController.previewItemsHeight(
-        _dataListOffset,
-        previewReverse: true,
-      );
-      //is busy
-      if (preview == null) {
-        return;
-      }
       double heightNeedChange = height;
       double heightChanged = 0;
       for (int s = _dataListOffset - 1; s >= 0; s--) {
-        heightChanged += (preview.itemHeights[s] ?? 0);
+        heightChanged += _itemsRectHolder[s]?.rectHeight() ?? 0;
         if (heightChanged > heightNeedChange) {
           _dataListOffset = s;
           _itemsRectHolder.clear();
