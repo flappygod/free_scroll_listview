@@ -1161,7 +1161,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   }
 
   ///init height
-  void _initHeight() {
+  void _notifyIndexAndOnShow() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _notifyIndex();
@@ -1174,7 +1174,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void initState() {
     _throttler = Throttler(duration: widget.notifyItemShowThrottlerDuration);
     _initListener();
-    _initHeight();
+    _notifyIndexAndOnShow();
     super.initState();
   }
 
@@ -1186,7 +1186,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       widget.controller.addSyncActionListener(_syncListener);
       widget.controller.addASyncActionListener(_aSyncListener);
     }
-    _initHeight();
+    _notifyIndexAndOnShow();
+    widget.controller._resetIndexIfNeeded();
     super.didUpdateWidget(oldWidget);
   }
 
