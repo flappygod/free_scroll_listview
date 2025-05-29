@@ -183,6 +183,7 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
     _checkPreviewHeight();
     return ListView.builder(
       key: widget.controller._previewListKey,
+      shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: widget.controller._previewCount,
       cacheExtent: widget.controller._previewExtent,
