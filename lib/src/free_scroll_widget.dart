@@ -496,6 +496,11 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///previewHeight measure add item height or not
   Future<void> addDataToHead(List<T> dataList, {bool measureHeight = true}) {
     return _lock.synchronized(() async {
+      ///do nothing
+      if (dataList.isEmpty) {
+        return;
+      }
+
       ///data list
       if (_dataList.isNotEmpty && _itemsRectHolder.isEmpty) {
         await waitForPostFrameCallback();
@@ -532,7 +537,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         ///notify data
         setDataAndScrollTo(
           [...dataList, ..._dataList],
-          index: dataList.length,
+          index: max(0, dataList.length - 1),
           align: FreeScrollType.directJumpTo,
         );
       }
@@ -548,11 +553,13 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
   }) {
-    if(dataList.isNotEmpty && index >= dataList.length) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    if (dataList.isNotEmpty && index >= dataList.length) {
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
-    if(index<0){
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    if (index < 0) {
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
     ///clear data
@@ -630,11 +637,13 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
   }) async {
-    if(dataList.isNotEmpty && index >= dataList.length) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    if (dataList.isNotEmpty && index >= dataList.length) {
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
-    if(index<0){
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    if (index < 0) {
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
     ///no clients
@@ -727,11 +736,13 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
   }) async {
-    if(dataList.isNotEmpty && index >= dataList.length) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    if (dataList.isNotEmpty && index >= dataList.length) {
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
-    if(index<0){
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    if (index < 0) {
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
     ///header view height
