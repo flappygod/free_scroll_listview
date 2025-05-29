@@ -496,6 +496,11 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///previewHeight measure add item height or not
   Future<void> addDataToHead(List<T> dataList, {bool measureHeight = true}) {
     return _lock.synchronized(() async {
+      ///data list
+      if (_dataList.isNotEmpty && _itemsRectHolder.isEmpty) {
+        await waitForPostFrameCallback();
+      }
+
       ///if can scroll
       if (hasClients && position.maxScrollExtent > 0) {
         ///insert all data
