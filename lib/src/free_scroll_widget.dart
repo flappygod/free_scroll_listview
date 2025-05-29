@@ -630,7 +630,12 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
   }) async {
-    assert(index >= 0 && index < dataList.length);
+    if(dataList.isNotEmpty && index >= dataList.length) {
+      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    }
+    if(index<0){
+      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    }
 
     ///no clients
     if (!hasClients) {
@@ -722,7 +727,12 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
   }) async {
-    assert(index >= 0 && index < dataList.length);
+    if(dataList.isNotEmpty && index >= dataList.length) {
+      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    }
+    if(index<0){
+      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+    }
 
     ///header view height
     double trueAnchorOffset =
