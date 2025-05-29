@@ -58,10 +58,12 @@ class FreeScrollListViewController<T> extends ScrollController {
   final Set<VoidCallback> _checkRectListeners = {};
 
   //controller
-  final AdditionPreviewController<T> _previewController = AdditionPreviewController<T>();
+  final AdditionPreviewController<T> _previewController =
+      AdditionPreviewController<T>();
 
   //item maps
-  final SplayTreeMap<int, RectHolder> _itemsRectHolder = SplayTreeMap<int, RectHolder>();
+  final SplayTreeMap<int, RectHolder> _itemsRectHolder =
+      SplayTreeMap<int, RectHolder>();
 
   //negative height total
   double _negativeHeight = negativeInfinityValue;
@@ -173,7 +175,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       if (_negativeHeight == negativeInfinityValue) {
         negativedPosition.minScrollExtend = _negativeHeight;
       } else {
-        negativedPosition.minScrollExtend = (_negativeHeight - headerViewHeight).removeTinyFraction();
+        negativedPosition.minScrollExtend =
+            (_negativeHeight - headerViewHeight).removeTinyFraction();
       }
     }
   }
@@ -265,7 +268,9 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     //Safely cast the position to _NegativedScrollPosition
     _NegativedScrollPosition? currentPosition =
-        position is _NegativedScrollPosition ? position as _NegativedScrollPosition : null;
+        position is _NegativedScrollPosition
+            ? position as _NegativedScrollPosition
+            : null;
 
     //Find the minimum rectTop from _itemsRectHolder
     double? minRectTop = _findMinRectTop();
@@ -336,18 +341,12 @@ class FreeScrollListViewController<T> extends ScrollController {
         if (heightChanged > heightNeedChange) {
           _dataListOffset = s;
           _itemsRectHolder.clear();
-          notifyActionSyncListeners(
-            FreeScrollActionSyncType.notifyAnimOffset,
-            data: heightChanged - heightNeedChange,
-          );
-          position.correctPixels(
-            position.pixels + heightChanged - heightNeedChange,
-          );
+          position.correctBy(heightChanged - heightNeedChange);
           return;
         }
       }
+      //just set
       _dataListOffset = 0;
-      position.correctPixels(0);
     }
   }
 
@@ -552,7 +551,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         double formerTopData = _negativeHeight;
         if (_negativeHeight != negativeInfinityValue && measureHeight) {
           ///preview model
-          PreviewModel? previewModel = await _previewController.previewItemsHeight(
+          PreviewModel? previewModel =
+              await _previewController.previewItemsHeight(
             dataList.length,
           );
 
@@ -588,10 +588,12 @@ class FreeScrollListViewController<T> extends ScrollController {
     double anchorOffset = 0,
   }) {
     if (dataList.isNotEmpty && index >= dataList.length) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
     if (index < 0) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
     ///clear data
@@ -670,10 +672,12 @@ class FreeScrollListViewController<T> extends ScrollController {
     double anchorOffset = 0,
   }) async {
     if (dataList.isNotEmpty && index >= dataList.length) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
     if (index < 0) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
     ///no clients
@@ -767,14 +771,17 @@ class FreeScrollListViewController<T> extends ScrollController {
     double anchorOffset = 0,
   }) async {
     if (dataList.isNotEmpty && index >= dataList.length) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
     if (index < 0) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
     ///header view height
-    double trueAnchorOffset = (index == 0) ? (anchorOffset + headerViewHeight) : anchorOffset;
+    double trueAnchorOffset =
+        (index == 0) ? (anchorOffset + headerViewHeight) : anchorOffset;
 
     switch (align) {
       case FreeScrollType.bottomToTop:
@@ -826,7 +833,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       case FreeScrollType.directJumpTo:
 
         ///preview data model
-        PreviewModel? previewModel = await _previewController.previewItemsHeight(
+        PreviewModel? previewModel =
+            await _previewController.previewItemsHeight(
           dataList.length,
           previewReverse: true,
           previewExtent: max(0, trueAnchorOffset),
@@ -1017,7 +1025,8 @@ class FreeScrollListView<T> extends StatefulWidget {
 }
 
 ///free scroll listview state
-class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerProviderStateMixin {
+class FreeScrollListViewState<T> extends State<FreeScrollListView>
+    with TickerProviderStateMixin {
   ///throttler
   late Throttler _throttler;
 
@@ -1054,8 +1063,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
         ///stop animation
         case FreeScrollActionSyncType.notifyAnimStop:
           _cancelAnimation();
-          if (widget.controller.hasClients && widget.controller.position.hasPixels) {
-            widget.controller.position.jumpTo(widget.controller.position.pixels);
+          if (widget.controller.hasClients &&
+              widget.controller.position.hasPixels) {
+            widget.controller.position
+                .jumpTo(widget.controller.position.pixels);
           }
           break;
 
@@ -1106,7 +1117,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     ///add status listener
     animationController.addStatusListener((status) {
       //监听动画状态
-      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+      if (status == AnimationStatus.completed ||
+          status == AnimationStatus.dismissed) {
         //动画自然完成时，调用 completer.complete()
         if (!completer.isCompleted) {
           completer.complete();
@@ -1140,7 +1152,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
       double maxScrollExtent = widget.controller.position.maxScrollExtent;
 
       ///check max scroll extend
-      if (offsetTo <= maxScrollExtent && widget.controller.hasClients && widget.controller.position.hasPixels) {
+      if (offsetTo <= maxScrollExtent &&
+          widget.controller.hasClients &&
+          widget.controller.position.hasPixels) {
         widget.controller.position.jumpTo(offsetTo);
         return;
       }
@@ -1257,7 +1271,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                 builder: (context) {
                   ///Build negative [ScrollPosition] for the negative scrolling [Viewport].
                   final ScrollableState state = Scrollable.of(context);
-                  final _NegativedScrollPosition negativeOffset = _NegativedScrollPosition(
+                  final _NegativedScrollPosition negativeOffset =
+                      _NegativedScrollPosition(
                     physics: physics,
                     context: state,
                     initialPixels: -offset.pixels,
@@ -1270,7 +1285,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                   });
 
                   int negativeDataLength = widget.controller._dataListOffset;
-                  int positiveDataLength = widget.controller._dataList.length - widget.controller._dataListOffset;
+                  int positiveDataLength = widget.controller._dataList.length -
+                      widget.controller._dataListOffset;
 
                   ///negative
                   List<Widget> sliverNegative = <Widget>[
@@ -1279,7 +1295,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                         (context, index) {
                           int actualIndex = negativeDataLength - index - 1;
                           RectHolder rectHolder = RectHolder();
-                          widget.controller._itemsRectHolder[actualIndex] = rectHolder;
+                          widget.controller._itemsRectHolder[actualIndex] =
+                              rectHolder;
                           return AnchorItemWrapper(
                             reverse: widget.reverse,
                             actualIndex: actualIndex,
@@ -1304,7 +1321,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                         (context, index) {
                           int actualIndex = negativeDataLength + index;
                           RectHolder rectHolder = RectHolder();
-                          widget.controller._itemsRectHolder[actualIndex] = rectHolder;
+                          widget.controller._itemsRectHolder[actualIndex] =
+                              rectHolder;
                           return AnchorItemWrapper(
                             reverse: widget.reverse,
                             actualIndex: actualIndex,
@@ -1414,18 +1432,21 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
   ///handle notification
   bool _handleNotification(ScrollNotification notification) {
     ///滚动开始而且有触摸事件
-    if (notification is ScrollStartNotification && notification.dragDetails != null) {
+    if (notification is ScrollStartNotification &&
+        notification.dragDetails != null) {
       _cancelAnimation();
       widget.controller.notifyCheckRectListeners();
     }
 
     ///加载之前的消息，FormerMessages
-    if (notification.metrics.pixels >= (notification.metrics.maxScrollExtent - widget.loadOffset)) {
+    if (notification.metrics.pixels >=
+        (notification.metrics.maxScrollExtent - widget.loadOffset)) {
       _timeStampDebouncer.run(widget.willReachTail);
     }
 
     ///加载新的消息
-    if (notification.metrics.pixels <= (widget.controller._negativeHeight + widget.loadOffset)) {
+    if (notification.metrics.pixels <=
+        (widget.controller._negativeHeight + widget.loadOffset)) {
       _timeStampDebouncer.run(widget.willReachHead);
     }
 
@@ -1443,7 +1464,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     ///notify the on show
     if ((notification is ScrollUpdateNotification) &&
         (widget.notifyItemShowWhenAllTypeScroll ||
-            (widget.notifyItemShowWhenGestureScroll && notification.dragDetails != null))) {
+            (widget.notifyItemShowWhenGestureScroll &&
+                notification.dragDetails != null))) {
       if (_throttler.duration == Duration.zero) {
         _notifyOnShow();
       } else {
@@ -1454,7 +1476,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     }
 
     ///notify index
-    if (notification is ScrollUpdateNotification || notification is ScrollEndNotification) {
+    if (notification is ScrollUpdateNotification ||
+        notification is ScrollEndNotification) {
       _notifyIndex();
     }
 
@@ -1478,12 +1501,15 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
       RectHolder? holder = widget.controller._itemsRectHolder[key];
       if (holder != null && holder.isOnScreen) {
         ///offset top
-        double offsetTop = holder.rectTop()! - widget.controller.position.pixels;
+        double offsetTop =
+            holder.rectTop()! - widget.controller.position.pixels;
         holder.rectTop()! - widget.controller.position.pixels;
-        double offsetBottom = holder.rectBottom()! - widget.controller.position.pixels;
+        double offsetBottom =
+            holder.rectBottom()! - widget.controller.position.pixels;
 
         ///Listview height
-        if ((offsetTop >= 0 && offsetBottom <= listViewHeight) || offsetTop <= 0 && offsetBottom >= listViewHeight) {
+        if ((offsetTop >= 0 && offsetBottom <= listViewHeight) ||
+            offsetTop <= 0 && offsetBottom >= listViewHeight) {
           keys.add(key);
         }
       }
