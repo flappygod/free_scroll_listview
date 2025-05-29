@@ -321,25 +321,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     position.jumpTo(position.pixels);
   }
 
-  ///reset index current
-  void _resetIndexCurrent() {
-    notifyCheckRectListeners();
-    double? offsetOne = getItemTopScrollOffset(currentStartIndex-1);
-    if (offsetOne != null && _dataListOffset!=currentStartIndex-1) {
-      _dataListOffset = currentStartIndex-1;
-      _itemsRectHolder.clear();
-      position.correctPixels(offsetOne);
-      return;
-    }
-    double? offsetTwo = getItemTopScrollOffset(currentStartIndex);
-    if (offsetTwo != null && _dataListOffset!=currentStartIndex) {
-      _dataListOffset = currentStartIndex;
-      _itemsRectHolder.clear();
-      position.correctPixels(offsetTwo);
-      return;
-    }
-  }
-
   ///can scroll
   void _resetIndexIfNeeded() {
     int maxIndex = dataList.length - 1;
@@ -1033,9 +1014,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   AnimationController? _animationController;
   double _animationOffset = 0;
 
-  ///former max height
-  double? _formerMaxHeight;
-
   ///init listener
   void _initListener() {
     _syncListener = (
@@ -1208,6 +1186,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       widget.controller.addSyncActionListener(_syncListener);
       widget.controller.addASyncActionListener(_aSyncListener);
     }
+    if (widget.shrinkWrap) {
+      widget.controller.notifyCheckRectListeners();
+      widget.controller._resetIndexIfNeeded();
+    }
     _initHeight();
     super.didUpdateWidget(oldWidget);
   }
@@ -1233,17 +1215,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        ///set former max height
-        _formerMaxHeight ??= constraints.maxHeight;
-
-        ///check height changed
-        if (_formerMaxHeight != constraints.maxHeight) {
-          if (widget.shrinkWrap) {
-            widget.controller._resetIndexCurrent();
-          }
-          _formerMaxHeight = constraints.maxHeight;
-        }
-
         return NotificationListener<ScrollNotification>(
           onNotification: _handleNotification,
           child: Scrollable(
