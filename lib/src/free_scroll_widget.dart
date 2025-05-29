@@ -1187,7 +1187,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       widget.controller.addASyncActionListener(_aSyncListener);
     }
     _notifyIndexAndOnShow();
-    widget.controller._resetIndexIfNeeded();
+    if(widget.shrinkWrap){
+      widget.controller.notifyCheckRectListeners();
+      widget.controller._resetIndexIfNeeded();
+    }
     super.didUpdateWidget(oldWidget);
   }
 
