@@ -1192,6 +1192,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         physics: physics,
         clipBehavior: widget.clipBehavior,
         viewportBuilder: (BuildContext context, ViewportOffset offset) {
+          //get max height father
+          final constraints = context.findRenderObject() as RenderBox;
+          final maxHeight = constraints.constraints.maxHeight;
+
           return Builder(
             builder: (context) {
               ///Build negative [ScrollPosition] for the negative scrolling [Viewport].
@@ -1267,10 +1271,14 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
               return widget.shrinkWrap
                   ? Stack(
                       clipBehavior: Clip.none,
+                      alignment: widget.reverse
+                          ? Alignment.topCenter
+                          : Alignment.bottomCenter,
                       children: <Widget>[
                         ///preview items widget
                         AdditionPreview(
                           padding: EdgeInsets.zero,
+                          maxHeight: maxHeight,
                           itemBuilder: widget.builder,
                           controller: widget.controller._previewController,
                         ),
@@ -1299,6 +1307,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                       children: <Widget>[
                         ///preview items widget
                         AdditionPreview(
+                          maxHeight: maxHeight,
                           padding: EdgeInsets.zero,
                           itemBuilder: widget.builder,
                           controller: widget.controller._previewController,

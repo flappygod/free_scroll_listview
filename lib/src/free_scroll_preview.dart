@@ -74,10 +74,14 @@ class AdditionPreview<T> extends StatefulWidget {
   //margin
   final EdgeInsetsGeometry? margin;
 
+  //max height
+  final double maxHeight;
+
   const AdditionPreview({
     super.key,
     required this.controller,
     required this.itemBuilder,
+    required this.maxHeight,
     this.padding,
     this.margin,
   });
@@ -181,34 +185,41 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
   @override
   Widget build(BuildContext context) {
     _checkPreviewHeight();
-    return ListView.builder(
-      key: widget.controller._previewListKey,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: widget.controller._previewCount,
-      cacheExtent: widget.controller._previewExtent,
-      itemBuilder: (context, index) {
-        int trueIndex = widget.controller._previewReverse
-            ? (widget.controller._previewCount - 1 - index)
-            : index;
-        Widget item =
-            widget.itemBuilder(context, trueIndex) ?? const SizedBox();
-        widget.controller._previewWidgetList[trueIndex] = item;
-        widget.controller._previewKeys[trueIndex] = GlobalKey();
-        return Visibility(
-          visible: false,
-          maintainSize: true,
-          maintainAnimation: true,
-          maintainState: true,
-          maintainSemantics: true,
-          child: HeroMode(
-            key: widget.controller._previewKeys[trueIndex],
-            enabled: false,
-            child: item,
-          ),
-        );
-      },
-      padding: widget.padding,
+    return SizedBox(
+      height: 0.01,
+      width: double.infinity,
+      child: OverflowBox(
+        minHeight: widget.maxHeight,
+        maxHeight: widget.maxHeight,
+        child: ListView.builder(
+          key: widget.controller._previewListKey,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: widget.controller._previewCount,
+          cacheExtent: widget.controller._previewExtent,
+          itemBuilder: (context, index) {
+            int trueIndex = widget.controller._previewReverse
+                ? (widget.controller._previewCount - 1 - index)
+                : index;
+            Widget item =
+                widget.itemBuilder(context, trueIndex) ?? const SizedBox();
+            widget.controller._previewWidgetList[trueIndex] = item;
+            widget.controller._previewKeys[trueIndex] = GlobalKey();
+            return Visibility(
+              visible: false,
+              maintainSize: true,
+              maintainAnimation: true,
+              maintainState: true,
+              maintainSemantics: true,
+              child: HeroMode(
+                key: widget.controller._previewKeys[trueIndex],
+                enabled: false,
+                child: item,
+              ),
+            );
+          },
+          padding: widget.padding,
+        ),
+      ),
     );
   }
 }
