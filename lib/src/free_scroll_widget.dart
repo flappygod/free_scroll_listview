@@ -548,7 +548,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
   }) {
-    assert(index >= 0 && index < dataList.length);
+    assert((index > 0 && index < dataList.length) || index == 0);
 
     ///clear data
     _dataList.clear();
