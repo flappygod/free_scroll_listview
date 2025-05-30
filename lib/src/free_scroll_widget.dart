@@ -319,26 +319,31 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///start
-  void _resetIndexByHeightAdd(double height)  {
+  void _resetIndexByHeightAdd(double willChangeHeight) {
+    //noting need to do
     if (!hasClients || !position.hasPixels) {
       return;
     }
-    double maxExtent = position.maxScrollExtent;
-    if (maxExtent < height && maxExtent > 0) {
-      double heightNeedChange = height;
+
+    // Check if the position's maxScrollExtent is zero and the dataListOffset is zero
+    if (position.maxScrollExtent == 0 && _dataListOffset == 0) {
+      return;
+    }
+
+    //If the maxScrollExtent is less than the height, adjust the dataListOffset
+    if (position.maxScrollExtent < willChangeHeight) {
       double heightChanged = 0;
+      int newOffset = 0;
       for (int s = _dataListOffset - 1; s >= 0; s--) {
         heightChanged += _itemsRectHolder[s]?.rectHeight() ?? 0;
-        if (heightChanged > heightNeedChange) {
-          _dataListOffset = s;
-          _itemsRectHolder.clear();
-          position.jumpTo(position.pixels + heightChanged - heightNeedChange);
-          return;
+        if (heightChanged > willChangeHeight) {
+          newOffset = s;
+          break;
         }
       }
-      _dataListOffset = 0;
+      _dataListOffset = newOffset;
       _itemsRectHolder.clear();
-      position.jumpTo(0);
+      position.correctBy(heightChanged - willChangeHeight);
     }
   }
 
