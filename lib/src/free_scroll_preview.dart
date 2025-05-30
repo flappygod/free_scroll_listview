@@ -209,7 +209,6 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
               maintainSize: true,
               maintainAnimation: true,
               maintainState: true,
-              maintainSemantics: true,
               child: HeroMode(
                 key: widget.controller._previewKeys[trueIndex],
                 enabled: false,
