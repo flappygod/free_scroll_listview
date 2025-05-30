@@ -341,9 +341,18 @@ class FreeScrollListViewController<T> extends ScrollController {
           break;
         }
       }
-      _dataListOffset = newOffset;
-      _itemsRectHolder.clear();
-      position.correctBy(heightChanged - willChangeHeight);
+      //is zero(just to zero)
+      if(newOffset == 0){
+        _dataListOffset = newOffset;
+        _itemsRectHolder.clear();
+        position.jumpTo(0);
+      }
+      //offset changed
+      else{
+        _dataListOffset = newOffset;
+        _itemsRectHolder.clear();
+        position.jumpTo(position.pixels + heightChanged - willChangeHeight);
+      }
     }
   }
 
