@@ -1,3 +1,3 @@
-## 1.2.42
+## 2.0.0
 
-* Fix bugs if the listview was resized and set shrinkWrap true;
+* Make resize animation smooth;
