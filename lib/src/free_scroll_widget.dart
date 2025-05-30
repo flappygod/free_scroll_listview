@@ -1090,12 +1090,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
         ///start animation
         case FreeScrollActionAsyncType.notifyJump:
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              _notifyIndex();
-              _notifyOnShow();
-            }
-          });
+          _notifyIndexAndOnShow();
           break;
       }
     };
