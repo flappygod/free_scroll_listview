@@ -130,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
               behavior: HitTestBehavior.translucent,
               onTap: () {
                 _controller.scrollToIndex(
-                  4,
+                  94,
                   duration: const Duration(milliseconds: 300),
                 );
               },
