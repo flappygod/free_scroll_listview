@@ -1052,7 +1052,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   double _animationOffset = 0;
 
   ///mx height
-  double _listviewMaxHeight = 0;
+  double _listviewMaxHeight = -1;
 
   ///init listener
   void _initListener() {
@@ -1245,7 +1245,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     return LayoutBuilder(
       builder: (context, constraints) {
         ///just set if is zero
-        if (_listviewMaxHeight == 0) {
+        if (_listviewMaxHeight == -1) {
           _listviewMaxHeight = constraints.maxHeight;
         }
 

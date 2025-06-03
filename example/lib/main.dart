@@ -89,12 +89,12 @@ class _MyHomePageState extends State<MyHomePage> {
   ///reset data and scroll align
   Future _resetDataAndScrollAlign() {
     List<String> dataList = [];
-    for (int s = 0; s < 100; s++) {
+    for (int s = 0; s < 6; s++) {
       dataList.add(s.toString());
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 94,
+      index: 5,
       duration: Duration.zero,
       align: FreeScrollType.directJumpTo,
     );
@@ -130,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
               behavior: HitTestBehavior.translucent,
               onTap: () {
                 _controller.scrollToIndex(
-                  96,
+                  4,
                   duration: const Duration(milliseconds: 300),
                 );
               },
