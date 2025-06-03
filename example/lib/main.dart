@@ -89,12 +89,12 @@ class _MyHomePageState extends State<MyHomePage> {
   ///reset data and scroll align
   Future _resetDataAndScrollAlign() {
     List<String> dataList = [];
-    for (int s = 0; s < 6; s++) {
+    for (int s = 0; s < 100; s++) {
       dataList.add(s.toString());
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 5,
+      index: 93,
       duration: Duration.zero,
       align: FreeScrollType.directJumpTo,
     );
