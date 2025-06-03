@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 ///free scroll listview action type
 enum FreeScrollActionAsyncType {
   notifyAnimStart,
-  notifyJump,
+  notifyIndexShow,
 }
 
 ///free scroll listview action type

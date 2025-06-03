@@ -253,6 +253,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       data: needChangeOffset,
     );
     notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+    notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
     position.correctBy(needChangeOffset);
   }
 
@@ -399,6 +400,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       data: needChangeOffset,
     );
     notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+    notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
     position.jumpTo(position.pixels + needChangeOffset);
   }
 
@@ -497,7 +499,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataList.addAll(dataList);
       _dataListOffset = 0;
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-      notifyActionASyncListeners(FreeScrollActionAsyncType.notifyJump);
+      notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
     }
 
     ///set data if is init
@@ -508,7 +510,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataList.addAll(dataList);
       _dataListOffset = min(_dataListOffset, dataList.length);
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-      notifyActionASyncListeners(FreeScrollActionAsyncType.notifyJump);
+      notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
     }
   }
 
@@ -518,6 +520,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     _dataList[index] = t;
     _itemsRectHolder.clear();
     notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+    notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
   }
 
   ///add data to tail
@@ -526,6 +529,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataList.addAll(dataList);
       _itemsRectHolder.clear();
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
     });
   }
 
@@ -570,6 +574,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///notify data
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+        notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
       } else {
         ///notify data
         setDataAndScrollTo(
@@ -879,7 +884,7 @@ class FreeScrollListViewController<T> extends ScrollController {
             }
             await waitForPostFrameCallback();
             return notifyActionASyncListeners(
-              FreeScrollActionAsyncType.notifyJump,
+              FreeScrollActionAsyncType.notifyIndexShow,
             );
           }
         }
@@ -895,7 +900,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         }
         await waitForPostFrameCallback();
         return notifyActionASyncListeners(
-          FreeScrollActionAsyncType.notifyJump,
+          FreeScrollActionAsyncType.notifyIndexShow,
         );
     }
   }
@@ -907,7 +912,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       _isAnimating = false;
       _resetIndexIfNeeded();
       notifyActionASyncListeners(
-        FreeScrollActionAsyncType.notifyJump,
+        FreeScrollActionAsyncType.notifyIndexShow,
       );
     });
   }
@@ -1090,7 +1095,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           break;
 
         ///start animation
-        case FreeScrollActionAsyncType.notifyJump:
+        case FreeScrollActionAsyncType.notifyIndexShow:
           _notifyIndexAndOnShow();
           break;
       }
@@ -1192,7 +1197,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   ///init height
   void _notifyIndexAndOnShow() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    Future.delayed(const Duration(milliseconds: 60)).then((_) {
       if (mounted) {
         _notifyIndex();
         _notifyOnShow();
@@ -1204,7 +1209,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void initState() {
     _throttler = Throttler(duration: widget.notifyItemShowThrottlerDuration);
     _initListener();
-    _notifyIndexAndOnShow();
     super.initState();
   }
 
@@ -1216,7 +1220,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       widget.controller.addSyncActionListener(_syncListener);
       widget.controller.addASyncActionListener(_aSyncListener);
     }
-    _notifyIndexAndOnShow();
     super.didUpdateWidget(oldWidget);
   }
 
@@ -1247,14 +1250,18 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         }
 
         ///listview change to bigger,we need to know the changed height
-        if (_listviewMaxHeight < constraints.maxHeight && widget.shrinkWrap) {
-          widget.controller._resetIndexByHeightAdd(
-            constraints.maxHeight - _listviewMaxHeight,
-          );
+        if (_listviewMaxHeight != constraints.maxHeight) {
+          //if changed to bigger
+          if (_listviewMaxHeight < constraints.maxHeight && widget.shrinkWrap) {
+            widget.controller._resetIndexByHeightAdd(
+              constraints.maxHeight - _listviewMaxHeight,
+            );
+          }
+          //set height
+          _listviewMaxHeight = constraints.maxHeight;
+          //notify
+          _notifyIndexAndOnShow();
         }
-
-        ///set height
-        _listviewMaxHeight = constraints.maxHeight;
 
         return NotificationListener<ScrollNotification>(
           onNotification: _handleNotification,
@@ -1645,10 +1652,9 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
 ///wait
 Future waitForPostFrameCallback() {
-  return SchedulerBinding.instance.endOfFrame;
-  /*final Completer<void> completer = Completer<void>();
+  final Completer<void> completer = Completer<void>();
   WidgetsBinding.instance.addPostFrameCallback((_) {
     completer.complete();
   });
-  return completer.future;*/
+  return completer.future;
 }
