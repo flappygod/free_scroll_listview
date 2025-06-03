@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:free_scroll_listview/src/free_scroll_throttller.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
 import 'package:synchronized/synchronized.dart';
@@ -1643,10 +1644,11 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 }
 
 ///wait
-Future<void> waitForPostFrameCallback() async {
-  final Completer<void> completer = Completer<void>();
+Future waitForPostFrameCallback() {
+  return SchedulerBinding.instance.endOfFrame;
+  /*final Completer<void> completer = Completer<void>();
   WidgetsBinding.instance.addPostFrameCallback((_) {
     completer.complete();
   });
-  return completer.future;
+  return completer.future;*/
 }
