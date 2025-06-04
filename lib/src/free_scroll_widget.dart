@@ -1197,7 +1197,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   ///init height
   void _notifyIndexAndOnShow() {
-    Future.delayed(const Duration(milliseconds: 60)).then((_) {
+    Future.delayed(const Duration(milliseconds: 50)).then((_) {
       if (mounted) {
         _notifyIndex();
         _notifyOnShow();
@@ -1463,29 +1463,24 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     ///scroll end, check need reset index or not
     if (notification is ScrollEndNotification) {
       widget.controller._resetIndexIfNeeded();
-      _notifyOnShow();
+      _notifyIndexAndOnShow();
     }
 
     ///notify the on show
-    if ((notification is ScrollUpdateNotification) &&
-        (widget.notifyItemShowWhenAllTypeScroll ||
-            (widget.notifyItemShowWhenGestureScroll &&
-                notification.dragDetails != null))) {
-      if (_throttler.duration == Duration.zero) {
-        _notifyOnShow();
-      } else {
-        _throttler.throttle(() {
+    if (notification is ScrollUpdateNotification) {
+      _notifyIndex();
+      if ((widget.notifyItemShowWhenAllTypeScroll ||
+          (widget.notifyItemShowWhenGestureScroll &&
+              notification.dragDetails != null))) {
+        if (_throttler.duration.inMilliseconds == 0) {
           _notifyOnShow();
-        });
+        } else {
+          _throttler.throttle(() {
+            _notifyOnShow();
+          });
+        }
       }
     }
-
-    ///notify index
-    if (notification is ScrollUpdateNotification ||
-        notification is ScrollEndNotification) {
-      _notifyIndex();
-    }
-
     return false;
   }
 

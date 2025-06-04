@@ -10,7 +10,7 @@ class Throttler {
 
   //构造函数，允许自定义节流间隔时间，默认为 100ms
   Throttler({
-    this.duration = const Duration(milliseconds: 120),
+    this.duration = const Duration(milliseconds: 100),
   });
 
   //节流方法
