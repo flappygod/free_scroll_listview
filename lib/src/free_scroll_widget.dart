@@ -1463,7 +1463,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     ///scroll end, check need reset index or not
     if (notification is ScrollEndNotification) {
       widget.controller._resetIndexIfNeeded();
-      _notifyIndexAndOnShow();
+      _notifyIndex();
+      _notifyOnShow();
     }
 
     ///notify the on show
