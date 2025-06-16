@@ -1499,25 +1499,31 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     ///keys
     for (int key in widget.controller._itemsRectHolder.keys) {
       RectHolder? holder = widget.controller._itemsRectHolder[key];
-      if (holder != null && holder.isOnScreen) {
-        ///offset top
-        double offsetTop =
-            holder.rectTop()! - widget.controller.position.pixels;
-        holder.rectTop()! - widget.controller.position.pixels;
-        double offsetBottom =
-            holder.rectBottom()! - widget.controller.position.pixels;
 
-        ///Listview height
-        if ((offsetTop >= 0 && offsetBottom <= listViewHeight) ||
-            offsetTop <= 0 && offsetBottom >= listViewHeight) {
-          keys.add(key);
-        }
+      if (holder == null || !holder.isOnScreen) {
+        continue;
+      }
+
+      double? rectBottom = holder.rectBottom();
+      double? rectTop = holder.rectTop();
+      if (rectBottom == null || rectTop == null) {
+        continue;
+      }
+
+      ///offset top
+      double offsetTop = rectTop - widget.controller.position.pixels;
+      double offsetBottom = rectBottom - widget.controller.position.pixels;
+
+      ///Listview height
+      if ((offsetTop >= 0 && offsetBottom <= listViewHeight) ||
+          offsetTop <= 0 && offsetBottom >= listViewHeight) {
+        keys.add(key);
       }
     }
 
     ///keys data
     if (keys.isNotEmpty) {
-      widget.onItemShow!(keys);
+      widget.onItemShow?.call(keys);
     }
   }
 
@@ -1528,6 +1534,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     }
 
     double pixels = widget.controller.position.pixels;
+
+    ///listview height
+    double listViewHeight = widget.controller.listViewHeight;
 
     ///get sorted key
     List<int> sortedKeys = widget.controller._itemsRectHolder.keys.toList();
@@ -1556,6 +1565,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     }
 
     ///end index
+    if (sortedKeys.isEmpty) {
+      return;
+    }
     for (int s = sortedKeys.length - 1; s >= 0; s--) {
       int key = sortedKeys[s];
       RectHolder? holder = widget.controller._itemsRectHolder[key];
@@ -1569,7 +1581,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       }
 
       double offsetTop = rectTop - pixels;
-      if (offsetTop.round() < widget.controller.listViewHeight) {
+      if (offsetTop.round() < listViewHeight) {
         int index = key;
         if (widget.controller._currentEndIndex != index) {
           widget.controller._currentEndIndex = index;

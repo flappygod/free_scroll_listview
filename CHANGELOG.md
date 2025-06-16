@@ -1,3 +1,3 @@
-## 2.0.3
+## 2.0.4
 
-* Some small bug fixes and improvements.
+* Bugs fixed on flutter 3.32.0
