@@ -1,4 +1,3 @@
-import 'package:flutter/scheduler.dart';
 import 'package:free_scroll_listview/src/free_scroll_throttller.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
 import 'package:synchronized/synchronized.dart';
