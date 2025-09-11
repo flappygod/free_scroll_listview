@@ -48,9 +48,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   ///refresh rect
   void _refreshRectItems() {
     ///item
-    if (!mounted ||
-        !widget.controller.hasClients ||
-        !widget.controller.position.hasPixels) {
+    if (!mounted || !widget.controller.hasClients || !widget.controller.position.hasPixels) {
       return;
     }
 
@@ -144,8 +142,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     }
 
     ///remove former wrapper hash and rect
-    if (oldWidget.rectHolder.wrapperHash == hashCode &&
-        oldWidget.rectHolder != widget.rectHolder) {
+    if (oldWidget.rectHolder.wrapperHash == hashCode && oldWidget.rectHolder != widget.rectHolder) {
       _removeFrameRect(
         oldWidget.rectHolder,
         oldWidget.actualIndex,

@@ -39,8 +39,7 @@ class AdditionPreviewController<T> extends ChangeNotifier {
     bool previewReverse = false,
   }) {
     //return null if preview is already gone
-    if (_offsetPreviewCompleter != null &&
-        !_offsetPreviewCompleter!.isCompleted) {
+    if (_offsetPreviewCompleter != null && !_offsetPreviewCompleter!.isCompleted) {
       return Future.delayed(
         const Duration(milliseconds: 0),
         () => null,
@@ -93,8 +92,7 @@ class AdditionPreview<T> extends StatefulWidget {
 }
 
 /// addition preview state
-class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
-    with SingleTickerProviderStateMixin {
+class _AdditionPreviewState<T> extends State<AdditionPreview<T>> with SingleTickerProviderStateMixin {
   //listener
   late VoidCallback _listener;
 
@@ -125,15 +123,13 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
   //check preview height
   void _checkPreviewHeight() {
     //do nothing if not set
-    if (widget.controller._offsetPreviewCompleter == null ||
-        widget.controller._offsetPreviewCompleter!.isCompleted) {
+    if (widget.controller._offsetPreviewCompleter == null || widget.controller._offsetPreviewCompleter!.isCompleted) {
       return;
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ///get preview completer at first
-      Completer<PreviewModel?>? completer =
-          widget.controller._offsetPreviewCompleter;
+      Completer<PreviewModel?>? completer = widget.controller._offsetPreviewCompleter;
 
       ///is completed
       if (completer == null || completer.isCompleted) {
@@ -146,8 +142,7 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
       ///all
       for (int s = 0; s < widget.controller._previewCount; s++) {
         ///get context
-        final BuildContext? context =
-            widget.controller._previewKeys[s]?.currentContext;
+        final BuildContext? context = widget.controller._previewKeys[s]?.currentContext;
 
         ///anyone is empty, preview failure
         final RenderBox? box = context?.findRenderObject() as RenderBox?;
@@ -163,8 +158,7 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
       }
 
       ///get listview height
-      final BuildContext? listContext =
-          widget.controller._previewListKey.currentContext;
+      final BuildContext? listContext = widget.controller._previewListKey.currentContext;
       final RenderBox? listBox = listContext?.findRenderObject() as RenderBox?;
       previewModel.listviewHeight = listBox?.size.height ?? 0;
 
@@ -197,11 +191,8 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
           itemCount: widget.controller._previewCount,
           cacheExtent: widget.controller._previewExtent,
           itemBuilder: (context, index) {
-            int trueIndex = widget.controller._previewReverse
-                ? (widget.controller._previewCount - 1 - index)
-                : index;
-            Widget item =
-                widget.itemBuilder(context, trueIndex) ?? const SizedBox();
+            int trueIndex = widget.controller._previewReverse ? (widget.controller._previewCount - 1 - index) : index;
+            Widget item = widget.itemBuilder(context, trueIndex) ?? const SizedBox();
             widget.controller._previewWidgetList[trueIndex] = item;
             widget.controller._previewKeys[trueIndex] = GlobalKey();
             return Visibility(

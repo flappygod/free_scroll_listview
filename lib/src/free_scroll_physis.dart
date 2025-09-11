@@ -21,11 +21,8 @@ class FreeLimitShrinkOverScrollPhysics extends ScrollPhysics {
   @override
   bool shouldAcceptUserOffset(ScrollMetrics position) {
     if (controller is FreeScrollListViewController) {
-      FreeScrollListViewController ctl =
-          controller as FreeScrollListViewController;
-      if (ctl.hasClients &&
-          ctl.position.hasContentDimensions &&
-          ctl.dataListOffset() == 0) {
+      FreeScrollListViewController ctl = controller as FreeScrollListViewController;
+      if (ctl.hasClients && ctl.position.hasContentDimensions && ctl.dataListOffset() == 0) {
         return controller.position.maxScrollExtent > 0;
       } else {
         return true;
