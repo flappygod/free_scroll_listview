@@ -7,7 +7,6 @@ class AnchorItemWrapper extends StatefulWidget {
   const AnchorItemWrapper({
     required this.actualIndex,
     required this.controller,
-    required this.rectHolder,
     this.reverse = false,
     this.addRepaintBoundary = false,
     this.child,
@@ -17,15 +16,11 @@ class AnchorItemWrapper extends StatefulWidget {
   //可选的 AnchorScrollController
   final FreeScrollListViewController controller;
 
-
   //子小部件
   final Widget? child;
 
   //项目的索引
   final int actualIndex;
-
-  //Rect
-  final RectHolder rectHolder;
 
   //reverse
   final bool reverse;
@@ -39,6 +34,9 @@ class AnchorItemWrapper extends StatefulWidget {
 
 ///anchor item wrapper state
 class AnchorItemWrapperState extends State<AnchorItemWrapper> {
+  ///当前的rect holder
+  final RectHolder _rectHolder = RectHolder();
+
   ///check rect listener
   late VoidCallback _checkRectListener;
 
@@ -77,6 +75,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
           itemBox.size.width.removeTinyFraction(),
           itemBox.size.height.removeTinyFraction(),
         ),
+        widget.actualIndex,
       );
     } else {
       _addFrameRect(
@@ -86,11 +85,12 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
           itemBox.size.width.removeTinyFraction(),
           itemBox.size.height.removeTinyFraction(),
         ),
+        widget.actualIndex,
       );
     }
   }
 
-  ///update scroll rect to controller
+  ///更新Rect controller
   void _updateScrollRectToController() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -99,17 +99,21 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     });
   }
 
-  ///add to rect
-  void _addFrameRect(Rect rect) {
-    if (widget.rectHolder.wrapperHash == hashCode) {
-      widget.rectHolder.rect = rect;
-      widget.controller.notifyItemRectShowOnScreen(widget.actualIndex);
-    }
+  ///这里必然是正在展示的
+  void _addFrameRect(Rect rect, int index) {
+    ///必然是当前正在展示的
+    _rectHolder.rect = rect;
+    widget.controller.itemsRectHolder[index] = _rectHolder;
+    widget.controller.notifyItemRectShowOnScreen(index);
   }
 
-  ///remove rect
-  void _removeFrameRect(RectHolder holder, int index) {
-    holder.wrapperHash = null;
+  ///这里需要判断移除
+  void _removeFrameRect(int index) {
+    ///如果移除的时候仍然相等
+    _rectHolder.rect = null;
+    if (widget.controller.itemsRectHolder[index] == _rectHolder) {
+      widget.controller.itemsRectHolder.remove(index);
+    }
     widget.controller.notifyItemRectRemoveOnScreen(index);
   }
 
@@ -121,10 +125,6 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     };
     widget.controller.addCheckRectListener(_checkRectListener);
 
-    ///set wrapper hash
-    widget.rectHolder.wrapperHash = hashCode;
-    widget.rectHolder.rect = null;
-
     ///refresh
     _updateScrollRectToController();
     super.initState();
@@ -132,22 +132,16 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
-    ///check rect listener changed
+    ///监听更换
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeCheckRectListener(_checkRectListener);
       widget.controller.addCheckRectListener(_checkRectListener);
     }
 
-    ///remove former wrapper hash and rect
-    if (oldWidget.rectHolder.wrapperHash == hashCode && oldWidget.rectHolder != widget.rectHolder) {
-      _removeFrameRect(
-        oldWidget.rectHolder,
-        oldWidget.actualIndex,
-      );
+    ///index发送了改变，View被服用了
+    if (oldWidget.actualIndex != widget.actualIndex) {
+      _removeFrameRect(oldWidget.actualIndex);
     }
-
-    ///set current wrapper hash and rect
-    widget.rectHolder.wrapperHash = hashCode;
 
     ///refresh
     _updateScrollRectToController();
@@ -157,17 +151,12 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   void dispose() {
-    ///check rect listener
     widget.controller.removeCheckRectListener(_checkRectListener);
 
-    ///remove wrapper hash if is equal
-    if (widget.rectHolder.wrapperHash == hashCode) {
-      _removeFrameRect(
-        widget.rectHolder,
-        widget.actualIndex,
-      );
-    }
+    ///移除rect
+    _removeFrameRect(widget.actualIndex);
 
+    ///完成释放
     super.dispose();
   }
 

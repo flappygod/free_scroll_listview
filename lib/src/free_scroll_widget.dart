@@ -61,7 +61,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   final AdditionPreviewController<T> _previewController = AdditionPreviewController<T>();
 
   //item maps
-  final SplayTreeMap<int, RectHolder> _itemsRectHolder = SplayTreeMap<int, RectHolder>();
+  final SplayTreeMap<int, RectHolder> itemsRectHolder = SplayTreeMap<int, RectHolder>();
 
   //negative height total
   double _negativeHeight = negativeInfinityValue;
@@ -98,17 +98,13 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _currentEndIndex;
   }
 
-  ///get items rect on screen
-  Map<int, RectHolder> getItemRectList() {
-    return _itemsRectHolder;
-  }
 
   ///get item top scroll offset
   double? getItemTopScrollOffset(int index) {
     if (!hasClients || !position.hasPixels) {
       return null;
     }
-    RectHolder? rect = _itemsRectHolder[index];
+    RectHolder? rect = itemsRectHolder[index];
     if (rect == null) {
       return null;
     }
@@ -125,7 +121,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     if (!hasClients || !position.hasPixels) {
       return null;
     }
-    RectHolder? rect = _itemsRectHolder[index];
+    RectHolder? rect = itemsRectHolder[index];
     if (rect == null) {
       return null;
     }
@@ -213,7 +209,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///calculate the last screen index
     for (int s = maxIndex; s >= 0; s--) {
-      final double? itemHeight = _itemsRectHolder[s]?.rectHeight();
+      final double? itemHeight = itemsRectHolder[s]?.rectHeight();
       if (itemHeight == null) {
         return;
       }
@@ -236,7 +232,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///calculate the offset needed to reset the index
     double needChangeOffset = 0;
     for (int s = lastScreenIndex; s < tempCount; s++) {
-      final itemHeight = _itemsRectHolder[s]?.rectHeight();
+      final itemHeight = itemsRectHolder[s]?.rectHeight();
       if (itemHeight == null) {
         return;
       }
@@ -248,7 +244,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///reset index and update state
     _dataListOffset = lastScreenIndex;
-    _itemsRectHolder.clear();
+    itemsRectHolder.clear();
     _correctNegativeHeight(needChangeOffset);
     notifyActionSyncListeners(
       FreeScrollActionSyncType.notifyAnimOffset,
@@ -262,12 +258,12 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///check reset scroll extend
   void _checkResetMinScrollExtend() {
     //Do nothing if _itemsRectHolder is empty
-    if (_itemsRectHolder.isEmpty) {
+    if (itemsRectHolder.isEmpty) {
       return;
     }
 
     //Get the first RectHolder and its rectTop
-    RectHolder? firstHolder = _itemsRectHolder[0];
+    RectHolder? firstHolder = itemsRectHolder[0];
     double? firstHolderRectTop = firstHolder?.rectTop();
 
     //Safely cast the position to _NegativedScrollPosition
@@ -294,7 +290,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   double? _findMinRectTop() {
     double? minRectTop;
     //Iterate through all RectHolders in _itemsRectHolder
-    for (RectHolder holder in _itemsRectHolder.values) {
+    for (RectHolder holder in itemsRectHolder.values) {
       final rectTop = holder.rectTop();
       if (rectTop != null) {
         //Update minRectTop if a smaller value is found
@@ -308,7 +304,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///when delete some item
   void _checkDeleteLastItem(int index) {
-    RectHolder? firstHolder = _itemsRectHolder[0];
+    RectHolder? firstHolder = itemsRectHolder[0];
     if (position.isScrollingNotifier.value ||
         isAnimating ||
         index != 0 ||
@@ -337,14 +333,14 @@ class FreeScrollListViewController<T> extends ScrollController {
       double heightChanged = 0;
       int newOffset = 0;
       for (int s = _dataListOffset - 1; s >= 0; s--) {
-        heightChanged += _itemsRectHolder[s]?.rectHeight() ?? 0;
+        heightChanged += itemsRectHolder[s]?.rectHeight() ?? 0;
         if (heightChanged > willChangeHeight) {
           newOffset = s;
           break;
         }
       }
       _dataListOffset = newOffset;
-      _itemsRectHolder.clear();
+      itemsRectHolder.clear();
       _correctNegativeHeight(heightChanged);
       notifyActionSyncListeners(
         FreeScrollActionSyncType.notifyAnimOffset,
@@ -363,7 +359,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///calculate the last screen index
     for (int s = maxIndex; s >= 0; s--) {
-      final double? itemHeight = _itemsRectHolder[s]?.rectHeight();
+      final double? itemHeight = itemsRectHolder[s]?.rectHeight();
       if (itemHeight == null) {
         return;
       }
@@ -384,7 +380,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///calculate the offset needed to reset the index
     double needChangeOffset = 0;
     for (int s = lastScreenIndex; s < tempCount; s++) {
-      final itemHeight = _itemsRectHolder[s]?.rectHeight();
+      final itemHeight = itemsRectHolder[s]?.rectHeight();
       if (itemHeight == null) {
         return;
       }
@@ -393,7 +389,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///reset index and update state
     _dataListOffset = lastScreenIndex;
-    _itemsRectHolder.clear();
+    itemsRectHolder.clear();
     _correctNegativeHeight(needChangeOffset);
     notifyActionSyncListeners(
       FreeScrollActionSyncType.notifyAnimOffset,
@@ -494,7 +490,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///set data if not init
     if (_dataList.isEmpty) {
       _setNegativeHeight(0);
-      _itemsRectHolder.clear();
+      itemsRectHolder.clear();
       _dataList.clear();
       _dataList.addAll(dataList);
       _dataListOffset = 0;
@@ -505,7 +501,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///set data if is init
     else {
       _setNegativeHeight(negativeInfinityValue);
-      _itemsRectHolder.clear();
+      itemsRectHolder.clear();
       _dataList.clear();
       _dataList.addAll(dataList);
       _dataListOffset = min(_dataListOffset, dataList.length);
@@ -518,7 +514,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   void updateData(T t, int index) {
     assert(index >= 0 && index < dataList.length);
     _dataList[index] = t;
-    _itemsRectHolder.clear();
+    itemsRectHolder.clear();
     notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
     notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
   }
@@ -527,7 +523,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   Future<void> addDataToTail(List<T> dataList) {
     return _lock.synchronized(() async {
       _dataList.addAll(dataList);
-      _itemsRectHolder.clear();
+      itemsRectHolder.clear();
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
     });
@@ -543,7 +539,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       }
 
       ///data list
-      if (_dataList.isNotEmpty && _itemsRectHolder.isEmpty) {
+      if (_dataList.isNotEmpty && itemsRectHolder.isEmpty) {
         await waitForPostFrameCallback();
       }
 
@@ -552,7 +548,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         ///insert all data
         _dataList.insertAll(0, dataList);
         _dataListOffset = _dataListOffset + dataList.length;
-        _itemsRectHolder.clear();
+        itemsRectHolder.clear();
 
         ///preview the height and add it to negative height
         double formerTopData = _negativeHeight;
@@ -708,7 +704,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     notifyCheckRectListeners();
 
     ///get the rect for the index
-    RectHolder? holder = _itemsRectHolder[index];
+    RectHolder? holder = itemsRectHolder[index];
 
     ///if index is exists and is not animating
     ///when animating the rect may not actual
@@ -728,7 +724,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     else {
       ///get align
       FreeScrollType align = FreeScrollType.topToBottom;
-      List<int> keys = _itemsRectHolder.keys.toList();
+      List<int> keys = itemsRectHolder.keys.toList();
 
       if (keys.isEmpty) {
         return Future.delayed(Duration.zero);
@@ -737,8 +733,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///keys
       double pixels = position.pixels;
       int currentIndex = keys.first;
-      for (int key in _itemsRectHolder.keys) {
-        RectHolder? holder = _itemsRectHolder[key];
+      for (int key in itemsRectHolder.keys) {
+        RectHolder? holder = itemsRectHolder[key];
         if (holder != null && holder.isOnScreen) {
           double offsetTop = holder.rectTop()! - pixels;
           double offsetBottom = holder.rectBottom()! - pixels;
@@ -788,7 +784,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///Clear existing data and cached maps
         _setNegativeHeight(negativeInfinityValue);
-        _itemsRectHolder.clear();
+        itemsRectHolder.clear();
         _dataListOffset = index;
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
@@ -811,7 +807,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///Clear existing data and cached maps
         _setNegativeHeight(negativeInfinityValue);
-        _itemsRectHolder.clear();
+        itemsRectHolder.clear();
         _dataListOffset = index;
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
@@ -866,7 +862,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
             ///set jump index
             _setNegativeHeight(negativeInfinityValue);
-            _itemsRectHolder.clear();
+            itemsRectHolder.clear();
             _dataListOffset = testIndex;
             notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
             notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
@@ -882,7 +878,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///other kind
         _setNegativeHeight(negativeInfinityValue);
-        _itemsRectHolder.clear();
+        itemsRectHolder.clear();
         _dataListOffset = index;
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
@@ -1151,8 +1147,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
           maxScrollExtent != double.maxFinite &&
           widget.controller.hasClients &&
           widget.controller.position.hasPixels &&
-          widget.controller._itemsRectHolder[maxIndex] != null &&
-          widget.controller._itemsRectHolder[maxIndex]!.isOnScreen) {
+          widget.controller.itemsRectHolder[maxIndex] != null &&
+          widget.controller.itemsRectHolder[maxIndex]!.isOnScreen) {
         widget.controller.position.jumpTo(maxScrollExtent);
       }
     });
@@ -1264,13 +1260,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           int actualIndex = negativeDataLength - index - 1;
-                          RectHolder rectHolder = RectHolder();
-                          widget.controller._itemsRectHolder[actualIndex] = rectHolder;
                           return AnchorItemWrapper(
                             reverse: widget.reverse,
                             actualIndex: actualIndex,
                             controller: widget.controller,
-                            rectHolder: rectHolder,
                             addRepaintBoundary: widget.addRepaintBoundary,
                             child: widget.builder(context, actualIndex),
                           );
@@ -1288,13 +1281,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           int actualIndex = negativeDataLength + index;
-                          RectHolder rectHolder = RectHolder();
-                          widget.controller._itemsRectHolder[actualIndex] = rectHolder;
                           return AnchorItemWrapper(
                             reverse: widget.reverse,
                             actualIndex: actualIndex,
                             controller: widget.controller,
-                            rectHolder: rectHolder,
                             addRepaintBoundary: widget.addRepaintBoundary,
                             child: widget.builder(context, actualIndex),
                           );
@@ -1523,8 +1513,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     double listViewHeight = widget.controller.listViewHeight;
 
     ///keys
-    for (int key in widget.controller._itemsRectHolder.keys) {
-      RectHolder? holder = widget.controller._itemsRectHolder[key];
+    for (int key in widget.controller.itemsRectHolder.keys) {
+      RectHolder? holder = widget.controller.itemsRectHolder[key];
 
       if (holder == null || !holder.isOnScreen) {
         continue;
@@ -1564,11 +1554,11 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     double listViewHeight = widget.controller.listViewHeight;
 
     ///get sorted key
-    List<int> sortedKeys = widget.controller._itemsRectHolder.keys.toList();
+    List<int> sortedKeys = widget.controller.itemsRectHolder.keys.toList();
 
     ///start index
     for (int key in sortedKeys) {
-      RectHolder? holder = widget.controller._itemsRectHolder[key];
+      RectHolder? holder = widget.controller.itemsRectHolder[key];
       if (holder == null || !holder.isOnScreen) {
         continue;
       }
@@ -1595,7 +1585,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     }
     for (int s = sortedKeys.length - 1; s >= 0; s--) {
       int key = sortedKeys[s];
-      RectHolder? holder = widget.controller._itemsRectHolder[key];
+      RectHolder? holder = widget.controller.itemsRectHolder[key];
       if (holder == null || !holder.isOnScreen) {
         continue;
       }

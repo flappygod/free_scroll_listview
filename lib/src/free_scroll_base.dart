@@ -78,23 +78,23 @@ enum FreeScrollType {
 class RectHolder {
   ///check is on screen or not
   bool get isOnScreen {
-    return wrapperHash != null && rect != null;
+    return rect != null;
   }
-
-  ///wrapper hash
-  int? wrapperHash;
 
   ///rect
   Rect? rect;
 
+  ///高度
   double? rectHeight() {
     return rect?.height;
   }
 
+  ///顶部
   double? rectTop() {
     return rect?.top;
   }
 
+  ///底部
   double? rectBottom() {
     return rect?.bottom;
   }
