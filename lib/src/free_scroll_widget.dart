@@ -98,7 +98,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _currentEndIndex;
   }
 
-
   ///get item top scroll offset
   double? getItemTopScrollOffset(int index) {
     if (!hasClients || !position.hasPixels) {
@@ -133,41 +132,41 @@ class FreeScrollListViewController<T> extends ScrollController {
     return offsetTwo - offsetOne - (rect.rectHeight() ?? 0);
   }
 
-  ///获取最大可能的高度
+  ///获取最大可能区域的高度
   double get listviewMaxHeight => _listviewMaxHeight ?? 0;
 
-  /// ListView height
+  ///获取列表的高度
   double get listViewHeight {
     final box = _listViewKey.currentContext?.findRenderObject() as RenderBox?;
     return box?.size.height ?? 0.0;
   }
 
-  /// ListView offset
+  ///获取当前列表相对于屏幕的偏移量
   double get listViewOffset {
     final box = _listViewKey.currentContext?.findRenderObject() as RenderBox?;
     return box?.localToGlobal(Offset.zero).dy ?? 0.0;
   }
 
-  ///get header view height
+  ///获取headerView的高度
   double get headerViewHeight {
     final box = _headerKey.currentContext?.findRenderObject() as RenderBox?;
     return box?.size.height ?? 0.0;
   }
 
-  ///get footer view height
+  ///获取footerView的高度
   double get footerViewHeight {
     final box = _footerKey.currentContext?.findRenderObject() as RenderBox?;
     return box?.size.height ?? 0.0;
   }
 
-  ///correct negative height
+  ///纠正负向滚动的最大高度进行偏移
   void _correctNegativeHeight(double height) {
     if (_negativeHeight != negativeInfinityValue) {
       _setNegativeHeight(_negativeHeight + height);
     }
   }
 
-  /// Set negative height
+  ///设置负向滚动的最大搞低
   void _setNegativeHeight(double height) {
     _negativeHeight = height.removeTinyFraction();
     if (hasClients && position is _NegativedScrollPosition) {
@@ -180,40 +179,48 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
-  ///remove rect on screen
+  ///某个Item将要被移除掉了
   void notifyItemRectRemoveOnScreen(int index) {
+    //如果是index == 0的item被移除掉了，设置负向滚动距离为无限
     if (index == 0) {
       _setNegativeHeight(negativeInfinityValue);
     }
   }
 
-  ///add anchor item state
+  ///某个Item展示在屏幕上了
   void notifyItemRectShowOnScreen(int index) {
-    ///check when animating
-    _checkResetCurrentIndex();
+    _checkResetLastScreenIndex();
     _checkResetMinScrollExtend();
-    _checkDeleteLastItem(index);
+    _checkResetDeleteFirstItem(index);
   }
 
-  ///reset index when animating,this is triggered by when jump index has no enough positive space to lay on one screen.
-  void _checkResetCurrentIndex() {
-    ///when not animating,return
+  ///这里主要是为了解决在动画的过程中，如果发现最后一屏的数据不满了，防止滚动最后留白太多。
+  void _checkResetLastScreenIndex() {
+    //如果不是在动画中，就直接返回
     if (!_isAnimating) {
       return;
     }
 
-    int maxIndex = dataList.length - 1;
+    //最大的index
+    int maxIndex = (dataList.length - 1);
+
+    //当前列表高度
     double currentListViewHeight = listViewHeight;
+
+    //我们来计算滚动到的最后一屏的高度
     double lastScreenHeight = 0;
     int? lastScreenIndex;
 
-    ///calculate the last screen index
+    //从最大的index开始方向计算
     for (int s = maxIndex; s >= 0; s--) {
+      //没有找到高度就代表最后一屏还没有展示完全，不做处理
       final double? itemHeight = itemsRectHolder[s]?.rectHeight();
       if (itemHeight == null) {
         return;
       }
       lastScreenHeight += itemHeight;
+
+      //当完成了最后一屏的高度计算大于了当前的列表高度(设置最大的能满足负一屏幕的高度，主要保证Viewport能够正常滚动)
       if (lastScreenHeight >= currentListViewHeight) {
         lastScreenIndex = s;
         break;
@@ -223,13 +230,13 @@ class FreeScrollListViewController<T> extends ScrollController {
       return;
     }
 
-    ///do not need to reset index
+    //如果当前的offset已经比最少需要的lastScreenIndex要小，那么无需做切换就能保证最后一屏的滚动不出现问题
     int tempCount = _dataListOffset;
     if (tempCount <= lastScreenIndex) {
       return;
     }
 
-    ///calculate the offset needed to reset the index
+    //否则的话我们就需要计算一下需要切换锚定Index的高度的大小是多少
     double needChangeOffset = 0;
     for (int s = lastScreenIndex; s < tempCount; s++) {
       final itemHeight = itemsRectHolder[s]?.rectHeight();
@@ -242,58 +249,77 @@ class FreeScrollListViewController<T> extends ScrollController {
       return;
     }
 
-    ///reset index and update state
+    //重置当前的锚定index,
     _dataListOffset = lastScreenIndex;
+
+    //清空缓存item高度
     itemsRectHolder.clear();
+
+    //最小高度如果存在那么就进行一个偏移
     _correctNegativeHeight(needChangeOffset);
+
+    //告诉正在进行的动画列表的锚定已经修改，响应的动画响应位置也需要进行偏移
     notifyActionSyncListeners(
       FreeScrollActionSyncType.notifyAnimOffset,
       data: needChangeOffset,
     );
+
+    //刷新界面
     notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+
+    //提示index被展示
     notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
+
+    //当前的滚动距离修正
     position.correctBy(needChangeOffset);
   }
 
-  ///check reset scroll extend
+  ///这里主要是在滚动的过程中，及时去设置最小的滚动距离，这样对滚动列表进行限制
   void _checkResetMinScrollExtend() {
-    //Do nothing if _itemsRectHolder is empty
+    //当前的rect holder如果是空的
     if (itemsRectHolder.isEmpty) {
       return;
     }
 
-    //Get the first RectHolder and its rectTop
+    //对当前的滚动的position进行一个转换
+    _NegativedScrollPosition? currentPosition =
+        (hasClients && position is _NegativedScrollPosition) ? (position as _NegativedScrollPosition) : null;
+
+    //如果都是空的那么就不需要再继续了
+    if (currentPosition == null) {
+      return;
+    }
+
+    //获取顶部的第一个
     RectHolder? firstHolder = itemsRectHolder[0];
     double? firstHolderRectTop = firstHolder?.rectTop();
 
-    //Safely cast the position to _NegativedScrollPosition
-    _NegativedScrollPosition? currentPosition =
-        position is _NegativedScrollPosition ? position as _NegativedScrollPosition : null;
-
-    //Find the minimum rectTop from _itemsRectHolder
+    //找到当前屏幕最小
     double? minRectTop = _findMinRectTop();
 
-    //Determine and set the negative height based on conditions
+    //如果第一个rect top不为空、而且也确认了是第一个
     if (firstHolderRectTop != null && minRectTop == firstHolderRectTop) {
-      //If the minimum rectTop is the firstHolder's rectTop
+      //这种情况相当于无疑问，直接设置这个负向滚动距离的限制
       _setNegativeHeight(firstHolderRectTop);
-    } else if (currentPosition != null && minRectTop != null) {
-      //If firstHolder does not exist, compare currentPosition.minScrollExtent with minRectTop
-      _setNegativeHeight(min(currentPosition.minScrollExtent, minRectTop));
-    } else {
-      //If no valid minimum rectTop is found, set to negative infinity
-      _setNegativeHeight(negativeInfinityValue);
+      return;
     }
+
+    //如果只是最小的rect不为空、取当前的已经设置的minScrollExtent和minRectTop进行对比来取得最小的
+    if (minRectTop != null) {
+      _setNegativeHeight(min(currentPosition.minScrollExtent, minRectTop));
+      return;
+    }
+
+    //其余的情况我们直接设置为可以无限的负向滚动
+    _setNegativeHeight(negativeInfinityValue);
   }
 
-  ///Helper method to find the minimum rectTop from _itemsRectHolder
+  ///在itemsRectHolder中找到那个最小的值进行处理(找到当前所有的rect中的那个最小的值)
   double? _findMinRectTop() {
     double? minRectTop;
-    //Iterate through all RectHolders in _itemsRectHolder
     for (RectHolder holder in itemsRectHolder.values) {
       final rectTop = holder.rectTop();
       if (rectTop != null) {
-        //Update minRectTop if a smaller value is found
         if (minRectTop == null || rectTop < minRectTop) {
           minRectTop = rectTop;
         }
@@ -302,50 +328,77 @@ class FreeScrollListViewController<T> extends ScrollController {
     return minRectTop;
   }
 
-  ///when delete some item
-  void _checkDeleteLastItem(int index) {
+  ///处理第一条数据被删除了的情况(反向的时候需要触发一下防止空白高度)
+  void _checkResetDeleteFirstItem(int index) {
     RectHolder? firstHolder = itemsRectHolder[0];
-    if (position.isScrollingNotifier.value ||
+    if (index != 0 ||
+        //正在滚动
+        position.isScrollingNotifier.value ||
         isAnimating ||
-        index != 0 ||
+        //第一条值没有
         firstHolder == null ||
         firstHolder.rectTop() == null ||
+        //已经滚动了
         position.pixels >= firstHolder.rectTop()!) {
       return;
     }
     position.jumpTo(position.pixels);
   }
 
-  ///start
+  ///当界面的高度发生变化的时候，可能因为最后一屏高度不足导致空白
   void _resetIndexByHeightAdd(double willChangeHeight) {
-    //noting need to do
+    //基本条件
     if (!hasClients || !position.hasPixels) {
       return;
     }
 
-    // Check if the position's maxScrollExtent is zero and the dataListOffset is zero
-    if (position.maxScrollExtent == 0 && _dataListOffset == 0) {
+    //如果当前_dataListOffset已经为零(position.maxScrollExtent == 0 这个貌似不需要已经注释掉了)
+    if (_dataListOffset == 0 /*&& position.maxScrollExtent == 0*/) {
       return;
     }
 
-    //If the maxScrollExtent is less than the height, adjust the dataListOffset
-    if (position.maxScrollExtent < willChangeHeight) {
+    //如果发现你的最大滚动距离已经不足，那么我们就需要进行切换了
+    //(这里我们多给了100的高度偏移,防止重新锚定次数过多,具体加多少合适，这个需要考虑)
+    double cleverHeight = (willChangeHeight + 100);
+
+    //你的滚动距离不足，需要进行充值
+    if (position.maxScrollExtent < cleverHeight) {
+      //我们以当前的_dataListOffset向前偏移
+      //因为willChangeHeight这个值可能持续回调且不大
+      //防止多次进行重新锚定而导致性能问题
       double heightChanged = 0;
-      int newOffset = 0;
+      int newListOffset = 0;
       for (int s = _dataListOffset - 1; s >= 0; s--) {
-        heightChanged += itemsRectHolder[s]?.rectHeight() ?? 0;
-        if (heightChanged > willChangeHeight) {
-          newOffset = s;
+        //界面上都没有展示，这个就不要做多余的动作了，
+        double? itemHeight = itemsRectHolder[s]?.rectHeight();
+        if (itemHeight == null) {
+          break;
+        }
+        //一直干直到大于
+        heightChanged += itemHeight;
+        if (heightChanged > cleverHeight) {
+          newListOffset = s;
           break;
         }
       }
-      _dataListOffset = newOffset;
+
+      //因为特殊原因导致没法获得新的锚定点，直接返回罢工
+      if (_dataListOffset == newListOffset) {
+        return;
+      }
+
+      //重新锚定
+      _dataListOffset = newListOffset;
+      //清空老数据
       itemsRectHolder.clear();
+      //执行偏移
       _correctNegativeHeight(heightChanged);
+      //通知动画
       notifyActionSyncListeners(
         FreeScrollActionSyncType.notifyAnimOffset,
         data: heightChanged,
       );
+      //执行偏移
       position.jumpTo(position.pixels + heightChanged);
     }
   }
