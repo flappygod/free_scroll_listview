@@ -403,15 +403,19 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
-  ///can scroll
+  ///这里是当滚动结束的时候，进行一个锚定位置的校准，同样的道理，尽量保证最后一屏(positive)能够铺满
+  ///(极少数特殊情况下可能滚出空白，这里是为了在滚动结束后不再展示这一块空白区域，按照道理这个方法不触发才是最好的)
   void _resetIndexIfNeeded() {
+    //最大
     int maxIndex = dataList.length - 1;
+    //当前高度
     double currentListViewHeight = listViewHeight;
+
+    //同样的最后一屏
     double lastScreenHeight = 0;
     int? lastScreenIndex;
-
-    ///calculate the last screen index
     for (int s = maxIndex; s >= 0; s--) {
+      //没有取到证明没展示，直接return
       final double? itemHeight = itemsRectHolder[s]?.rectHeight();
       if (itemHeight == null) {
         return;
@@ -422,15 +426,16 @@ class FreeScrollListViewController<T> extends ScrollController {
         break;
       }
     }
+    //要么取到了，要么所有数据都不够铺满一个屏幕就直接赋值为0
     lastScreenIndex ??= 0;
 
-    ///do not need to reset index
+    //不需要重新锚定
     int tempCount = _dataListOffset;
     if (tempCount <= lastScreenIndex) {
       return;
     }
 
-    ///calculate the offset needed to reset the index
+    //进行重新锚定
     double needChangeOffset = 0;
     for (int s = lastScreenIndex; s < tempCount; s++) {
       final itemHeight = itemsRectHolder[s]?.rectHeight();
@@ -440,7 +445,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       needChangeOffset += itemHeight;
     }
 
-    ///reset index and update state
+    //执行重新锚定
     _dataListOffset = lastScreenIndex;
     itemsRectHolder.clear();
     _correctNegativeHeight(needChangeOffset);
