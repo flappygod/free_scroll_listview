@@ -48,6 +48,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   //data list offset
   int _dataListOffset;
 
+  //当前列表是否是反向的
+  bool _isReverse = false;
+
   //listeners
   final Set<FreeScrollListSyncListener> _syncListeners = {};
 
@@ -345,48 +348,60 @@ class FreeScrollListViewController<T> extends ScrollController {
     position.jumpTo(position.pixels);
   }
 
-  ///当界面的高度发生变化的时候，可能因为最后一屏高度不足导致空白
-  void _resetIndexByHeightAdd(double willChangeHeight) {
+  ///当界面的高度发生变化的时候，可能因为最后一屏高度不足导致空白，这种情况下，我们合理的重新锚定以防止空白的出现
+  void _resetIndexByHeightAdd(double oldHeight, double newHeight) {
     //基本条件
     if (!hasClients || !position.hasPixels) {
       return;
     }
 
-    //如果当前_dataListOffset已经为零(position.maxScrollExtent == 0 这个貌似不需要已经注释掉了)
-    if (_dataListOffset == 0 /*&& position.maxScrollExtent == 0*/) {
+    //如果当前_dataListOffset已经为零
+    if (_dataListOffset == 0) {
       return;
     }
 
-    //如果发现你的最大滚动距离已经不足，那么我们就需要进行切换了
-    //(这里我们多给了100的高度偏移,防止重新锚定次数过多,具体加多少合适，这个需要考虑)
-    double cleverHeight = (willChangeHeight + 100);
+    //计算当前展示的区域offset的contentHeight,如果没有展示代表其实距离是足够的，距离不足的时候，必然所有item都是有值的。
+    double currentContentHeight = 0;
+    int maxIndex = (dataList.length - 1);
+    for (int s = maxIndex; s >= _dataListOffset; s--) {
+      double? itemHeight = itemsRectHolder[s]?.rectHeight();
+      if (itemHeight == null) {
+        return;
+      }
+      currentContentHeight += itemHeight;
+    }
 
-    //你的滚动距离不足，需要进行充值
-    if (position.maxScrollExtent < cleverHeight) {
+    //多申请100的高度防止重新锚定次数过多
+    double applyHeight = newHeight + 100;
+
+    //高度已经不再满足需求
+    if (currentContentHeight < applyHeight) {
+      //需求高度
+      double needHeight = (applyHeight - currentContentHeight);
+
       //我们以当前的_dataListOffset向前偏移
       //因为willChangeHeight这个值可能持续回调且不大
       //防止多次进行重新锚定而导致性能问题
       double heightChanged = 0;
-      int newListOffset = 0;
+      int newListOffset = _dataListOffset;
       for (int s = _dataListOffset - 1; s >= 0; s--) {
-        //界面上都没有展示，这个就不要做多余的动作了，
+        //向前取可能这个item还未展示的情况直接break,能向前偏移多少个就向前偏移多少个
         double? itemHeight = itemsRectHolder[s]?.rectHeight();
         if (itemHeight == null) {
           break;
         }
-        //一直干直到大于
+        //向前偏移
         heightChanged += itemHeight;
-        if (heightChanged > cleverHeight) {
-          newListOffset = s;
+        newListOffset = s;
+        //已经满足我们的要求了
+        if (heightChanged > needHeight) {
           break;
         }
       }
-
-      //因为特殊原因导致没法获得新的锚定点，直接返回罢工
+      //完全没有取得新的锚点，和之前一模一样，不做处理
       if (_dataListOffset == newListOffset) {
         return;
       }
-
       //重新锚定
       _dataListOffset = newListOffset;
       //清空老数据
@@ -406,19 +421,38 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///这里是当滚动结束的时候，进行一个锚定位置的校准，同样的道理，尽量保证最后一屏(positive)能够铺满
   ///(极少数特殊情况下可能滚出空白，这里是为了在滚动结束后不再展示这一块空白区域，按照道理这个方法不触发才是最好的)
   void _resetIndexIfNeeded() {
-    //最大
+    //这里我们进行特殊处理
+    if (!hasClients) {
+      return;
+    }
+
+    //完全不需要重新锚定了
+    if (_dataListOffset == 0) {
+      return;
+    }
+
+    //最大滚动距离大于零，代表最后一屏不需要resetIndex
+    if (position.maxScrollExtent > 0) {
+      return;
+    }
+
+    //最大index
     int maxIndex = dataList.length - 1;
     //当前高度
     double currentListViewHeight = listViewHeight;
 
-    //同样的最后一屏
+    //这里我们取得连续的、大于屏幕高度的一个锚定点来进行锚定
     double lastScreenHeight = 0;
     int? lastScreenIndex;
+    bool isAllContinuous = true;
     for (int s = maxIndex; s >= 0; s--) {
       //没有取到证明没展示，直接return
       final double? itemHeight = itemsRectHolder[s]?.rectHeight();
       if (itemHeight == null) {
-        return;
+        //重新开始计算，必须要连续的一个空间位置
+        lastScreenHeight = 0;
+        isAllContinuous = false;
+        continue;
       }
       lastScreenHeight += itemHeight;
       if (lastScreenHeight >= currentListViewHeight) {
@@ -426,36 +460,48 @@ class FreeScrollListViewController<T> extends ScrollController {
         break;
       }
     }
-    //要么取到了，要么所有数据都不够铺满一个屏幕就直接赋值为0
-    lastScreenIndex ??= 0;
 
-    //不需要重新锚定
-    int tempCount = _dataListOffset;
-    if (tempCount <= lastScreenIndex) {
+    //穷尽解数也完全无法铺满屏幕
+    if (isAllContinuous && lastScreenIndex == null) {
+      //除非极其特殊的情况，否则不应该走到这里
+      _dataListOffset = 0;
+      itemsRectHolder.clear();
+      _setNegativeHeight(0);
+      position.jumpTo(0);
+      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       return;
     }
 
-    //进行重新锚定
-    double needChangeOffset = 0;
-    for (int s = lastScreenIndex; s < tempCount; s++) {
-      final itemHeight = itemsRectHolder[s]?.rectHeight();
-      if (itemHeight == null) {
+    //我们已经获得了重新锚定的index,需要根据这个index进行重新锚定
+    if (lastScreenIndex != null) {
+      //获取这个item的真实基准
+      double? itemTop;
+      if (_isReverse) {
+        //如果是反向，那么取得当前的item底部的滚动position,
+        itemTop = itemsRectHolder[lastScreenIndex]?.rectBottom();
+      } else {
+        //如果是正向，那么取得当前的item顶部的滚动position,
+        itemTop = itemsRectHolder[lastScreenIndex]?.rectTop();
+      }
+      if (itemTop == null) {
         return;
       }
-      needChangeOffset += itemHeight;
-    }
 
-    //执行重新锚定
-    _dataListOffset = lastScreenIndex;
-    itemsRectHolder.clear();
-    _correctNegativeHeight(needChangeOffset);
-    notifyActionSyncListeners(
-      FreeScrollActionSyncType.notifyAnimOffset,
-      data: needChangeOffset,
-    );
-    notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-    notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
-    position.jumpTo(position.pixels + needChangeOffset);
+      //减去之后才是真正锚定后的距离
+      final double scrollOffset = position.pixels;
+      double reIndexOffset = itemTop - scrollOffset;
+
+      //执行重新锚定
+      _dataListOffset = lastScreenIndex;
+      //清空缓存
+      itemsRectHolder.clear();
+      //这种锚定就直接设置为负向无限滚动后等待自动刷新赋值最小negative高度
+      _setNegativeHeight(_negativeHeight);
+      //跳转到指定位置
+      position.jumpTo(reIndexOffset);
+      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      return;
+    }
   }
 
   ///add check rect listener
@@ -827,9 +873,12 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
   }) async {
+    ///越界错误提示
     if (dataList.isNotEmpty && index >= dataList.length) {
       throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
+
+    ///越界错误提示
     if (index < 0) {
       throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
@@ -1245,6 +1294,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
   void initState() {
     _throttler = Throttler(duration: widget.notifyItemShowThrottlerDuration);
     _initListener();
+    widget.controller._isReverse = widget.reverse;
     super.initState();
   }
 
@@ -1256,6 +1306,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
       widget.controller.addSyncActionListener(_syncListener);
       widget.controller.addASyncActionListener(_aSyncListener);
     }
+    widget.controller._isReverse = widget.reverse;
     super.didUpdateWidget(oldWidget);
   }
 
@@ -1386,9 +1437,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     //不相等
     if (widget.controller._listviewMaxHeight != constraints.maxHeight) {
       if (widget.controller._listviewMaxHeight! < constraints.maxHeight) {
-        _listViewAreaBigger(widget.controller._listviewMaxHeight!, constraints.maxWidth);
+        _listViewAreaBigger(widget.controller._listviewMaxHeight!, constraints.maxHeight);
       } else {
-        _listViewAreaSmaller(widget.controller._listviewMaxHeight!, constraints.maxWidth);
+        _listViewAreaSmaller(widget.controller._listviewMaxHeight!, constraints.maxHeight);
       }
       widget.controller._listviewMaxHeight = constraints.maxHeight;
     }
@@ -1397,7 +1448,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
   ///列表区域变大
   void _listViewAreaBigger(double oldValue, double newValue) {
     if (widget.shrinkWrap) {
-      widget.controller._resetIndexByHeightAdd(newValue - oldValue);
+      widget.controller._resetIndexByHeightAdd(oldValue, newValue);
     }
     _notifyIndexAndOnShow();
   }

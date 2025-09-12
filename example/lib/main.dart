@@ -47,8 +47,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   ///controller
-  final FreeScrollListViewController _controller =
-      FreeScrollListViewController();
+  final FreeScrollListViewController _controller = FreeScrollListViewController();
+
+  double height = 0;
 
   @override
   void initState() {
@@ -86,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return _controller.addDataToHead(dataList.reversed.toList());
   }
 
-  ///reset data and scroll align
+  ///重设数据并跳转到指定位置
   Future _resetDataAndScrollAlign() {
     List<String> dataList = [];
     for (int s = 0; s < 100; s++) {
@@ -94,112 +95,160 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 93,
-      duration: Duration.zero,
-      align: FreeScrollType.directJumpTo,
+      index: 94,
+      duration: const Duration(milliseconds: 320),
+      align: FreeScrollType.topToBottom,
+    );
+  }
+
+  ///重设数据并跳转到指定位置
+  Future _resetDataAndScrollAlign2() {
+    List<String> dataList = [];
+    for (int s = 0; s < 10; s++) {
+      dataList.add((s).toString());
+    }
+    return _controller.setDataAndScrollTo(
+      dataList,
+      index: 3,
+      duration: const Duration(milliseconds: 320),
+      align: FreeScrollType.bottomToTop,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            color: Colors.grey,
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () {
-                _resetDataAndScrollAlign();
-              },
-              child: Container(
-                width: double.infinity,
-                height: 35,
-                margin: EdgeInsets.fromLTRB(
-                    20, 20 + MediaQuery.of(context).padding.top, 20, 20),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(17.5),
+      body: SafeArea(
+        child: Column(
+          children: [
+            ///执行
+            Row(
+              children: [
+                //按钮1
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      _resetDataAndScrollAlign();
+                    },
+                    child: Container(
+                      height: 35,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "1",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          Container(
-            color: Colors.grey,
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () {
-                _controller.scrollToIndex(
-                  100,
-                  duration: const Duration(milliseconds: 300),
-                );
-              },
-              child: Container(
-                width: double.infinity,
-                height: 35,
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(17.5),
+                //按钮2
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      _resetDataAndScrollAlign2();
+                    },
+                    child: Container(
+                      height: 35,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "2",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                //按钮2
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      if (height == 0) {
+                        height = 450;
+                      } else {
+                        height = 0;
+                      }
+                      setState(() {});
+                    },
+                    child: Container(
+                      height: 35,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "3",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Expanded(
-            child: FreeScrollListView(
-              reverse: true,
-              shrinkWrap: true,
-              controller: _controller,
-              physics: const AlwaysScrollableScrollPhysics(),
-              /*headerView: Container(
+            Container(
+              width: double.infinity,
+              height: 10,
+              color: Colors.red,
+            ),
+            Expanded(
+              child: FreeScrollListView(
+                reverse: true,
+                shrinkWrap: true,
+                controller: _controller,
+                physics: const AlwaysScrollableScrollPhysics(),
+                /*headerView: Container(
                   height: 60,
                   color: Colors.redAccent,
                 ),*/
-              /*footerView: Container(
+                /*footerView: Container(
                   height: 60,
                   color: Colors.blue,
                 ),*/
-              onStartIndexChange: (int index) {
-                if (kDebugMode) {
-                  print("A$index");
-                }
-              },
-              onEndIndexChange: (int index) {
-                if (kDebugMode) {
-                  print("B$index");
-                }
-              },
-              onItemShow: (List<int> dataList) {
-                if (kDebugMode) {
-                  print(dataList);
-                }
-              },
-              /*willReachTail: () {
+                onStartIndexChange: (int index) {
+                  /*if (kDebugMode) {
+                    print("A$index");
+                  }*/
+                },
+                onEndIndexChange: (int index) {
+                  /*if (kDebugMode) {
+                    print("B$index");
+                  }*/
+                },
+                onItemShow: (List<int> dataList) {
+                  /*if (kDebugMode) {
+                    print(dataList);
+                  }*/
+                },
+                /*willReachTail: () {
                   return _checkAddTail();
                 },
                 willReachHead: () {
                   return _checkAddHead();
                 },*/
-              builder: (context, index) {
-                return Container(
-                  height: 75,
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.black.withAlpha(20),
-                        width: 0.5,
+                builder: (context, index) {
+                  return Container(
+                    height: 75,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.black.withAlpha(20),
+                          width: 0.5,
+                        ),
                       ),
                     ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    _controller.dataList[index],
-                  ),
-                );
-              },
+                    alignment: Alignment.center,
+                    child: Text(
+                      _controller.dataList[index],
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+            AnimatedContainer(
+              height: height,
+              duration: const Duration(milliseconds: 320),
+              curve: Curves.easeIn,
+              color: Colors.blue,
+            ),
+          ],
+        ),
       ),
     );
   }
