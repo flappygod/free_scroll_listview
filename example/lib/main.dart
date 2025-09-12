@@ -204,19 +204,19 @@ class _MyHomePageState extends State<MyHomePage> {
                   color: Colors.blue,
                 ),*/
                 onStartIndexChange: (int index) {
-                  /*if (kDebugMode) {
+                  if (kDebugMode) {
                     print("A$index");
-                  }*/
+                  }
                 },
                 onEndIndexChange: (int index) {
-                  /*if (kDebugMode) {
+                  if (kDebugMode) {
                     print("B$index");
-                  }*/
+                  }
                 },
                 onItemShow: (List<int> dataList) {
-                  /*if (kDebugMode) {
+                  if (kDebugMode) {
                     print(dataList);
-                  }*/
+                  }
                 },
                 /*willReachTail: () {
                   return _checkAddTail();
