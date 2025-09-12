@@ -90,15 +90,15 @@ class _MyHomePageState extends State<MyHomePage> {
   ///重设数据并跳转到指定位置
   Future _resetDataAndScrollAlign() {
     List<String> dataList = [];
-    for (int s = 0; s < 100; s++) {
+    for (int s = 0; s < 20; s++) {
       dataList.add(s.toString());
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 88,
+      index: 10,
       duration: Duration.zero,
       align: FreeScrollType.directJumpTo,
-      //anchorOffset: -1000,
+      anchorOffset: -200,
       /*duration: const Duration(milliseconds: 320),
       align: FreeScrollType.bottomToTop,*/
     );
