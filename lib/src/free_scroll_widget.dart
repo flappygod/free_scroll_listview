@@ -1269,7 +1269,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                           return AnchorItemWrapper(
                             reverse: widget.reverse,
                             actualIndex: actualIndex,
-                            listViewState: this,
                             controller: widget.controller,
                             rectHolder: rectHolder,
                             addRepaintBoundary: widget.addRepaintBoundary,
@@ -1294,7 +1293,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                           return AnchorItemWrapper(
                             reverse: widget.reverse,
                             actualIndex: actualIndex,
-                            listViewState: this,
                             controller: widget.controller,
                             rectHolder: rectHolder,
                             addRepaintBoundary: widget.addRepaintBoundary,

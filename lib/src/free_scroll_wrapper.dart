@@ -10,7 +10,6 @@ class AnchorItemWrapper extends StatefulWidget {
     required this.rectHolder,
     this.reverse = false,
     this.addRepaintBoundary = false,
-    this.listViewState,
     this.child,
     super.key,
   });
@@ -18,8 +17,6 @@ class AnchorItemWrapper extends StatefulWidget {
   //可选的 AnchorScrollController
   final FreeScrollListViewController controller;
 
-  //list offset
-  final FreeScrollListViewState? listViewState;
 
   //子小部件
   final Widget? child;
