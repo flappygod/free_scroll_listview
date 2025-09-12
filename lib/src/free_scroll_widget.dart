@@ -1428,6 +1428,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
           axisDirection: flipAxisDirection(axisDirection),
           anchor: 1.0,
           offset: negativeOffset,
+          clipBehavior: Clip.none,
           cacheExtent: widget.cacheExtent,
           slivers: sliverNegative,
         ),
