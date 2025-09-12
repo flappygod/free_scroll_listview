@@ -445,6 +445,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     double lastScreenHeight = 0;
     int? lastScreenIndex;
     bool isAllContinuous = true;
+    double? firstRectBottom;
     for (int s = maxIndex; s >= 0; s--) {
       //没有取到证明没展示，直接return
       final double? itemHeight = itemsRectHolder[s]?.rectHeight();
@@ -452,8 +453,10 @@ class FreeScrollListViewController<T> extends ScrollController {
         //重新开始计算，必须要连续的一个空间位置
         lastScreenHeight = 0;
         isAllContinuous = false;
+        firstRectBottom = null;
         continue;
       }
+      firstRectBottom ??= itemsRectHolder[s]?.rectBottom();
       lastScreenHeight += itemHeight;
       if (lastScreenHeight >= currentListViewHeight) {
         lastScreenIndex = s;
@@ -483,7 +486,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       //跳转
       double reIndexOffset = scrollOffset - itemTop;
       //这里不处理吧
-      if(reIndexOffset>0){
+      if ((firstRectBottom ?? 0) - scrollOffset < listViewHeight) {
         return;
       }
       //执行重新锚定
