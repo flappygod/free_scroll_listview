@@ -198,8 +198,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 /*headerView: Container(
                   height: 60,
                   color: Colors.redAccent,
-                ),*/
-                /*footerView: Container(
+                ),
+                footerView: Container(
                   height: 60,
                   color: Colors.blue,
                 ),*/
