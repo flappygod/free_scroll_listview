@@ -191,8 +191,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Expanded(
               child: FreeScrollListView(
-                reverse: false,
-                shrinkWrap: false,
+                reverse: true,
+                shrinkWrap: true,
                 controller: _controller,
                 physics: const AlwaysScrollableScrollPhysics(),
                 /*headerView: Container(
