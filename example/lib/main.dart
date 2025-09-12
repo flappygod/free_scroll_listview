@@ -106,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ///重设数据并跳转到指定位置
   Future _resetDataAndScrollAlign2() {
     List<String> dataList = [];
-    for (int s = 0; s < 10; s++) {
+    for (int s = 0; s < 12; s++) {
       dataList.add((s).toString());
     }
     return _controller.setDataAndScrollTo(
