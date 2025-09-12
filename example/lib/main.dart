@@ -95,10 +95,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 10,
+      index: 3,
       duration: Duration.zero,
       align: FreeScrollType.directJumpTo,
-      anchorOffset: -200,
+      anchorOffset: -1000,
       /*duration: const Duration(milliseconds: 320),
       align: FreeScrollType.bottomToTop,*/
     );
