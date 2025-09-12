@@ -75,6 +75,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   //is animating
   bool _isAnimating = false;
 
+  //mx height
+  double? _listviewMaxHeight;
+
   //check is animating
   bool get isAnimating {
     return _isAnimating;
@@ -133,6 +136,9 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
     return offsetTwo - offsetOne - (rect.rectHeight() ?? 0);
   }
+
+  ///获取最大可能的高度
+  double get listviewMaxHeight => _listviewMaxHeight ?? 0;
 
   /// ListView height
   double get listViewHeight {
@@ -1035,9 +1041,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
   AnimationController? _animationController;
   double _animationOffset = 0;
 
-  ///mx height
-  double _listviewMaxHeight = -1;
-
   ///init listener
   void _initListener() {
     _syncListener = (
@@ -1221,38 +1224,23 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
           controller: widget.controller,
         );
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        ///just set if is zero
-        if (_listviewMaxHeight == -1) {
-          _listviewMaxHeight = constraints.maxHeight;
-        }
+    return ClipRect(
+      clipBehavior: widget.clipBehavior,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          ///检查显示区域大小的变化
+          _checkMaxHeight(constraints);
 
-        ///listview change to bigger,we need to know the changed height
-        if (_listviewMaxHeight != constraints.maxHeight) {
-          //if changed to bigger
-          if (_listviewMaxHeight < constraints.maxHeight && widget.shrinkWrap) {
-            widget.controller._resetIndexByHeightAdd(
-              constraints.maxHeight - _listviewMaxHeight,
-            );
-          }
-          //set height
-          _listviewMaxHeight = constraints.maxHeight;
-          //notify
-          _notifyIndexAndOnShow();
-        }
-
-        return NotificationListener<ScrollNotification>(
-          onNotification: _handleNotification,
-          child: Scrollable(
-            key: widget.controller._listViewKey,
-            axisDirection: axisDirection,
-            controller: widget.controller,
-            physics: physics,
-            clipBehavior: widget.clipBehavior,
-            viewportBuilder: (BuildContext context, ViewportOffset offset) {
-              return Builder(
-                builder: (context) {
+          return NotificationListener<ScrollNotification>(
+            onNotification: _handleNotification,
+            child: Scrollable(
+              key: widget.controller._listViewKey,
+              axisDirection: axisDirection,
+              controller: widget.controller,
+              physics: physics,
+              clipBehavior: Clip.none,
+              viewportBuilder: (BuildContext context, ViewportOffset offset) {
+                return Builder(builder: (context) {
                   ///Build negative [ScrollPosition] for the negative scrolling [Viewport].
                   final ScrollableState state = Scrollable.of(context);
                   final _NegativedScrollPosition negativeOffset = _NegativedScrollPosition(
@@ -1320,72 +1308,139 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                   ];
 
                   return widget.shrinkWrap
-                      ? Stack(
-                          clipBehavior: Clip.none,
-                          children: <Widget>[
-                            ///preview items widget
-                            AdditionPreview(
-                              padding: EdgeInsets.zero,
-                              maxHeight: constraints.maxHeight,
-                              itemBuilder: widget.builder,
-                              controller: widget.controller._previewController,
-                            ),
-
-                            ///negative
-                            if (widget.controller._dataListOffset > 0)
-                              Viewport(
-                                axisDirection: flipAxisDirection(axisDirection),
-                                anchor: 1.0,
-                                offset: negativeOffset,
-                                cacheExtent: widget.cacheExtent,
-                                slivers: sliverNegative,
-                              ),
-
-                            ///positive
-                            ShrinkWrappingViewport(
-                              axisDirection: axisDirection,
-                              clipBehavior: widget.clipBehavior,
-                              offset: offset,
-                              slivers: sliverPositive,
-                            ),
-                          ],
+                      ? _buildScrollShrinkWrap(
+                          constraints,
+                          axisDirection,
+                          sliverNegative,
+                          sliverPositive,
+                          negativeOffset,
+                          offset,
                         )
-                      : Stack(
-                          clipBehavior: Clip.none,
-                          children: <Widget>[
-                            ///preview items widget
-                            AdditionPreview(
-                              padding: EdgeInsets.zero,
-                              maxHeight: constraints.maxHeight,
-                              itemBuilder: widget.builder,
-                              controller: widget.controller._previewController,
-                            ),
-
-                            ///negative
-                            Viewport(
-                              axisDirection: flipAxisDirection(axisDirection),
-                              anchor: 1.0,
-                              offset: negativeOffset,
-                              cacheExtent: widget.cacheExtent,
-                              slivers: sliverNegative,
-                            ),
-
-                            ///positive
-                            Viewport(
-                              offset: offset,
-                              axisDirection: axisDirection,
-                              cacheExtent: widget.cacheExtent,
-                              clipBehavior: widget.clipBehavior,
-                              slivers: sliverPositive,
-                            ),
-                          ],
+                      : _buildScrollNormal(
+                          constraints,
+                          axisDirection,
+                          sliverNegative,
+                          sliverPositive,
+                          negativeOffset,
+                          offset,
                         );
-                },
-              );
-            },
+                });
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  ///检查控件最大适用的高度
+  void _checkMaxHeight(BoxConstraints constraints) {
+    //没有值的时候进行赋值
+    widget.controller._listviewMaxHeight ??= constraints.maxHeight;
+    //不相等
+    if (widget.controller._listviewMaxHeight != constraints.maxHeight) {
+      if (widget.controller._listviewMaxHeight! < constraints.maxHeight) {
+        _listViewAreaBigger(widget.controller._listviewMaxHeight!, constraints.maxWidth);
+      } else {
+        _listViewAreaSmaller(widget.controller._listviewMaxHeight!, constraints.maxWidth);
+      }
+      widget.controller._listviewMaxHeight = constraints.maxHeight;
+    }
+  }
+
+  ///列表区域变大
+  void _listViewAreaBigger(double oldValue, double newValue) {
+    if (widget.shrinkWrap) {
+      widget.controller._resetIndexByHeightAdd(newValue - oldValue);
+    }
+    _notifyIndexAndOnShow();
+  }
+
+  ///列表区域变小
+  void _listViewAreaSmaller(double oldValue, double newValue) {
+    _notifyIndexAndOnShow();
+  }
+
+  ///自适应情况下的build
+  Widget _buildScrollShrinkWrap(
+    BoxConstraints constraints,
+    AxisDirection axisDirection,
+    List<Widget> sliverNegative,
+    List<Widget> sliverPositive,
+    ViewportOffset negativeOffset,
+    ViewportOffset offset,
+  ) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: <Widget>[
+        ///preview items widget
+        AdditionPreview(
+          padding: EdgeInsets.zero,
+          maxHeight: constraints.maxHeight,
+          itemBuilder: widget.builder,
+          controller: widget.controller._previewController,
+        ),
+
+        ///negative
+        if (widget.controller._dataListOffset > 0)
+          Viewport(
+            axisDirection: flipAxisDirection(axisDirection),
+            anchor: 1.0,
+            offset: negativeOffset,
+            clipBehavior: Clip.none,
+            cacheExtent: widget.cacheExtent,
+            slivers: sliverNegative,
           ),
-        );
-      },
+
+        ///positive
+        ShrinkWrappingViewport(
+          axisDirection: axisDirection,
+          clipBehavior: Clip.none,
+          offset: offset,
+          slivers: sliverPositive,
+        ),
+      ],
+    );
+  }
+
+  ///正常情况下的build listView
+  Widget _buildScrollNormal(
+    BoxConstraints constraints,
+    AxisDirection axisDirection,
+    List<Widget> sliverNegative,
+    List<Widget> sliverPositive,
+    ViewportOffset negativeOffset,
+    ViewportOffset offset,
+  ) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: <Widget>[
+        ///preview items widget
+        AdditionPreview(
+          padding: EdgeInsets.zero,
+          maxHeight: constraints.maxHeight,
+          itemBuilder: widget.builder,
+          controller: widget.controller._previewController,
+        ),
+
+        ///negative
+        Viewport(
+          axisDirection: flipAxisDirection(axisDirection),
+          anchor: 1.0,
+          offset: negativeOffset,
+          cacheExtent: widget.cacheExtent,
+          slivers: sliverNegative,
+        ),
+
+        ///positive
+        Viewport(
+          offset: offset,
+          axisDirection: axisDirection,
+          cacheExtent: widget.cacheExtent,
+          clipBehavior: widget.clipBehavior,
+          slivers: sliverPositive,
+        ),
+      ],
     );
   }
 
