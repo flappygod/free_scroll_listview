@@ -461,9 +461,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       }
     }
 
-    //穷尽解数也完全无法铺满屏幕
+    //穷尽解数也完全无法铺满屏幕(除非极其特殊的情况，否则不应该走到这里)
     if (isAllContinuous && lastScreenIndex == null) {
-      //除非极其特殊的情况，否则不应该走到这里
       _dataListOffset = 0;
       itemsRectHolder.clear();
       _setNegativeHeight(0);
@@ -475,22 +474,18 @@ class FreeScrollListViewController<T> extends ScrollController {
     //我们已经获得了重新锚定的index,需要根据这个index进行重新锚定
     if (lastScreenIndex != null) {
       //获取这个item的真实基准
-      double? itemTop;
-      if (_isReverse) {
-        //如果是反向，那么取得当前的item底部的滚动position,
-        itemTop = itemsRectHolder[lastScreenIndex]?.rectBottom();
-      } else {
-        //如果是正向，那么取得当前的item顶部的滚动position,
-        itemTop = itemsRectHolder[lastScreenIndex]?.rectTop();
-      }
+      double? itemTop = itemsRectHolder[lastScreenIndex]?.rectTop();
       if (itemTop == null) {
         return;
       }
-
       //减去之后才是真正锚定后的距离
       final double scrollOffset = position.pixels;
-      double reIndexOffset = itemTop - scrollOffset;
-
+      //跳转
+      double reIndexOffset = scrollOffset - itemTop;
+      //这里不处理吧
+      if(reIndexOffset>0){
+        return;
+      }
       //执行重新锚定
       _dataListOffset = lastScreenIndex;
       //清空缓存
@@ -498,8 +493,9 @@ class FreeScrollListViewController<T> extends ScrollController {
       //这种锚定就直接设置为负向无限滚动后等待自动刷新赋值最小negative高度
       _setNegativeHeight(_negativeHeight);
       //跳转到指定位置
-      position.jumpTo(reIndexOffset);
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      //跳转
+      position.jumpTo(reIndexOffset);
       return;
     }
   }
@@ -1588,8 +1584,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     ///scroll end, check need reset index or not
     if (notification is ScrollEndNotification) {
       widget.controller._resetIndexIfNeeded();
-      _notifyIndex();
-      _notifyOnShow();
+      _notifyIndexAndOnShow();
     }
 
     ///notify the on show
