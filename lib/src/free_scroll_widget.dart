@@ -867,9 +867,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///检查尾屏
   FreeFixIndexOffset? _checkFixIndexLastScreen(
     PreviewModel? previewModel,
-    FreeScrollType align,
     int index,
     double trueAnchorOffset,
+    FreeScrollType align,
   ) {
     ///空的
     if (previewModel == null) {
@@ -914,9 +914,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///检查尾屏
   FreeFixIndexOffset? _checkFixIndexFistScreen(
     PreviewModel? previewModel,
-    FreeScrollType align,
     int index,
     double trueAnchorOffset,
+    FreeScrollType align,
   ) {
     ///空的
     if (previewModel == null) {
@@ -978,6 +978,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///修正的index和修正的偏移量，保证不出界，后续直接用来作为跳转位置
     int fixedIndex = index;
     double fixedAnchor = trueAnchorOffset;
+    FreeScrollType fixedAlign = align;
 
     ///如果偏移量大于0，我们只需要尾屏修正
     if (trueAnchorOffset >= 0) {
@@ -991,15 +992,15 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///对位置进行修正
       FreeFixIndexOffset? lastScreen = _checkFixIndexLastScreen(
         previewLastModel,
-        align,
         index,
         trueAnchorOffset,
+        align,
       );
 
       ///修正
       fixedIndex = lastScreen?.fixIndex ?? fixedIndex;
       fixedAnchor = lastScreen?.fixAnchor ?? fixedAnchor;
-      align = lastScreen?.fixAlign ?? align;
+      fixedAlign = lastScreen?.fixAlign ?? fixedAlign;
     }
 
     ///如果偏移量小于0，我们需要首屏尾屏同时修正
@@ -1027,27 +1028,32 @@ class FreeScrollListViewController<T> extends ScrollController {
       ///对位置进行修正
       FreeFixIndexOffset? firstScreen = _checkFixIndexFistScreen(
         previewFirstModel,
-        align,
         index,
         trueAnchorOffset,
+        align,
       );
+
+      ///修正
+      fixedIndex = firstScreen?.fixIndex ?? fixedIndex;
+      fixedAnchor = firstScreen?.fixAnchor ?? fixedAnchor;
+      fixedAlign = firstScreen?.fixAlign ?? fixedAlign;
 
       ///对位置进行修正
       FreeFixIndexOffset? lastScreen = _checkFixIndexLastScreen(
         previewLastModel,
-        align,
-        index,
-        trueAnchorOffset,
+        fixedIndex,
+        fixedAnchor,
+        fixedAlign,
       );
 
       ///修正
-      fixedIndex = firstScreen?.fixIndex ?? lastScreen?.fixIndex ?? fixedIndex;
-      fixedAnchor = firstScreen?.fixAnchor ?? lastScreen?.fixAnchor ?? fixedAnchor;
-      align = firstScreen?.fixAlign ?? lastScreen?.fixAlign ?? align;
+      fixedIndex = lastScreen?.fixIndex ?? fixedIndex;
+      fixedAnchor = lastScreen?.fixAnchor ?? fixedAnchor;
+      fixedAlign = lastScreen?.fixAlign ?? fixedAlign;
     }
 
     ///区分执行跳转及其他
-    switch (align) {
+    switch (fixedAlign) {
       case FreeScrollType.bottomToTop:
 
         ///Clear existing data and cached maps
