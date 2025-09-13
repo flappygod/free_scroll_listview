@@ -57,8 +57,11 @@ class FreeScrollListViewController<T> extends ScrollController {
   //check rect listeners
   final Set<VoidCallback> _checkRectListeners = {};
 
-  //controller
-  final AdditionPreviewController<T> _previewController = AdditionPreviewController<T>();
+  //尾部一屏幕的预览
+  final AdditionPreviewController<T> _previewLastController = AdditionPreviewController<T>();
+
+  //头部一屏幕的预览
+  final AdditionPreviewController<T> _previewFirstController = AdditionPreviewController<T>();
 
   //item maps
   final SplayTreeMap<int, RectHolder> itemsRectHolder = SplayTreeMap<int, RectHolder>();
@@ -656,7 +659,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         double formerTopData = _negativeHeight;
         if (_negativeHeight != negativeInfinityValue && measureHeight) {
           ///preview model
-          PreviewModel? previewModel = await _previewController.previewItemsHeight(
+          PreviewModel? previewModel = await _previewLastController.previewItemsHeight(
             dataList.length,
           );
 
@@ -881,7 +884,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
-    ///header view height
+    ///加上顶部view的高度
     double trueAnchorOffset = (index == 0) ? (anchorOffset + headerViewHeight) : anchorOffset;
 
     switch (align) {
@@ -934,7 +937,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       case FreeScrollType.directJumpTo:
 
         ///preview data model
-        PreviewModel? previewModel = await _previewController.previewItemsHeight(
+        PreviewModel? previewModel = await _previewLastController.previewItemsHeight(
           dataList.length,
           previewReverse: true,
           previewExtent: max(0, trueAnchorOffset),
@@ -1317,7 +1320,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
 
   @override
   Widget build(BuildContext context) {
-    ///get direction
+    ///获取方向
     AxisDirection axisDirection = _getDirection(context);
 
     ScrollPhysics physics = widget.physics ??
@@ -1325,6 +1328,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
           controller: widget.controller,
         );
 
+    ///最外层裁剪，内部不裁剪
     return ClipRect(
       clipBehavior: widget.clipBehavior,
       child: LayoutBuilder(
@@ -1466,15 +1470,23 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
-        ///preview items widget
+
+        ///此控件预览首屏幕
         AdditionPreview(
           padding: EdgeInsets.zero,
           maxHeight: constraints.maxHeight,
           itemBuilder: widget.builder,
-          controller: widget.controller._previewController,
+          controller: widget.controller._previewFirstController,
+        ),
+        ///此控件预览最后一屏
+        AdditionPreview(
+          padding: EdgeInsets.zero,
+          maxHeight: constraints.maxHeight,
+          itemBuilder: widget.builder,
+          controller: widget.controller._previewLastController,
         ),
 
-        ///negative
+        ///负index(被锚定跳过的)
         if (widget.controller._dataListOffset > 0)
           Viewport(
             axisDirection: flipAxisDirection(axisDirection),
@@ -1508,15 +1520,22 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
-        ///preview items widget
+        ///此控件预览首屏幕
         AdditionPreview(
           padding: EdgeInsets.zero,
           maxHeight: constraints.maxHeight,
           itemBuilder: widget.builder,
-          controller: widget.controller._previewController,
+          controller: widget.controller._previewFirstController,
+        ),
+        ///此控件预览最后一屏
+        AdditionPreview(
+          padding: EdgeInsets.zero,
+          maxHeight: constraints.maxHeight,
+          itemBuilder: widget.builder,
+          controller: widget.controller._previewLastController,
         ),
 
-        ///negative
+        ///负index(被锚定跳过的)
         Viewport(
           axisDirection: flipAxisDirection(axisDirection),
           anchor: 1.0,
@@ -1526,7 +1545,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
           slivers: sliverNegative,
         ),
 
-        ///positive
+        ///正index
         Viewport(
           offset: offset,
           axisDirection: axisDirection,
