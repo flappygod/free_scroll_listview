@@ -1004,23 +1004,29 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///如果偏移量小于0，我们需要首屏尾屏同时修正
     else {
-      ///尾屏幕
-      PreviewModel? previewLastModel = await _previewLastController.previewItemsHeight(
-        dataList.length,
-        previewReverse: true,
-        previewExtent: max(0, trueAnchorOffset),
-      );
+      ///获取高度预览
+      List<PreviewModel?> previewList = await Future.wait([
+        _previewFirstController.previewItemsHeight(
+          dataList.length,
+          previewReverse: false,
+          previewExtent: max(0, -trueAnchorOffset),
+        ),
+        _previewLastController.previewItemsHeight(
+          dataList.length,
+          previewReverse: true,
+          previewExtent: max(0, trueAnchorOffset),
+        ),
+      ]);
 
-      ///首屏
-      PreviewModel? previewFirstModel = await _previewFirstController.previewItemsHeight(
-        dataList.length,
-        previewReverse: false,
-        previewExtent: max(0, -trueAnchorOffset),
-      );
+      ///首屏预览
+      PreviewModel? previewFirstModel = previewList[0];
+
+      ///尾屏预览
+      PreviewModel? previewLastModel = previewList[1];
 
       ///对位置进行修正
       FreeFixIndexOffset? firstScreen = _checkFixIndexFistScreen(
-        previewLastModel,
+        previewFirstModel,
         align,
         index,
         trueAnchorOffset,
@@ -1028,7 +1034,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
       ///对位置进行修正
       FreeFixIndexOffset? lastScreen = _checkFixIndexLastScreen(
-        previewFirstModel,
+        previewLastModel,
         align,
         index,
         trueAnchorOffset,
