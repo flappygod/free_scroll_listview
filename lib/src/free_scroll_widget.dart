@@ -890,7 +890,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///此时我们逐渐进行逼近直到找到尾屏数据允许的index和offset(正常情况下我们设置的cacheExtent足够支撑)
     else {
-      ///极点补正
+      ///尾部顶点补正
       double height = footerViewHeight;
       for (int s = dataList.length - 1; s >= index; s--) {
         height = (previewModel.itemHeights[s] ?? 0) + height;
@@ -909,7 +909,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         }
       }
 
-      ///常规补正(保证anchor大于零)
+      ///常规补正(保证尾屏足够支撑)
       int fixIndex = index;
       double fixAnchor = anchor;
       for (int s = index - 1; s >= 0; s--) {
