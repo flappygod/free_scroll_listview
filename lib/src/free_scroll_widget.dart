@@ -440,6 +440,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     int maxIndex = dataList.length - 1;
     //当前高度
     double currentListViewHeight = listViewHeight;
+    //减去之后才是真正锚定后的距离
+    double scrollOffset = position.pixels;
 
     //这里我们取得连续的、大于屏幕高度的一个锚定点来进行锚定
     double lastScreenHeight = 0;
@@ -474,6 +476,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       return;
     }
 
+
+
     //我们已经获得了重新锚定的index,需要根据这个index进行重新锚定
     if (lastScreenIndex != null) {
       //获取这个item的真实基准
@@ -481,14 +485,12 @@ class FreeScrollListViewController<T> extends ScrollController {
       if (itemTop == null) {
         return;
       }
-      //减去之后才是真正锚定后的距离
-      final double scrollOffset = position.pixels;
-      //跳转
-      double reIndexOffset = scrollOffset - itemTop;
-      //这里不处理吧
+      //首项没有滑出屏幕不处理，让用户无感
       if ((firstRectBottom ?? 0) - scrollOffset < listViewHeight) {
         return;
       }
+      //跳转
+      double reIndexOffset = scrollOffset - itemTop;
       //执行重新锚定
       _dataListOffset = lastScreenIndex;
       //清空缓存
