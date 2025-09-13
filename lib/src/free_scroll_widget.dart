@@ -48,9 +48,6 @@ class FreeScrollListViewController<T> extends ScrollController {
   //data list offset
   int _dataListOffset;
 
-  //当前列表是否是反向的
-  bool _isReverse = false;
-
   //listeners
   final Set<FreeScrollListSyncListener> _syncListeners = {};
 
@@ -1295,7 +1292,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
   void initState() {
     _throttler = Throttler(duration: widget.notifyItemShowThrottlerDuration);
     _initListener();
-    widget.controller._isReverse = widget.reverse;
     super.initState();
   }
 
@@ -1307,7 +1303,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
       widget.controller.addSyncActionListener(_syncListener);
       widget.controller.addASyncActionListener(_aSyncListener);
     }
-    widget.controller._isReverse = widget.reverse;
     super.didUpdateWidget(oldWidget);
   }
 
