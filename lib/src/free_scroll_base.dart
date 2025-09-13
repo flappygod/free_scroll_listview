@@ -13,12 +13,25 @@ enum FreeScrollActionSyncType {
   notifyAnimOffset,
 }
 
-///time stamp debouncer
-class TimeStampDebouncer {
+///free scroll index offset
+class FreeFixIndexOffset {
+  int fixIndex;
+  double fixAnchor;
+  FreeScrollType fixAlign;
+
+  FreeFixIndexOffset({
+    required this.fixIndex,
+    required this.fixAnchor,
+    required this.fixAlign,
+  });
+}
+
+///time stamp de bouncer
+class TimeStampDeBouncer {
   //is action
   bool _isAction = false;
 
-  TimeStampDebouncer();
+  TimeStampDeBouncer();
 
   void run(WillReachCallback? action) {
     if (action == null || _isAction) {

@@ -864,6 +864,91 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
+  ///检查尾屏
+  FreeFixIndexOffset? _checkFixIndexLastScreen(
+    PreviewModel? previewModel,
+    FreeScrollType align,
+    int index,
+    double trueAnchorOffset,
+  ) {
+    ///空的
+    if (previewModel == null) {
+      return null;
+    }
+
+    ///列表高度
+    double listviewHeight = previewModel.listviewHeight;
+
+    ///预览高度都直接不满一屏，直接清零
+    if (previewModel.totalHeight + footerViewHeight < listviewHeight) {
+      return FreeFixIndexOffset(
+        fixIndex: 0,
+        fixAnchor: 0,
+        fixAlign: (align == FreeScrollType.bottomToTop) ? FreeScrollType.directJumpTo : align,
+      );
+    }
+
+    ///此时我们逐渐进行逼近直到找到尾屏数据允许的index和offset(正常情况下我们设置的cacheExtent足够支撑)
+    else {
+      double height = footerViewHeight;
+      for (int s = dataList.length - 1; s >= index; s--) {
+        height = (previewModel.itemHeights[s] ?? 0) + height;
+      }
+      if (height < (trueAnchorOffset + listviewHeight)) {
+        double testHeight = footerViewHeight;
+        for (int s = dataList.length - 1; s >= 0; s--) {
+          testHeight = (previewModel.itemHeights[s] ?? 0) + testHeight;
+          if (testHeight > listviewHeight) {
+            return FreeFixIndexOffset(
+              fixIndex: s,
+              fixAnchor: testHeight - listviewHeight,
+              fixAlign: (align == FreeScrollType.bottomToTop) ? FreeScrollType.directJumpTo : align,
+            );
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  ///检查尾屏
+  FreeFixIndexOffset? _checkFixIndexFistScreen(
+    PreviewModel? previewModel,
+    FreeScrollType align,
+    int index,
+    double trueAnchorOffset,
+  ) {
+    ///空的
+    if (previewModel == null) {
+      return null;
+    }
+
+    ///预览高度都直接不满一屏，直接清零
+    if (previewModel.totalHeight + footerViewHeight < previewModel.listviewHeight) {
+      return FreeFixIndexOffset(
+        fixIndex: 0,
+        fixAnchor: 0,
+        fixAlign: (align == FreeScrollType.topToBottom) ? FreeScrollType.directJumpTo : align,
+      );
+    }
+
+    ///计算是否越界，最小值为fixedIndex =0，fixedAnchor=0；
+    else {
+      double height = headerViewHeight;
+      for (int s = 0; s < index; s++) {
+        height = (previewModel.itemHeights[s] ?? 0) + height;
+      }
+      if (height < -trueAnchorOffset) {
+        return FreeFixIndexOffset(
+          fixIndex: 0,
+          fixAnchor: 0,
+          fixAlign: (align == FreeScrollType.topToBottom) ? FreeScrollType.directJumpTo : align,
+        );
+      }
+    }
+    return null;
+  }
+
   ///scroll to index just by align
   Future scrollToIndexSkipAlign(
     int index, {
@@ -873,7 +958,9 @@ class FreeScrollListViewController<T> extends ScrollController {
     double anchorOffset = 0,
   }) async {
     ///你不能瞎搞影响性能
-    assert(anchorOffset.abs() < listViewHeight);
+    if (listViewHeight > 0 && anchorOffset.abs() > listViewHeight) {
+      throw ArgumentError('anchorOffset is too large.');
+    }
 
     ///越界错误提示
     if (dataList.isNotEmpty && index >= dataList.length) {
@@ -892,75 +979,68 @@ class FreeScrollListViewController<T> extends ScrollController {
     int fixedIndex = index;
     double fixedAnchor = trueAnchorOffset;
 
-    ///如果偏移量大于0，我们取最后一屏进行计算
+    ///如果偏移量大于0，我们只需要尾屏修正
     if (trueAnchorOffset >= 0) {
-      PreviewModel? previewModel = await _previewLastController.previewItemsHeight(
+      ///尾屏幕
+      PreviewModel? previewLastModel = await _previewLastController.previewItemsHeight(
         dataList.length,
         previewReverse: true,
         previewExtent: max(0, trueAnchorOffset),
       );
 
-      ///不为空的时候开始处理
-      if (previewModel != null) {
-        double listviewHeight = previewModel.listviewHeight;
+      ///对位置进行修正
+      FreeFixIndexOffset? lastScreen = _checkFixIndexLastScreen(
+        previewLastModel,
+        align,
+        index,
+        trueAnchorOffset,
+      );
 
-        ///预览高度都直接不满一屏，直接清零
-        if (previewModel.totalHeight + footerViewHeight < listviewHeight) {
-          fixedIndex = 0;
-          fixedAnchor = 0;
-        }
-
-        ///此时我们逐渐进行逼近直到找到尾屏数据允许的index和offset(正常情况下我们设置的cacheExtent足够支撑)
-        else {
-          double height = footerViewHeight;
-          for (int s = dataList.length - 1; s >= index; s--) {
-            height = (previewModel.itemHeights[s] ?? 0) + height;
-          }
-          if (height < (trueAnchorOffset + listviewHeight)) {
-            double testHeight = footerViewHeight;
-            for (int s = dataList.length - 1; s >= 0; s--) {
-              testHeight = (previewModel.itemHeights[s] ?? 0) + testHeight;
-              if (testHeight > listviewHeight) {
-                fixedIndex = s;
-                fixedAnchor = testHeight - listviewHeight;
-                break;
-              }
-            }
-          }
-        }
-      }
+      ///修正
+      fixedIndex = lastScreen?.fixIndex ?? fixedIndex;
+      fixedAnchor = lastScreen?.fixAnchor ?? fixedAnchor;
+      align = lastScreen?.fixAlign ?? align;
     }
 
-    ///如果偏移量小于0，我们取第一屏进行计算
+    ///如果偏移量小于0，我们需要首屏尾屏同时修正
     else {
-      PreviewModel? previewModel = await _previewLastController.previewItemsHeight(
+      ///尾屏幕
+      PreviewModel? previewLastModel = await _previewLastController.previewItemsHeight(
+        dataList.length,
+        previewReverse: true,
+        previewExtent: max(0, trueAnchorOffset),
+      );
+
+      ///首屏
+      PreviewModel? previewFirstModel = await _previewFirstController.previewItemsHeight(
         dataList.length,
         previewReverse: false,
         previewExtent: max(0, -trueAnchorOffset),
       );
 
-      ///不为空的时候开始处理
-      if (previewModel != null) {
-        ///预览高度都直接不满一屏，直接清零
-        if (previewModel.totalHeight + footerViewHeight < previewModel.listviewHeight) {
-          fixedIndex = 0;
-          fixedAnchor = 0;
-        }
+      ///对位置进行修正
+      FreeFixIndexOffset? firstScreen = _checkFixIndexFistScreen(
+        previewLastModel,
+        align,
+        index,
+        trueAnchorOffset,
+      );
 
-        ///计算是否越界，最小值为 fixedIndex =0 ，fixedAnchor = 0；
-        else {
-          double height = headerViewHeight;
-          for (int s = 0; s < index; s++) {
-            height = (previewModel.itemHeights[s] ?? 0) + height;
-          }
-          if (height < -trueAnchorOffset) {
-            fixedIndex = 0;
-            fixedAnchor = 0;
-          }
-        }
-      }
+      ///对位置进行修正
+      FreeFixIndexOffset? lastScreen = _checkFixIndexLastScreen(
+        previewFirstModel,
+        align,
+        index,
+        trueAnchorOffset,
+      );
+
+      ///修正
+      fixedIndex = firstScreen?.fixIndex ?? lastScreen?.fixIndex ?? fixedIndex;
+      fixedAnchor = firstScreen?.fixAnchor ?? lastScreen?.fixAnchor ?? fixedAnchor;
+      align = firstScreen?.fixAlign ?? lastScreen?.fixAlign ?? align;
     }
 
+    ///区分执行跳转及其他
     switch (align) {
       case FreeScrollType.bottomToTop:
 
@@ -1165,7 +1245,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
   late FreeScrollListASyncListener _aSyncListener;
 
   ///time stamp debouncer
-  final TimeStampDebouncer _timeStampDebouncer = TimeStampDebouncer();
+  final TimeStampDeBouncer _timeStampDebouncer = TimeStampDeBouncer();
 
   ///animation controller and offset
   AnimationController? _animationController;
