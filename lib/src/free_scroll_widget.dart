@@ -963,7 +963,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         return FreeFixIndexOffset(
           fixIndex: fixIndex,
           fixAnchor: fixAnchor,
-          fixAlign: (align == FreeScrollType.topToBottom) ? FreeScrollType.directJumpTo : align,
+          fixAlign:  align,
         );
       }
     }
@@ -1031,7 +1031,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         _previewFirstController.previewItemsHeight(
           dataList.length,
           previewReverse: false,
-          previewExtent: max(0, -trueAnchorOffset),
+          previewExtent: max(0, listViewHeight),
         ),
         _previewLastController.previewItemsHeight(
           dataList.length,
