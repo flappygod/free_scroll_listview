@@ -890,7 +890,6 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///此时我们逐渐进行逼近直到找到尾屏数据允许的index和offset(正常情况下我们设置的cacheExtent足够支撑)
     else {
-
       ///极点补正
       double height = footerViewHeight;
       for (int s = dataList.length - 1; s >= index; s--) {
@@ -925,7 +924,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       return FreeFixIndexOffset(
         fixIndex: fixIndex,
         fixAnchor: fixAnchor,
-        fixAlign:  align,
+        fixAlign: align,
       );
     }
   }
@@ -1006,7 +1005,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       PreviewModel? previewLastModel = await _previewLastController.previewItemsHeight(
         dataList.length,
         previewReverse: true,
-        previewExtent: max(0, trueAnchorOffset),
+        previewExtent: trueAnchorOffset,
       );
 
       ///对位置进行修正
@@ -1030,12 +1029,12 @@ class FreeScrollListViewController<T> extends ScrollController {
         _previewFirstController.previewItemsHeight(
           dataList.length,
           previewReverse: false,
-          previewExtent: max(0, listViewHeight),
+          previewExtent: max(trueAnchorOffset.abs() - listViewHeight, 0),
         ),
         _previewLastController.previewItemsHeight(
           dataList.length,
           previewReverse: true,
-          previewExtent: max(0, trueAnchorOffset),
+          previewExtent: trueAnchorOffset.abs(),
         ),
       ]);
 
