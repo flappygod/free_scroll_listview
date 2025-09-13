@@ -868,7 +868,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   FreeFixIndexOffset? _checkFixIndexLastScreen(
     PreviewModel? previewModel,
     int index,
-    double trueAnchorOffset,
+    double anchor,
     FreeScrollType align,
   ) {
     ///空的
@@ -890,11 +890,13 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///此时我们逐渐进行逼近直到找到尾屏数据允许的index和offset(正常情况下我们设置的cacheExtent足够支撑)
     else {
+
+      ///极点补正
       double height = footerViewHeight;
       for (int s = dataList.length - 1; s >= index; s--) {
         height = (previewModel.itemHeights[s] ?? 0) + height;
       }
-      if (height < (trueAnchorOffset + listviewHeight)) {
+      if (height < (anchor + listviewHeight)) {
         double testHeight = footerViewHeight;
         for (int s = dataList.length - 1; s >= 0; s--) {
           testHeight = (previewModel.itemHeights[s] ?? 0) + testHeight;
@@ -907,8 +909,25 @@ class FreeScrollListViewController<T> extends ScrollController {
           }
         }
       }
+
+      ///常规补正(保证anchor大于零)
+      int fixIndex = index;
+      double fixAnchor = anchor;
+      for (int s = index - 1; s >= 0; s--) {
+        if (previewModel.itemHeights[s] != null) {
+          fixIndex = s;
+          fixAnchor = fixAnchor + previewModel.itemHeights[s]!;
+          if (fixAnchor >= 0) {
+            break;
+          }
+        }
+      }
+      return FreeFixIndexOffset(
+        fixIndex: fixIndex,
+        fixAnchor: fixAnchor,
+        fixAlign:  align,
+      );
     }
-    return null;
   }
 
   ///检查尾屏
@@ -939,31 +958,11 @@ class FreeScrollListViewController<T> extends ScrollController {
       for (int s = 0; s < index; s++) {
         height = (previewModel.itemHeights[s] ?? 0) + height;
       }
-      if (height < -anchor) {
+      if (height < anchor.abs()) {
         return FreeFixIndexOffset(
           fixIndex: 0,
           fixAnchor: 0,
           fixAlign: (align == FreeScrollType.topToBottom) ? FreeScrollType.directJumpTo : align,
-        );
-      }
-
-      ///常规补正
-      if (previewModel.itemHeights[index] != null) {
-        int fixIndex = index;
-        double fixAnchor = anchor;
-        for (int s = index - 1; s >= 0; s--) {
-          if (previewModel.itemHeights[s] != null) {
-            fixIndex = s;
-            fixAnchor = fixAnchor + previewModel.itemHeights[s]!;
-            if (fixAnchor >= 0) {
-              break;
-            }
-          }
-        }
-        return FreeFixIndexOffset(
-          fixIndex: fixIndex,
-          fixAnchor: fixAnchor,
-          fixAlign:  align,
         );
       }
     }
