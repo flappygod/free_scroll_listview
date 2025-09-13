@@ -476,8 +476,6 @@ class FreeScrollListViewController<T> extends ScrollController {
       return;
     }
 
-
-
     //我们已经获得了重新锚定的index,需要根据这个index进行重新锚定
     if (lastScreenIndex != null) {
       //获取这个item的真实基准
@@ -874,6 +872,9 @@ class FreeScrollListViewController<T> extends ScrollController {
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
   }) async {
+    ///你不能瞎搞影响性能
+    assert(anchorOffset.abs() < listViewHeight);
+
     ///越界错误提示
     if (dataList.isNotEmpty && index >= dataList.length) {
       throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
@@ -884,8 +885,81 @@ class FreeScrollListViewController<T> extends ScrollController {
       throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
-    ///加上顶部view的高度
+    ///加上顶部view的高度(这里的意思是如果我们存在headerViewHeight，滚动到第0项时需要考虑header)
     double trueAnchorOffset = (index == 0) ? (anchorOffset + headerViewHeight) : anchorOffset;
+
+    ///修正的index和修正的偏移量，保证不出界，后续直接用来作为跳转位置
+    int fixedIndex = index;
+    double fixedAnchor = trueAnchorOffset;
+
+    ///如果偏移量大于0，我们取最后一屏进行计算
+    if (trueAnchorOffset >= 0) {
+      PreviewModel? previewModel = await _previewLastController.previewItemsHeight(
+        dataList.length,
+        previewReverse: true,
+        previewExtent: max(0, trueAnchorOffset),
+      );
+
+      ///不为空的时候开始处理
+      if (previewModel != null) {
+        double listviewHeight = previewModel.listviewHeight;
+
+        ///预览高度都直接不满一屏，直接清零
+        if (previewModel.totalHeight + footerViewHeight < listviewHeight) {
+          fixedIndex = 0;
+          fixedAnchor = 0;
+        }
+
+        ///此时我们逐渐进行逼近直到找到尾屏数据允许的index和offset(正常情况下我们设置的cacheExtent足够支撑)
+        else {
+          double height = footerViewHeight;
+          for (int s = dataList.length - 1; s >= index; s--) {
+            height = (previewModel.itemHeights[s] ?? 0) + height;
+          }
+          if (height < (trueAnchorOffset + listviewHeight)) {
+            double testHeight = footerViewHeight;
+            for (int s = dataList.length - 1; s >= 0; s--) {
+              testHeight = (previewModel.itemHeights[s] ?? 0) + testHeight;
+              if (testHeight > listviewHeight) {
+                fixedIndex = s;
+                fixedAnchor = testHeight - listviewHeight;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    ///如果偏移量小于0，我们取第一屏进行计算
+    else {
+      PreviewModel? previewModel = await _previewLastController.previewItemsHeight(
+        dataList.length,
+        previewReverse: false,
+        previewExtent: max(0, -trueAnchorOffset),
+      );
+
+      ///不为空的时候开始处理
+      if (previewModel != null) {
+        ///预览高度都直接不满一屏，直接清零
+        if (previewModel.totalHeight + footerViewHeight < previewModel.listviewHeight) {
+          fixedIndex = 0;
+          fixedAnchor = 0;
+        }
+
+        ///计算是否越界，最小值为 fixedIndex =0 ，fixedAnchor = 0；
+        else {
+          double height = headerViewHeight;
+          for (int s = 0; s < index; s++) {
+            height = (previewModel.itemHeights[s] ?? 0) + height;
+          }
+          if (height < -trueAnchorOffset) {
+            fixedIndex = 0;
+            fixedAnchor = 0;
+          }
+        }
+      }
+    }
 
     switch (align) {
       case FreeScrollType.bottomToTop:
@@ -893,7 +967,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         ///Clear existing data and cached maps
         _setNegativeHeight(negativeInfinityValue);
         itemsRectHolder.clear();
-        _dataListOffset = index;
+        _dataListOffset = fixedIndex;
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         await waitForPostFrameCallback();
@@ -901,8 +975,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         AnimationData data = AnimationData(
           duration,
           curve,
-          listViewHeight + trueAnchorOffset,
-          0 + trueAnchorOffset,
+          listViewHeight + fixedAnchor,
+          0 + fixedAnchor,
           FreeScrollType.bottomToTop,
         );
 
@@ -916,7 +990,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         ///Clear existing data and cached maps
         _setNegativeHeight(negativeInfinityValue);
         itemsRectHolder.clear();
-        _dataListOffset = index;
+        _dataListOffset = fixedIndex;
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         await waitForPostFrameCallback();
@@ -924,8 +998,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         AnimationData data = AnimationData(
           duration,
           curve,
-          -listViewHeight + trueAnchorOffset,
-          0 + trueAnchorOffset,
+          -listViewHeight + fixedAnchor,
+          0 + fixedAnchor,
           FreeScrollType.topToBottom,
         );
 
@@ -936,62 +1010,14 @@ class FreeScrollListViewController<T> extends ScrollController {
         ));
       case FreeScrollType.directJumpTo:
 
-        ///preview data model
-        PreviewModel? previewModel = await _previewLastController.previewItemsHeight(
-          dataList.length,
-          previewReverse: true,
-          previewExtent: max(0, trueAnchorOffset),
-        );
-        double listviewHeight = previewModel?.listviewHeight ?? listViewHeight;
-
-        ///previewed
-        if (previewModel != null && previewModel.itemHeights[index] != null) {
-          ///get height remain
-          double height = footerViewHeight;
-          for (int s = dataList.length - 1; s >= index; s--) {
-            height = (previewModel.itemHeights[s] ?? 0) + height;
-          }
-
-          ///no enough space
-          if (height - trueAnchorOffset - listviewHeight < 0) {
-            double testHeight = footerViewHeight;
-            int testIndex = 0;
-            double testOffset = 0;
-
-            ///check max jump
-            for (int s = dataList.length - 1; s >= 0; s--) {
-              testHeight = (previewModel.itemHeights[s] ?? 0) + testHeight;
-              if (testHeight > listviewHeight) {
-                testIndex = s;
-                testOffset = testHeight - listviewHeight;
-                break;
-              }
-            }
-
-            ///set jump index
-            _setNegativeHeight(negativeInfinityValue);
-            itemsRectHolder.clear();
-            _dataListOffset = testIndex;
-            notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
-            notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-            if (hasClients && position.hasPixels) {
-              jumpTo(testOffset);
-            }
-            await waitForPostFrameCallback();
-            return notifyActionASyncListeners(
-              FreeScrollActionAsyncType.notifyIndexShow,
-            );
-          }
-        }
-
         ///other kind
         _setNegativeHeight(negativeInfinityValue);
         itemsRectHolder.clear();
-        _dataListOffset = index;
+        _dataListOffset = fixedIndex;
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         if (hasClients && position.hasPixels) {
-          jumpTo(trueAnchorOffset);
+          jumpTo(fixedAnchor);
         }
         await waitForPostFrameCallback();
         return notifyActionASyncListeners(
@@ -1470,7 +1496,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
-
         ///此控件预览首屏幕
         AdditionPreview(
           padding: EdgeInsets.zero,
@@ -1478,6 +1503,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
           itemBuilder: widget.builder,
           controller: widget.controller._previewFirstController,
         ),
+
         ///此控件预览最后一屏
         AdditionPreview(
           padding: EdgeInsets.zero,
@@ -1527,6 +1553,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
           itemBuilder: widget.builder,
           controller: widget.controller._previewFirstController,
         ),
+
         ///此控件预览最后一屏
         AdditionPreview(
           padding: EdgeInsets.zero,

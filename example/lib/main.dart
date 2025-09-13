@@ -96,10 +96,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return _controller.setDataAndScrollTo(
       dataList.toList(),
       index: 14,
-      duration: Duration.zero,
-      align: FreeScrollType.directJumpTo,
-      /*duration: const Duration(milliseconds: 320),
-      align: FreeScrollType.bottomToTop,*/
+      /*duration: Duration.zero,
+      align: FreeScrollType.directJumpTo,*/
+      duration: const Duration(milliseconds: 320),
+      align: FreeScrollType.topToBottom,
     );
   }
 
@@ -113,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
       dataList,
       index: 3,
       duration: const Duration(milliseconds: 320),
-      align: FreeScrollType.bottomToTop,
+      align: FreeScrollType.directJumpTo,
     );
   }
 
@@ -192,7 +192,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(
               child: FreeScrollListView(
                 reverse: true,
-                shrinkWrap: false,
+                shrinkWrap: true,
                 controller: _controller,
                 physics: const AlwaysScrollableScrollPhysics(),
                 /*headerView: Container(
