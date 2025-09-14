@@ -49,7 +49,8 @@ class _MyHomePageState extends State<MyHomePage> {
   ///controller
   final FreeScrollListViewController _controller = FreeScrollListViewController();
 
-  double height = 0;
+  double bottomHeight = 0;
+  double itemHeight = 75;
 
   @override
   void initState() {
@@ -95,25 +96,44 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 1,
+      index: 99,
       anchorOffset: 0,
       duration: const Duration(milliseconds: 320),
-      align: FreeScrollType.bottomToTop,
+      align: FreeScrollType.topToBottom,
     );
   }
 
   ///重设数据并跳转到指定位置
   Future _resetTwo() {
     List<String> dataList = [];
-    for (int s = 0; s < 12; s++) {
+    for (int s = 0; s < 20; s++) {
       dataList.add((s).toString());
     }
     return _controller.setDataAndScrollTo(
       dataList,
-      index: 3,
+      index: 9,
       duration: const Duration(milliseconds: 320),
-      align: FreeScrollType.directJumpTo,
+      align: FreeScrollType.topToBottom,
     );
+  }
+
+  ///重设数据并跳转到指定位置
+  void _resetThree() {
+    if (bottomHeight == 0) {
+      bottomHeight = 450;
+    } else {
+      bottomHeight = 0;
+    }
+    setState(() {});
+  }
+
+  void _resetFour(){
+    if (itemHeight == 75) {
+      itemHeight = 55;
+    } else {
+      itemHeight = 75;
+    }
+    setState(() {});
   }
 
   @override
@@ -147,7 +167,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTap: () {
-                      _resetTwo();
+                      //_resetTwo();
+                      _resetFour();
                     },
                     child: Container(
                       height: 35,
@@ -163,14 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Expanded(
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
-                    onTap: () {
-                      if (height == 0) {
-                        height = 450;
-                      } else {
-                        height = 0;
-                      }
-                      setState(() {});
-                    },
+                    onTap: _resetThree,
                     child: Container(
                       height: 35,
                       alignment: Alignment.center,
@@ -225,7 +239,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 },*/
                 builder: (context, index) {
                   return Container(
-                    height: 75,
+                    height: itemHeight,
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
@@ -243,7 +257,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             AnimatedContainer(
-              height: height,
+              height: bottomHeight,
               duration: const Duration(milliseconds: 320),
               curve: Curves.easeIn,
               color: Colors.blue,
