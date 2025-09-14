@@ -1034,7 +1034,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     double anchorOffset = 0,
   }) async {
     ///你不能瞎搞影响性能
-    if (listViewHeight > 0 && anchorOffset.abs() > listViewHeight) {
+    double currentListViewHeight = listViewHeight;
+    if (currentListViewHeight > 0 && anchorOffset.abs() > currentListViewHeight) {
       throw ArgumentError('anchorOffset is too large.');
     }
 
@@ -1050,6 +1051,8 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///加上顶部view的高度(这里的意思是如果我们存在headerViewHeight，滚动到第0项时需要考虑header)
     double trueAnchorOffset = (index == 0) ? (anchorOffset + headerViewHeight) : anchorOffset;
+
+
 
     ///修正的index和修正的偏移量，保证不出界，后续直接用来作为跳转位置
     int fixedIndex = index;
@@ -1086,7 +1089,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         _previewFirstController.previewItemsHeight(
           dataList.length,
           previewReverse: false,
-          previewExtent: max(trueAnchorOffset.abs() - listViewHeight, 0),
+          previewExtent: max(trueAnchorOffset.abs() - currentListViewHeight, 0),
         ),
         _previewLastController.previewItemsHeight(
           dataList.length,
@@ -1143,7 +1146,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         AnimationData data = AnimationData(
           duration,
           curve,
-          listViewHeight + fixedAnchor,
+          currentListViewHeight + fixedAnchor,
           0 + fixedAnchor,
           FreeScrollType.bottomToTop,
         );
@@ -1166,7 +1169,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         AnimationData data = AnimationData(
           duration,
           curve,
-          -listViewHeight + fixedAnchor,
+          -currentListViewHeight + fixedAnchor,
           0 + fixedAnchor,
           FreeScrollType.topToBottom,
         );
