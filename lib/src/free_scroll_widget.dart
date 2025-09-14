@@ -687,8 +687,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     });
   }
 
-  ///add data to head
-  ///previewHeight measure add item height or not
+  ///在顶部添加数据
   Future<void> addDataToHead(List<T> dataList, {bool measureHeight = true}) {
     return _lock.synchronized(() async {
       ///do nothing
