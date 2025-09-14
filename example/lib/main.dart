@@ -99,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
       index: 2,
       anchorOffset: 0,
       duration: const Duration(milliseconds: 320),
-      align: FreeScrollType.topToBottom,
+      align: FreeScrollType.bottomToTop,
     );
   }
 
