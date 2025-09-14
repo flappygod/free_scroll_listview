@@ -695,31 +695,31 @@ class FreeScrollListViewController<T> extends ScrollController {
         return;
       }
 
-      ///data list
+      ///数据都是空的，请等待
       if (_dataList.isNotEmpty && itemsRectHolder.isEmpty) {
         await waitForPostFrameCallback();
       }
 
-      ///if can scroll
+      ///有数据而且能滚动
       if (hasClients && position.maxScrollExtent > 0) {
-        ///insert all data
+        ///添加数据
         _dataList.insertAll(0, dataList);
+        ///位置移动
         _dataListOffset = _dataListOffset + dataList.length;
+        ///清空数据
         itemsRectHolder.clear();
 
-        ///之前的高度进行缓存
-        double formerTopData = _negativeHeight;
 
-        ///如果不是负无限
+        ///如果不是负无限就进行偏移
         if (_negativeHeight != negativeInfinityValue && measureHeight) {
+          ///之前的高度进行缓存
+          double formerTopData = _negativeHeight;
           ///预览高度
           PreviewModel? previewModel = await _previewLastController.previewItemsHeight(
             dataList.length,
           );
-
           ///总高度
           double? previewHeight = previewModel?.totalHeight;
-
           ///所有的item都被预览了
           if ((previewModel?.allPreviewed ?? false) && previewHeight != null) {
             ///重新设置高度
@@ -727,11 +727,11 @@ class FreeScrollListViewController<T> extends ScrollController {
           }
         }
 
-        ///notify data
+        ///通知刷新数据
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
       } else {
-        ///notify data
+        ///直接设置位置进行跳转
         setDataAndScrollTo(
           [...dataList, ..._dataList],
           index: max(0, dataList.length - 1),
@@ -757,11 +757,11 @@ class FreeScrollListViewController<T> extends ScrollController {
       throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
-    ///clear data
+    ///清空数据
     _dataList.clear();
     _dataList.addAll(dataList);
 
-    ///notify data
+    ///跳转到指定位置并设置动画
     return scrollToIndexSkipAlign(
       index,
       align: align,
