@@ -96,10 +96,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 12,
+      index: 5,
       anchorOffset: 0,
       duration: const Duration(milliseconds: 320),
-      align: FreeScrollType.bottomToTop,
+      align: FreeScrollType.topToBottom,
     );
   }
 
@@ -211,7 +211,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(
               child: FreeScrollListView(
                 reverse: true,
-                shrinkWrap: true,
+                shrinkWrap: false,
                 controller: _controller,
                 physics: const AlwaysScrollableScrollPhysics(),
                 /*headerView: Container(
