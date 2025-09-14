@@ -164,7 +164,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///设置负向滚动的最大搞低
   void _setNegativeHeight(double height) {
-    if(!hasClients||position is! _NegativedScrollPosition){
+    if (!hasClients || position is! _NegativedScrollPosition) {
       return;
     }
     //转换为我们需要的
@@ -176,8 +176,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       _negativeHeight = negativeInfinityValue;
     } else {
       //真实值(这里的高度不将headerView算进去)
-      negativedPosition.minScrollExtend = (height - headerViewHeight);
-      _negativeHeight = height;
+      negativedPosition.minScrollExtend = (height - headerViewHeight).removeTinyFraction();
+      _negativeHeight = height.removeTinyFraction();
     }
   }
 
@@ -278,19 +278,13 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///这里主要是在滚动的过程中，及时去设置最小的滚动距离，这样对滚动列表进行限制
   void _checkResetMinScrollExtend() {
-    //当前的rect holder如果是空的
-    if (itemsRectHolder.isEmpty) {
+    //必须要有值且正常
+    if (itemsRectHolder.isEmpty || !hasClients || position is! _NegativedScrollPosition) {
       return;
     }
 
     //对当前的滚动的position进行一个转换
-    _NegativedScrollPosition? currentPosition =
-        (hasClients && position is _NegativedScrollPosition) ? (position as _NegativedScrollPosition) : null;
-
-    //如果都是空的那么就不需要再继续了
-    if (currentPosition == null) {
-      return;
-    }
+    _NegativedScrollPosition currentPosition = (position as _NegativedScrollPosition);
 
     //获取顶部的第一个
     RectHolder? firstHolder = itemsRectHolder[0];
@@ -654,6 +648,7 @@ class FreeScrollListViewController<T> extends ScrollController {
 
         ///之前的高度进行缓存
         double formerTopData = _negativeHeight;
+
         ///如果不是负无限
         if (_negativeHeight != negativeInfinityValue && measureHeight) {
           ///预览高度
