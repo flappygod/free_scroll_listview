@@ -91,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ///重设数据并跳转到指定位置
   Future _resetOne() {
     List<String> dataList = [];
-    for (int s = 0; s < 100; s++) {
+    for (int s = 0; s < 20; s++) {
       dataList.add(s.toString());
     }
     return _controller.setDataAndScrollTo(
