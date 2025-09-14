@@ -67,23 +67,24 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
     ///offset item
     if (widget.reverse) {
-      double dy = (offset + height - offsetItem.dy - itemBox.size.height);
+      double dy = (pixels + offset + height - offsetItem.dy - itemBox.size.height).removeTinyFraction();
       _addFrameRect(
         Rect.fromLTWH(
           offsetItem.dx.removeTinyFraction(),
-          (dy + pixels).removeTinyFraction(),
-          itemBox.size.width.removeTinyFraction(),
-          itemBox.size.height.removeTinyFraction(),
+          dy,
+          (offsetItem.dx + itemBox.size.width).removeTinyFraction(),
+          (dy + itemBox.size.height).removeTinyFraction(),
         ),
         widget.actualIndex,
       );
     } else {
+      double dy = (pixels + offsetItem.dy - offset).removeTinyFraction();
       _addFrameRect(
-        Rect.fromLTWH(
+        Rect.fromLTRB(
           offsetItem.dx.removeTinyFraction(),
-          (offsetItem.dy - offset + pixels).removeTinyFraction(),
-          itemBox.size.width.removeTinyFraction(),
-          itemBox.size.height.removeTinyFraction(),
+          dy,
+          (offsetItem.dx + itemBox.size.width).removeTinyFraction(),
+          (dy + itemBox.size.height).removeTinyFraction(),
         ),
         widget.actualIndex,
       );

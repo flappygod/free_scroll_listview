@@ -30,28 +30,28 @@ const double negativeInfinityValue = double.negativeInfinity;
 
 ///free scroll listview controller
 class FreeScrollListViewController<T> extends ScrollController {
-  //global key
+  //列表总体高度
   final GlobalKey _listViewKey = GlobalKey();
 
-  //header key
+  //顶部View
   final GlobalKey _headerKey = GlobalKey();
 
-  //footer key
+  //底部View
   final GlobalKey _footerKey = GlobalKey();
 
-  //lock
+  //加锁
   final Lock _lock = Lock();
 
-  //data list
+  //数据源
   final List<T> _dataList;
 
-  //data list offset
+  //数据偏移
   int _dataListOffset;
 
-  //listeners
+  //同步监听
   final Set<FreeScrollListSyncListener> _syncListeners = {};
 
-  //listeners
+  //异步监听
   final Set<FreeScrollListASyncListener> _asyncListeners = {};
 
   //check rect listeners
@@ -81,58 +81,51 @@ class FreeScrollListViewController<T> extends ScrollController {
   //mx height
   double? _listviewMaxHeight;
 
-  //check is animating
+  //当前是否正在动画中
   bool get isAnimating {
     return _isAnimating;
   }
 
-  //data list offset
+  //获取当前数据偏移
   int dataListOffset() {
     return _dataListOffset;
   }
 
-  //get current start index
+  //当前在屏幕上起始的index
   int get currentStartIndex {
     return _currentStartIndex;
   }
 
-  //get current end index
+  //当前在屏幕上结束的index
   int get currentEndIndex {
     return _currentEndIndex;
   }
 
-  ///get item top scroll offset
+  ///这里获取的值是当前item顶部相对于View的距离
   double? getItemTopScrollOffset(int index) {
     if (!hasClients || !position.hasPixels) {
       return null;
     }
-    RectHolder? rect = itemsRectHolder[index];
-    if (rect == null) {
-      return null;
-    }
-    double? offsetOne = rect.rectTop();
-    double offsetTwo = position.pixels;
+    double? offsetOne = itemsRectHolder[index]?.rectTop();
     if (offsetOne == null) {
       return null;
     }
+    double offsetTwo = position.pixels;
     return offsetTwo - offsetOne;
   }
 
-  ///get item top scroll offset
+  ///这里获取的值是当前item底部相对于View的距离
   double? getItemBottomScrollOffset(int index) {
     if (!hasClients || !position.hasPixels) {
       return null;
     }
-    RectHolder? rect = itemsRectHolder[index];
-    if (rect == null) {
+    double? offsetOne = itemsRectHolder[index]?.rectTop();
+    double? height = itemsRectHolder[index]?.rectHeight();
+    if (offsetOne == null || height == null) {
       return null;
     }
-    double? offsetOne = rect.rectTop();
     double offsetTwo = position.pixels;
-    if (offsetOne == null) {
-      return null;
-    }
-    return offsetTwo - offsetOne - (rect.rectHeight() ?? 0);
+    return offsetTwo - offsetOne - height;
   }
 
   ///获取最大可能区域的高度
@@ -171,14 +164,20 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///设置负向滚动的最大搞低
   void _setNegativeHeight(double height) {
-    _negativeHeight = height.removeTinyFraction();
-    if (hasClients && position is _NegativedScrollPosition) {
-      final negativedPosition = position as _NegativedScrollPosition;
-      if (_negativeHeight == negativeInfinityValue) {
-        negativedPosition.minScrollExtend = _negativeHeight;
-      } else {
-        negativedPosition.minScrollExtend = (_negativeHeight - headerViewHeight).removeTinyFraction();
-      }
+    if(!hasClients||position is! _NegativedScrollPosition){
+      return;
+    }
+    //转换为我们需要的
+    final negativedPosition = position as _NegativedScrollPosition;
+    //设置负向滚动的值
+    if (height.isNegative && height.isInfinite) {
+      //负无穷
+      negativedPosition.minScrollExtend = negativeInfinityValue;
+      _negativeHeight = negativeInfinityValue;
+    } else {
+      //真实值(这里的高度不将headerView算进去)
+      negativedPosition.minScrollExtend = (height - headerViewHeight);
+      _negativeHeight = height;
     }
   }
 
@@ -494,7 +493,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       //清空缓存
       itemsRectHolder.clear();
       //这种锚定就直接设置为负向无限滚动后等待自动刷新赋值最小negative高度
-      _setNegativeHeight(_negativeHeight);
+      _setNegativeHeight(negativeInfinityValue);
       //跳转到指定位置
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       //跳转
@@ -653,19 +652,21 @@ class FreeScrollListViewController<T> extends ScrollController {
         _dataListOffset = _dataListOffset + dataList.length;
         itemsRectHolder.clear();
 
-        ///preview the height and add it to negative height
+        ///之前的高度进行缓存
         double formerTopData = _negativeHeight;
+        ///如果不是负无限
         if (_negativeHeight != negativeInfinityValue && measureHeight) {
-          ///preview model
+          ///预览高度
           PreviewModel? previewModel = await _previewLastController.previewItemsHeight(
             dataList.length,
           );
 
-          ///total height
+          ///总高度
           double? previewHeight = previewModel?.totalHeight;
 
-          ///all previewed
+          ///所有的item都被预览了
           if ((previewModel?.allPreviewed ?? false) && previewHeight != null) {
+            ///重新设置高度
             _setNegativeHeight(formerTopData - previewHeight);
           }
         }

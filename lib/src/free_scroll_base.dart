@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 ///free scroll listview action type
@@ -112,15 +114,16 @@ class RectHolder {
     return rect?.bottom;
   }
 }
-
 extension DoubleExtensions on double {
   /// 判断两个浮点数是否近似相等
-  bool isAlmostEqual(double other, {double epsilon = 1e-12}) {
+  bool isAlmostEqual(double other, {double epsilon = 1e-4}) {
     return (this - other).abs() < epsilon;
   }
 
-  /// 去掉小于指定误差范围的小数位（默认为 1e-12）
-  double removeTinyFraction({double epsilon = 1e-12}) {
-    return (abs() < epsilon) ? 0.0 : this;
+  /// 去掉过小的小数部分（可自定义精度）
+  double removeTinyFraction({int precision = 4}) {
+    final factor = pow(10, precision);
+    return (this * factor).roundToDouble() / factor;
   }
 }
+
