@@ -88,22 +88,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   ///重设数据并跳转到指定位置
-  Future _resetDataAndScrollAlign() {
+  Future _resetOne() {
     List<String> dataList = [];
     for (int s = 0; s < 100; s++) {
       dataList.add(s.toString());
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 93,
-      anchorOffset: -75*5,
+      index: 1,
+      anchorOffset: 0,
       duration: const Duration(milliseconds: 320),
-      align: FreeScrollType.topToBottom,
+      align: FreeScrollType.bottomToTop,
     );
   }
 
   ///重设数据并跳转到指定位置
-  Future _resetDataAndScrollAlign2() {
+  Future _resetTwo() {
     List<String> dataList = [];
     for (int s = 0; s < 12; s++) {
       dataList.add((s).toString());
@@ -130,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTap: () {
-                      _resetDataAndScrollAlign();
+                      _resetOne();
                     },
                     child: Container(
                       height: 35,
@@ -147,7 +147,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTap: () {
-                      _resetDataAndScrollAlign2();
+                      _resetTwo();
                     },
                     child: Container(
                       height: 35,
