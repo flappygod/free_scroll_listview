@@ -96,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 2,
+      index: 12,
       anchorOffset: 0,
       duration: const Duration(milliseconds: 320),
       align: FreeScrollType.bottomToTop,
@@ -105,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   ///重设数据并跳转到指定位置
   Future _resetFive() {
-    return _controller.scrollToIndex(2,anchorOffset: -75*10);
+    return _controller.scrollToIndex(2,anchorOffset: -75*3);
   }
 
   ///重设数据并跳转到指定位置
