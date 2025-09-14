@@ -1,3 +1,3 @@
-## 2.0.4
+## 2.0.5
 
-* Bugs fixed on flutter 3.32.0
+* Bugs fixed and add limit scroll for setDataAndScrollTo。
