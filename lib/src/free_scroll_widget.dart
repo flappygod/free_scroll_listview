@@ -742,7 +742,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     });
   }
 
-  ///set data and scroll to
+  ///设置index并跳转到指定的位置去
   Future setDataAndScrollTo(
     List<T> dataList, {
     int index = 0,
