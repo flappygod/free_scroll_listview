@@ -69,7 +69,7 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     if (widget.reverse) {
       double dy = (pixels + offset + height - offsetItem.dy - itemBox.size.height).removeTinyFraction();
       _addFrameRect(
-        Rect.fromLTWH(
+        Rect.fromLTRB(
           offsetItem.dx.removeTinyFraction(),
           dy,
           (offsetItem.dx + itemBox.size.width).removeTinyFraction(),

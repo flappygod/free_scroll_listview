@@ -196,8 +196,70 @@ class FreeScrollListViewController<T> extends ScrollController {
     _checkResetDeleteFirstItem(index);
   }
 
-  ///这里主要是为了解决在动画的过程中，如果发现最后一屏的数据不满了，防止滚动最后留白太多。
+  ///检查是否需要resetIndex
   void _checkResetLastScreenIndex() {
+
+    //已经不需要重新锚定了
+    if(_dataListOffset==0){
+      return;
+    }
+
+    //最大的index
+    int maxIndex = (dataList.length - 1);
+    //当前列表高度
+    double currentListViewHeight = listViewHeight;
+    //计算最后一屏高度
+    double lastScreenHeight = 0;
+    for (int s = maxIndex; s >= _dataListOffset; s--) {
+      //没有这个值
+      final double? itemHeight = itemsRectHolder[s]?.rectHeight();
+      if (itemHeight == null) {
+        return;
+      }
+      lastScreenHeight += itemHeight;
+    }
+    //已经足够
+    if (lastScreenHeight > currentListViewHeight) {
+      return;
+    }
+
+    //否则的话我们就需要计算一下需要切换锚定Index的高度的大小是多少
+    double needChangeOffset = 0;
+    int? needChangeIndex;
+    for (int s = _dataListOffset - 1; s >= 0; s--) {
+      final double? itemHeight = itemsRectHolder[s]?.rectHeight();
+      if (itemHeight == null) {
+        break;
+      }
+      needChangeIndex = s;
+      needChangeOffset += itemHeight;
+    }
+    //没有找到
+    if (needChangeIndex == null || _dataListOffset == needChangeOffset) {
+      return;
+    }
+    //重置当前的锚定index,
+    _dataListOffset = needChangeIndex;
+    //清空缓存item高度
+    itemsRectHolder.clear();
+    //最小高度如果存在那么就进行一个偏移
+    _correctNegativeHeight(needChangeOffset);
+    //告诉正在进行的动画列表的锚定已经修改，响应的动画响应位置也需要进行偏移
+    notifyActionSyncListeners(
+      FreeScrollActionSyncType.notifyAnimOffset,
+      data: needChangeOffset,
+    );
+    //刷新界面
+    notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+    //提示index被展示
+    notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
+    //当前的滚动距离修正
+    position.correctBy(needChangeOffset);
+  }
+
+  ///这里主要是为了解决在动画的过程中，如果发现最后一屏的数据不满了，防止滚动最后留白太多。
+  @Deprecated("这个方法暂时不需要了")
+  void _checkResetLastScreenWhenAnim() {
     //如果不是在动画中，就直接返回
     if (!_isAnimating) {
       return;
