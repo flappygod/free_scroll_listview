@@ -1342,8 +1342,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
   ///function listener
   late FreeScrollListASyncListener _aSyncListener;
 
-  ///time stamp debouncer
-  final TimeStampDeBouncer _timeStampDebouncer = TimeStampDeBouncer();
+  ///time stamp de bouncer
+  final TimeStampDeBouncer _timeStampDeBouncer = TimeStampDeBouncer();
 
   ///animation controller and offset
   AnimationController? _animationController;
@@ -1792,12 +1792,12 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
 
     ///加载之前的消息，FormerMessages
     if (notification.metrics.pixels >= (notification.metrics.maxScrollExtent - widget.loadOffset)) {
-      _timeStampDebouncer.run(widget.willReachTail);
+      _timeStampDeBouncer.run(widget.willReachTail);
     }
 
     ///加载新的消息
     if (notification.metrics.pixels <= (widget.controller._negativeHeight + widget.loadOffset)) {
-      _timeStampDebouncer.run(widget.willReachHead);
+      _timeStampDeBouncer.run(widget.willReachHead);
     }
 
     ///when animating do noting
