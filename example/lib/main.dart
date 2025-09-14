@@ -47,7 +47,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   ///controller
-  final FreeScrollListViewController _controller = FreeScrollListViewController();
+  final FreeScrollListViewController _controller =
+      FreeScrollListViewController();
 
   double bottomHeight = 0;
   double itemHeight = 75;
@@ -143,7 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
-  void _resetFour(){
+  void _resetFour() {
     if (itemHeight == 75) {
       itemHeight = 55;
     } else {
@@ -256,7 +257,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   return _checkAddHead();
                 },*/
                 builder: (context, index) {
-                  if(index==1){
+                  if (index == 1) {
                     return Container(
                       height: itemFirstHeight,
                       decoration: BoxDecoration(

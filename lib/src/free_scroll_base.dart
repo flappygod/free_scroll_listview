@@ -114,6 +114,7 @@ class RectHolder {
     return rect?.bottom;
   }
 }
+
 extension DoubleExtensions on double {
   /// 判断两个浮点数是否近似相等
   bool isAlmostEqual(double other, {double epsilon = 1e-4}) {
@@ -126,4 +127,3 @@ extension DoubleExtensions on double {
     return (this * factor).roundToDouble() / factor;
   }
 }
-

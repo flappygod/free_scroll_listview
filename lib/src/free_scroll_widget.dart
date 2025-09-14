@@ -58,13 +58,16 @@ class FreeScrollListViewController<T> extends ScrollController {
   final Set<VoidCallback> _checkRectListeners = {};
 
   //尾部一屏幕的预览
-  final AdditionPreviewController<T> _previewLastController = AdditionPreviewController<T>();
+  final AdditionPreviewController<T> _previewLastController =
+      AdditionPreviewController<T>();
 
   //头部一屏幕的预览
-  final AdditionPreviewController<T> _previewFirstController = AdditionPreviewController<T>();
+  final AdditionPreviewController<T> _previewFirstController =
+      AdditionPreviewController<T>();
 
   //item maps
-  final SplayTreeMap<int, RectHolder> itemsRectHolder = SplayTreeMap<int, RectHolder>();
+  final SplayTreeMap<int, RectHolder> itemsRectHolder =
+      SplayTreeMap<int, RectHolder>();
 
   //negative height total
   double _negativeHeight = negativeInfinityValue;
@@ -176,7 +179,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       _negativeHeight = negativeInfinityValue;
     } else {
       //真实值(这里的高度不将headerView算进去)
-      negativedPosition.minScrollExtend = (height - headerViewHeight).removeTinyFraction();
+      negativedPosition.minScrollExtend =
+          (height - headerViewHeight).removeTinyFraction();
       _negativeHeight = height.removeTinyFraction();
     }
   }
@@ -198,9 +202,8 @@ class FreeScrollListViewController<T> extends ScrollController {
 
   ///检查是否需要resetIndex
   void _checkResetLastScreenIndex() {
-
     //已经不需要重新锚定了
-    if(_dataListOffset==0){
+    if (_dataListOffset == 0) {
       return;
     }
 
@@ -341,12 +344,15 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///这里主要是在滚动的过程中，及时去设置最小的滚动距离，这样对滚动列表进行限制
   void _checkResetMinScrollExtend() {
     //必须要有值且正常
-    if (itemsRectHolder.isEmpty || !hasClients || position is! _NegativedScrollPosition) {
+    if (itemsRectHolder.isEmpty ||
+        !hasClients ||
+        position is! _NegativedScrollPosition) {
       return;
     }
 
     //对当前的滚动的position进行一个转换
-    _NegativedScrollPosition currentPosition = (position as _NegativedScrollPosition);
+    _NegativedScrollPosition currentPosition =
+        (position as _NegativedScrollPosition);
 
     //获取顶部的第一个
     RectHolder? firstHolder = itemsRectHolder[0];
@@ -707,22 +713,27 @@ class FreeScrollListViewController<T> extends ScrollController {
       if (hasClients && position.maxScrollExtent > 0) {
         ///添加数据
         _dataList.insertAll(0, dataList);
+
         ///位置移动
         _dataListOffset = _dataListOffset + dataList.length;
+
         ///清空数据
         itemsRectHolder.clear();
-
 
         ///如果不是负无限就进行偏移
         if (_negativeHeight != negativeInfinityValue && measureHeight) {
           ///之前的高度进行缓存
           double formerTopData = _negativeHeight;
+
           ///预览高度
-          PreviewModel? previewModel = await _previewLastController.previewItemsHeight(
+          PreviewModel? previewModel =
+              await _previewLastController.previewItemsHeight(
             dataList.length,
           );
+
           ///总高度
           double? previewHeight = previewModel?.totalHeight;
+
           ///所有的item都被预览了
           if ((previewModel?.allPreviewed ?? false) && previewHeight != null) {
             ///重新设置高度
@@ -754,10 +765,12 @@ class FreeScrollListViewController<T> extends ScrollController {
     double anchorOffset = 0,
   }) {
     if (dataList.isNotEmpty && index >= dataList.length) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
     if (index < 0) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
     ///清空数据
@@ -836,10 +849,12 @@ class FreeScrollListViewController<T> extends ScrollController {
     double anchorOffset = 0,
   }) async {
     if (dataList.isNotEmpty && index >= dataList.length) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
     if (index < 0) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
     ///根本都没完成初始化
@@ -859,12 +874,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
 
     ///这里主要是停止当前的动画
-    if(isAnimating){
+    if (isAnimating) {
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       await waitForPostFrameCallback();
     }
-
 
     ///所有的数据刷新一遍
     notifyCheckRectListeners();
@@ -880,7 +894,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         toOffset = min(position.maxScrollExtent, toOffset);
       }
       //顶部限制
-      if(!position.minScrollExtent.isInfinite){
+      if (!position.minScrollExtent.isInfinite) {
         toOffset = max(position.minScrollExtent, toOffset);
       }
       return _handleAnimation(animateTo(
@@ -951,7 +965,9 @@ class FreeScrollListViewController<T> extends ScrollController {
       return FreeFixIndexOffset(
         fixIndex: 0,
         fixAnchor: 0,
-        fixAlign: (align == FreeScrollType.bottomToTop) ? FreeScrollType.directJumpTo : align,
+        fixAlign: (align == FreeScrollType.bottomToTop)
+            ? FreeScrollType.directJumpTo
+            : align,
       );
     }
 
@@ -970,7 +986,9 @@ class FreeScrollListViewController<T> extends ScrollController {
             return FreeFixIndexOffset(
               fixIndex: s,
               fixAnchor: testHeight - listviewHeight,
-              fixAlign: (align == FreeScrollType.bottomToTop) ? FreeScrollType.directJumpTo : align,
+              fixAlign: (align == FreeScrollType.bottomToTop)
+                  ? FreeScrollType.directJumpTo
+                  : align,
             );
           }
         }
@@ -1009,11 +1027,14 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
 
     ///预览高度都直接不满一屏，直接清零
-    if (previewModel.totalHeight + footerViewHeight < previewModel.listviewHeight) {
+    if (previewModel.totalHeight + footerViewHeight <
+        previewModel.listviewHeight) {
       return FreeFixIndexOffset(
         fixIndex: 0,
         fixAnchor: 0,
-        fixAlign: (align == FreeScrollType.topToBottom) ? FreeScrollType.directJumpTo : align,
+        fixAlign: (align == FreeScrollType.topToBottom)
+            ? FreeScrollType.directJumpTo
+            : align,
       );
     }
 
@@ -1028,7 +1049,9 @@ class FreeScrollListViewController<T> extends ScrollController {
         return FreeFixIndexOffset(
           fixIndex: 0,
           fixAnchor: 0,
-          fixAlign: (align == FreeScrollType.topToBottom) ? FreeScrollType.directJumpTo : align,
+          fixAlign: (align == FreeScrollType.topToBottom)
+              ? FreeScrollType.directJumpTo
+              : align,
         );
       }
     }
@@ -1045,24 +1068,26 @@ class FreeScrollListViewController<T> extends ScrollController {
   }) async {
     ///你不能瞎搞影响性能
     double currentListViewHeight = listViewHeight;
-    if (currentListViewHeight > 0 && anchorOffset.abs() > currentListViewHeight) {
+    if (currentListViewHeight > 0 &&
+        anchorOffset.abs() > currentListViewHeight) {
       throw ArgumentError('anchorOffset is too large.');
     }
 
     ///越界错误提示
     if (dataList.isNotEmpty && index >= dataList.length) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
     ///越界错误提示
     if (index < 0) {
-      throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
+      throw ArgumentError(
+          'Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
     ///加上顶部view的高度(这里的意思是如果我们存在headerViewHeight，滚动到第0项时需要考虑header)
-    double trueAnchorOffset = (index == 0) ? (anchorOffset + headerViewHeight) : anchorOffset;
-
-
+    double trueAnchorOffset =
+        (index == 0) ? (anchorOffset + headerViewHeight) : anchorOffset;
 
     ///修正的index和修正的偏移量，保证不出界，后续直接用来作为跳转位置
     int fixedIndex = index;
@@ -1072,7 +1097,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///如果偏移量大于0，我们只需要尾屏修正
     if (trueAnchorOffset >= 0) {
       ///尾屏幕
-      PreviewModel? previewLastModel = await _previewLastController.previewItemsHeight(
+      PreviewModel? previewLastModel =
+          await _previewLastController.previewItemsHeight(
         dataList.length,
         previewReverse: true,
         previewExtent: trueAnchorOffset,
@@ -1335,7 +1361,8 @@ class FreeScrollListView<T> extends StatefulWidget {
 }
 
 ///free scroll listview state
-class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerProviderStateMixin {
+class FreeScrollListViewState<T> extends State<FreeScrollListView>
+    with TickerProviderStateMixin {
   ///throttler
   late Throttler _throttler;
 
@@ -1369,8 +1396,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
         ///stop animation
         case FreeScrollActionSyncType.notifyAnimStop:
           _cancelAnimation();
-          if (widget.controller.hasClients && widget.controller.position.hasPixels) {
-            widget.controller.position.jumpTo(widget.controller.position.pixels);
+          if (widget.controller.hasClients &&
+              widget.controller.position.hasPixels) {
+            widget.controller.position
+                .jumpTo(widget.controller.position.pixels);
           }
           break;
 
@@ -1416,7 +1445,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     ///add status listener
     animationController.addStatusListener((status) {
       //监听动画状态
-      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+      if (status == AnimationStatus.completed ||
+          status == AnimationStatus.dismissed) {
         //动画自然完成时，调用 completer.complete()
         if (!completer.isCompleted) {
           completer.complete();
@@ -1450,7 +1480,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
       double maxScrollExtent = widget.controller.position.maxScrollExtent;
 
       ///check max scroll extend
-      if (offsetTo <= maxScrollExtent && widget.controller.hasClients && widget.controller.position.hasPixels) {
+      if (offsetTo <= maxScrollExtent &&
+          widget.controller.hasClients &&
+          widget.controller.position.hasPixels) {
         widget.controller.position.jumpTo(offsetTo);
         return;
       }
@@ -1555,7 +1587,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                 return Builder(builder: (context) {
                   ///Build negative [ScrollPosition] for the negative scrolling [Viewport].
                   final ScrollableState state = Scrollable.of(context);
-                  final _NegativedScrollPosition negativeOffset = _NegativedScrollPosition(
+                  final _NegativedScrollPosition negativeOffset =
+                      _NegativedScrollPosition(
                     physics: physics,
                     context: state,
                     initialPixels: -offset.pixels,
@@ -1568,7 +1601,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
                   });
 
                   int negativeDataLength = widget.controller._dataListOffset;
-                  int positiveDataLength = widget.controller._dataList.length - widget.controller._dataListOffset;
+                  int positiveDataLength = widget.controller._dataList.length -
+                      widget.controller._dataListOffset;
 
                   ///negative
                   List<Widget> sliverNegative = <Widget>[
@@ -1644,9 +1678,11 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     //不相等
     if (widget.controller._listviewMaxHeight != constraints.maxHeight) {
       if (widget.controller._listviewMaxHeight! < constraints.maxHeight) {
-        _listViewAreaBigger(widget.controller._listviewMaxHeight!, constraints.maxHeight);
+        _listViewAreaBigger(
+            widget.controller._listviewMaxHeight!, constraints.maxHeight);
       } else {
-        _listViewAreaSmaller(widget.controller._listviewMaxHeight!, constraints.maxHeight);
+        _listViewAreaSmaller(
+            widget.controller._listviewMaxHeight!, constraints.maxHeight);
       }
       widget.controller._listviewMaxHeight = constraints.maxHeight;
     }
@@ -1788,18 +1824,21 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
   ///handle notification
   bool _handleNotification(ScrollNotification notification) {
     ///滚动开始而且有触摸事件
-    if (notification is ScrollStartNotification && notification.dragDetails != null) {
+    if (notification is ScrollStartNotification &&
+        notification.dragDetails != null) {
       _cancelAnimation();
       widget.controller.notifyCheckRectListeners();
     }
 
     ///加载之前的消息，FormerMessages
-    if (notification.metrics.pixels >= (notification.metrics.maxScrollExtent - widget.loadOffset)) {
+    if (notification.metrics.pixels >=
+        (notification.metrics.maxScrollExtent - widget.loadOffset)) {
       _timeStampDeBouncer.run(widget.willReachTail);
     }
 
     ///加载新的消息
-    if (notification.metrics.pixels <= (widget.controller._negativeHeight + widget.loadOffset)) {
+    if (notification.metrics.pixels <=
+        (widget.controller._negativeHeight + widget.loadOffset)) {
       _timeStampDeBouncer.run(widget.willReachHead);
     }
 
@@ -1818,7 +1857,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
     if (notification is ScrollUpdateNotification) {
       _notifyIndex();
       if ((widget.notifyItemShowWhenAllTypeScroll ||
-          (widget.notifyItemShowWhenGestureScroll && notification.dragDetails != null))) {
+          (widget.notifyItemShowWhenGestureScroll &&
+              notification.dragDetails != null))) {
         if (_throttler.duration.inMilliseconds == 0) {
           _notifyOnShow();
         } else {
@@ -1862,7 +1902,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView> with TickerPr
       double offsetBottom = rectBottom - widget.controller.position.pixels;
 
       ///Listview height
-      if ((offsetTop >= 0 && offsetBottom <= listViewHeight) || offsetTop <= 0 && offsetBottom >= listViewHeight) {
+      if ((offsetTop >= 0 && offsetBottom <= listViewHeight) ||
+          offsetTop <= 0 && offsetBottom >= listViewHeight) {
         keys.add(key);
       }
     }
@@ -1975,18 +2016,19 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
 
     ///add listener
     _callback = () {
-      if(!hasPixels){
+      if (!hasPixels) {
         return;
       }
-      if(minScrollExtend >= maxScrollExtent){
+      if (minScrollExtend >= maxScrollExtent) {
         return;
       }
-      if(_minScrollExtend == negativeInfinityValue){
+      if (_minScrollExtend == negativeInfinityValue) {
         return;
       }
-      if(pixels > _minScrollExtend - 100){
+      if (pixels > _minScrollExtend - 100) {
         return;
       }
+
       ///这里限制一下不能负得太多，导致滑动到莫名其妙的位置上去，因为有的时候设置了maxScrollExtent后生效有莫名其妙的时间差
       jumpTo(min(_minScrollExtend - 100, 0));
     };

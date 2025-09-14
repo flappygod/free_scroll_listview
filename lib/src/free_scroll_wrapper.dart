@@ -43,7 +43,9 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   ///refresh rect
   void _refreshRectItems() {
     ///item
-    if (!mounted || !widget.controller.hasClients || !widget.controller.position.hasPixels) {
+    if (!mounted ||
+        !widget.controller.hasClients ||
+        !widget.controller.position.hasPixels) {
       return;
     }
 
@@ -67,7 +69,9 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
     ///offset item
     if (widget.reverse) {
-      double dy = (pixels + offset + height - offsetItem.dy - itemBox.size.height).removeTinyFraction();
+      double dy =
+          (pixels + offset + height - offsetItem.dy - itemBox.size.height)
+              .removeTinyFraction();
       _addFrameRect(
         Rect.fromLTRB(
           offsetItem.dx.removeTinyFraction(),
