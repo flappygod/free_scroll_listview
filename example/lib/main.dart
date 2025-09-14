@@ -213,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 reverse: true,
                 shrinkWrap: false,
                 controller: _controller,
-                physics: const AlwaysScrollableScrollPhysics(),
+                //physics: const AlwaysScrollableScrollPhysics(),
                 /*headerView: Container(
                   height: 60,
                   color: Colors.redAccent,
