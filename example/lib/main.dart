@@ -96,11 +96,16 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 99,
+      index: 2,
       anchorOffset: 0,
       duration: const Duration(milliseconds: 320),
       align: FreeScrollType.topToBottom,
     );
+  }
+
+  ///重设数据并跳转到指定位置
+  Future _resetFive() {
+    return _controller.scrollToIndex(2,anchorOffset: -75*10);
   }
 
   ///重设数据并跳转到指定位置
@@ -168,7 +173,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     behavior: HitTestBehavior.translucent,
                     onTap: () {
                       //_resetTwo();
-                      _resetFour();
+                      //_resetFour();
+                      _resetFive();
                     },
                     child: Container(
                       height: 35,

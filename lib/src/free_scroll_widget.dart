@@ -839,12 +839,12 @@ class FreeScrollListViewController<T> extends ScrollController {
       throw ArgumentError('Index $index is out of bounds for dataList of length ${dataList.length}.');
     }
 
-    ///no clients
+    ///根本都没完成初始化
     if (!hasClients) {
       return;
     }
 
-    ///time is not enough
+    ///时间太短，直接跳转
     if (duration.inMilliseconds < 50) {
       return scrollToIndexSkipAlign(
         index,
@@ -855,23 +855,28 @@ class FreeScrollListViewController<T> extends ScrollController {
       );
     }
 
-    ///notify data
-    notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
-    notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-    await waitForPostFrameCallback();
+    ///这里主要是停止当前的动画
+    if(isAnimating){
+      notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
+      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      await waitForPostFrameCallback();
+    }
 
-    ///all visible items refresh
+
+    ///所有的数据刷新一遍
     notifyCheckRectListeners();
 
-    ///get the rect for the index
+    ///找到当前的index是否在屏幕上显示
     RectHolder? holder = itemsRectHolder[index];
 
-    ///if index is exists and is not animating
-    ///when animating the rect may not actual
+    ///正在显示中
     if (holder != null && holder.isOnScreen && !_isAnimating) {
       double toOffset = holder.rectTop()! + anchorOffset;
       if (hasClients && position.maxScrollExtent != double.maxFinite) {
         toOffset = min(position.maxScrollExtent, toOffset);
+      }
+      if(!position.minScrollExtent.isInfinite){
+        toOffset = max(position.minScrollExtent, toOffset);
       }
       return _handleAnimation(animateTo(
         toOffset,
