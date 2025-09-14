@@ -387,6 +387,8 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///处理第一条数据被删除了的情况(反向的时候需要触发一下防止空白高度)
+  ///当数据变化的时候，min scroll 可能发生变化，因为主要是第一个item去设置min scroll，所以
+  ///当第一个item、不是滚动状态(滚动状态自然触发)、不是动画状态(动画状态自然触发)、当第一个item必须有值、滚动距离已经越界了的情况下
   void _checkResetDeleteFirstItem(int index) {
     RectHolder? firstHolder = itemsRectHolder[0];
     if (index != 0 ||
@@ -400,6 +402,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         position.pixels >= firstHolder.rectTop()!) {
       return;
     }
+    //触发一下保证能够回弹回去
     position.jumpTo(position.pixels);
   }
 

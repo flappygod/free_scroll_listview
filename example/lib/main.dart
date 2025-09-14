@@ -51,6 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   double bottomHeight = 0;
   double itemHeight = 75;
+  double itemFirstHeight = 75;
 
   @override
   void initState() {
@@ -96,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 5,
+      index: 4,
       anchorOffset: 0,
       duration: const Duration(milliseconds: 320),
       align: FreeScrollType.topToBottom,
@@ -106,6 +107,16 @@ class _MyHomePageState extends State<MyHomePage> {
   ///重设数据并跳转到指定位置
   Future _resetFive() {
     return _controller.scrollToIndex(0);
+  }
+
+  ///重设数据并跳转到指定位置
+  void _resetSix() {
+    if (itemFirstHeight == 75) {
+      itemFirstHeight = 0;
+    } else {
+      itemFirstHeight = 75;
+    }
+    setState(() {});
   }
 
   ///重设数据并跳转到指定位置
@@ -174,7 +185,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     onTap: () {
                       //_resetTwo();
                       //_resetFour();
-                      _resetFive();
+                      //_resetFive();
+                      _resetSix();
                     },
                     child: Container(
                       height: 35,
@@ -214,14 +226,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 shrinkWrap: true,
                 controller: _controller,
                 //physics: const AlwaysScrollableScrollPhysics(),
-                headerView: Container(
+                /*headerView: Container(
                   height: 60,
                   color: Colors.redAccent,
                 ),
                 footerView: Container(
                   height: 60,
                   color: Colors.blue,
-                ),
+                ),*/
                 onStartIndexChange: (int index) {
                   if (kDebugMode) {
                     print("A$index");
@@ -244,6 +256,23 @@ class _MyHomePageState extends State<MyHomePage> {
                   return _checkAddHead();
                 },*/
                 builder: (context, index) {
+                  if(index==1){
+                    return Container(
+                      height: itemFirstHeight,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Colors.black.withAlpha(20),
+                            width: 0.5,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        _controller.dataList[index],
+                      ),
+                    );
+                  }
                   return Container(
                     height: itemHeight,
                     decoration: BoxDecoration(
