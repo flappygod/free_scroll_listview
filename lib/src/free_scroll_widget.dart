@@ -872,9 +872,11 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///正在显示中
     if (holder != null && holder.isOnScreen && !_isAnimating) {
       double toOffset = holder.rectTop()! + anchorOffset;
+      //底部限制
       if (hasClients && position.maxScrollExtent != double.maxFinite) {
         toOffset = min(position.maxScrollExtent, toOffset);
       }
+      //顶部限制
       if(!position.minScrollExtent.isInfinite){
         toOffset = max(position.minScrollExtent, toOffset);
       }
