@@ -105,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   ///重设数据并跳转到指定位置
   Future _resetFive() {
-    return _controller.scrollToIndex(2,anchorOffset: -75*3);
+    return _controller.scrollToIndex(0);
   }
 
   ///重设数据并跳转到指定位置
@@ -211,17 +211,17 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(
               child: FreeScrollListView(
                 reverse: true,
-                shrinkWrap: false,
+                shrinkWrap: true,
                 controller: _controller,
                 //physics: const AlwaysScrollableScrollPhysics(),
-                /*headerView: Container(
+                headerView: Container(
                   height: 60,
                   color: Colors.redAccent,
                 ),
                 footerView: Container(
                   height: 60,
                   color: Colors.blue,
-                ),*/
+                ),
                 onStartIndexChange: (int index) {
                   if (kDebugMode) {
                     print("A$index");
