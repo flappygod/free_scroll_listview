@@ -185,6 +185,9 @@ class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
   @override
   Widget build(BuildContext context) {
     _checkPreviewHeight();
+    if (widget.controller._previewCount == 0) {
+      return const SizedBox.shrink();
+    }
     return SizedBox(
       height: 0.01,
       width: double.infinity,
