@@ -1965,7 +1965,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
       if (_minScrollExtend == negativeInfinityValue) {
         return;
       }
-      if (pixels > _minScrollExtend - _minScrollLimit) {
+      if (pixels >= _minScrollExtend - _minScrollLimit) {
         return;
       }
 
