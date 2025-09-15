@@ -78,12 +78,12 @@ class _MyHomePageState extends State<MyHomePage> {
   ///跳转到某个位置，尾部空间不足的情况
   Future _resetOne() {
     List<String> dataList = [];
-    for (int s = 0; s < 20; s++) {
+    for (int s = 0; s < 12; s++) {
       dataList.add(s.toString());
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 14,
+      index: 0,
       anchorOffset: 0,
       duration: const Duration(milliseconds: 320),
       align: FreeScrollType.bottomToTop,
@@ -139,6 +139,16 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  ///设置第一个项目的高度
+  void _resetSeven() {
+    int first = int.tryParse(_controller.dataList.first) ?? 0;
+    List<String> dataList = [];
+    for (int s = 0; s < 3; s++) {
+      dataList.add((first - s - 1).toString());
+    }
+    _controller.addDataToHead(dataList.reversed.toList(), tryToMeasure: false);
+  }
+
   ///add data to tail
   Future _checkAddTail() {
     int last = int.tryParse(_controller.dataList.last) ?? 0;
@@ -153,10 +163,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Future _checkAddHead() {
     int first = int.tryParse(_controller.dataList.first) ?? 0;
     List<String> dataList = [];
-    for (int s = 0; s < 20; s++) {
+    for (int s = 0; s < 10; s++) {
       dataList.add((first - s - 1).toString());
     }
-    return _controller.addDataToHead(dataList.reversed.toList());
+    return _controller.addDataToHead(dataList.reversed.toList(),
+        tryToMeasure: true);
   }
 
   @override
@@ -192,7 +203,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     onTap: () {
                       //_resetTwo();
                       //_resetFour();
-                      _checkAddHead();
+                      _resetSeven();
                       //_resetSix();
                     },
                     child: Container(

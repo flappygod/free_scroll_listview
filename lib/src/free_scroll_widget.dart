@@ -616,7 +616,10 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///在顶部添加数据
-  Future<void> addDataToHead(List<T> dataList, {bool measureHeight = true}) {
+  Future<void> addDataToHead(
+    List<T> dataList, {
+    bool tryToMeasure = true,
+  }) {
     return _lock.synchronized(() async {
       ///do nothing
       if (dataList.isEmpty) {
@@ -640,7 +643,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         itemsRectHolder.clear();
 
         ///如果不是负无限就进行偏移
-        if (_negativeHeight != negativeInfinityValue && measureHeight) {
+        if (_negativeHeight != negativeInfinityValue && tryToMeasure) {
           ///之前的高度进行缓存
           double formerTopData = _negativeHeight;
 
