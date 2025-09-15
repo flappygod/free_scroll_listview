@@ -1363,7 +1363,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   ///start animation
   Future _startAnimation(AnimationData data) {
-    _cancelAnimation();
+    ///默认_startAnimation前会手动_cancelAnimation，为防止(非常非常特殊的)边界情况下的异常故如此处理
+    _cancelAnimation(resetAnimationOffset: false);
 
     ///completer
     Completer completer = Completer();
@@ -1442,14 +1443,18 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   }
 
   ///cancel animation
-  void _cancelAnimation() {
+  void _cancelAnimation({
+    bool resetAnimationOffset = true,
+  }) {
     if (_animationController?.isAnimating ?? false) {
       _animationController?.stop();
       _animationController?.reset();
       _animationController?.dispose();
       _animationController = null;
     }
-    _animationOffset = 0;
+    if (resetAnimationOffset) {
+      _animationOffset = 0;
+    }
   }
 
   ///init height
