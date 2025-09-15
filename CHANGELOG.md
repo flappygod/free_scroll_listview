@@ -1,3 +1,3 @@
-## 2.0.6
+## 2.0.7
 
-* Bugs fixed and change some default value.
+* Solved a boundary issue.
