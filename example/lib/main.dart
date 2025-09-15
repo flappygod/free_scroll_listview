@@ -47,7 +47,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   ///controller
-  final FreeScrollListViewController _controller = FreeScrollListViewController();
+  final FreeScrollListViewController _controller =
+      FreeScrollListViewController();
 
   double bottomHeight = 0;
   double itemHeight = 75;
@@ -83,12 +84,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return _controller.setDataAndScrollTo(
       dataList.toList(),
       index: 14,
-      anchorOffset:0,
+      anchorOffset: 0,
       duration: const Duration(milliseconds: 320),
       align: FreeScrollType.bottomToTop,
     );
   }
-
 
   ///重设数据并跳转到指定位置
   void _resetThree() {
@@ -128,7 +128,6 @@ class _MyHomePageState extends State<MyHomePage> {
       align: FreeScrollType.topToBottom,
     );
   }
-
 
   void _resetFour() {
     if (itemHeight == 75) {

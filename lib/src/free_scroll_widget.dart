@@ -189,7 +189,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   void notifyItemRectRemoveOnScreen(int index) {
     //如果是index == 0的item被移除掉了，设置负向滚动距离为无限
     if (index == 0) {
-      _setNegativeHeight(negativeInfinityValue);
+      ///_setNegativeHeight(negativeInfinityValue);
     }
   }
 
@@ -256,87 +256,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
     //提示index被展示
     notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
-    //当前的滚动距离修正
-    position.correctBy(needChangeOffset);
-  }
-
-  ///这里主要是为了解决在动画的过程中，如果发现最后一屏的数据不满了，防止滚动最后留白太多。
-  @Deprecated("这个方法暂时不需要了")
-  void _checkResetLastScreenWhenAnim() {
-    //如果不是在动画中，就直接返回
-    if (!_isAnimating) {
-      return;
-    }
-
-    //最大的index
-    int maxIndex = (dataList.length - 1);
-
-    //当前列表高度
-    double currentListViewHeight = listViewHeight;
-
-    //我们来计算滚动到的最后一屏的高度
-    double lastScreenHeight = 0;
-    int? lastScreenIndex;
-
-    //从最大的index开始方向计算
-    for (int s = maxIndex; s >= 0; s--) {
-      //没有找到高度就代表最后一屏还没有展示完全，不做处理
-      final double? itemHeight = itemsRectHolder[s]?.rectHeight();
-      if (itemHeight == null) {
-        return;
-      }
-      lastScreenHeight += itemHeight;
-
-      //当完成了最后一屏的高度计算大于了当前的列表高度(设置最大的能满足负一屏幕的高度，主要保证Viewport能够正常滚动)
-      if (lastScreenHeight >= currentListViewHeight) {
-        lastScreenIndex = s;
-        break;
-      }
-    }
-    if (lastScreenIndex == null) {
-      return;
-    }
-
-    //如果当前的offset已经比最少需要的lastScreenIndex要小，那么无需做切换就能保证最后一屏的滚动不出现问题
-    int tempCount = _dataListOffset;
-    if (tempCount <= lastScreenIndex) {
-      return;
-    }
-
-    //否则的话我们就需要计算一下需要切换锚定Index的高度的大小是多少
-    double needChangeOffset = 0;
-    for (int s = lastScreenIndex; s < tempCount; s++) {
-      final itemHeight = itemsRectHolder[s]?.rectHeight();
-      if (itemHeight == null) {
-        return;
-      }
-      needChangeOffset += itemHeight;
-    }
-    if (position.pixels < position.minScrollExtent + needChangeOffset) {
-      return;
-    }
-
-    //重置当前的锚定index,
-    _dataListOffset = lastScreenIndex;
-
-    //清空缓存item高度
-    itemsRectHolder.clear();
-
-    //最小高度如果存在那么就进行一个偏移
-    _correctNegativeHeight(needChangeOffset);
-
-    //告诉正在进行的动画列表的锚定已经修改，响应的动画响应位置也需要进行偏移
-    notifyActionSyncListeners(
-      FreeScrollActionSyncType.notifyAnimOffset,
-      data: needChangeOffset,
-    );
-
-    //刷新界面
-    notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-
-    //提示index被展示
-    notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
-
     //当前的滚动距离修正
     position.correctBy(needChangeOffset);
   }
