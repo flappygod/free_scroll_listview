@@ -223,7 +223,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       lastScreenHeight += itemHeight;
     }
     //已经足够
-    if (lastScreenHeight > currentListViewHeight) {
+    if (lastScreenHeight >= currentListViewHeight) {
       return;
     }
 
