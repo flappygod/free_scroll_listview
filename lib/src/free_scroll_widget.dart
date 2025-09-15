@@ -189,7 +189,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   void notifyItemRectRemoveOnScreen(int index) {
     //如果是index == 0的item被移除掉了，设置负向滚动距离为无限
     if (index == 0) {
-      ///_setNegativeHeight(negativeInfinityValue);
+      _setNegativeHeight(negativeInfinityValue);
     }
   }
 
