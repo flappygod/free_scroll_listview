@@ -188,9 +188,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///某个Item将要被移除掉了
   void notifyItemRectRemoveOnScreen(int index) {
     //如果是index == 0的item被移除掉了，设置负向滚动距离为无限
-    if (index == 0) {
+    /*if (index == 0) {
       _setNegativeHeight(negativeInfinityValue);
-    }
+    }*/
   }
 
   ///某个Item展示在屏幕上了
@@ -1258,7 +1258,7 @@ class FreeScrollListView<T> extends StatefulWidget {
     this.physics,
     this.clipBehavior = Clip.hardEdge,
     this.cacheExtent,
-    this.loadOffset = 100,
+    this.loadOffset = 200,
     this.willReachHead,
     this.willReachTail,
     this.headerView,
@@ -1913,6 +1913,9 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   ///min scroll extend
   double _minScrollExtend = negativeInfinityValue;
 
+  ///部分情况下设置了minScrollExtent仍然会滚出去，这里需要特殊处理下
+  final double _minScrollLimit = 150;
+
   ///callback
   late VoidCallback _callback;
 
@@ -1944,12 +1947,12 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
       if (_minScrollExtend == negativeInfinityValue) {
         return;
       }
-      if (pixels > _minScrollExtend - 100) {
+      if (pixels > _minScrollExtend - _minScrollLimit) {
         return;
       }
 
       ///这里限制一下不能负得太多，导致滑动到莫名其妙的位置上去，因为有的时候设置了maxScrollExtent后生效有莫名其妙的时间差
-      jumpTo(min(_minScrollExtend - 100, 0));
+      jumpTo(min(_minScrollExtend - _minScrollLimit, 0));
     };
     removeListener(_callback);
     addListener(_callback);

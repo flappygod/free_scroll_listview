@@ -91,31 +91,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   ///重设数据并跳转到指定位置
-  void _resetThree() {
-    if (bottomHeight == 0) {
-      bottomHeight = 450;
-    } else {
-      bottomHeight = 0;
-    }
-    setState(() {});
-  }
-
-  ///重设数据并跳转到指定位置
-  Future _resetFive() {
-    return _controller.scrollToIndex(0);
-  }
-
-  ///设置第一个项目的高度
-  void _resetSix() {
-    if (itemFirstHeight == 75) {
-      itemFirstHeight = 0;
-    } else {
-      itemFirstHeight = 75;
-    }
-    setState(() {});
-  }
-
-  ///重设数据并跳转到指定位置
   Future _resetTwo() {
     List<String> dataList = [];
     for (int s = 0; s < 20; s++) {
@@ -129,6 +104,22 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  ///重设数据并跳转到指定位置
+  void _resetThree() {
+    if (bottomHeight == 0) {
+      bottomHeight = 450;
+    } else {
+      bottomHeight = 0;
+    }
+    setState(() {});
+  }
+
+  ///重设数据并跳转到指定位置
+  Future _resetFive() {
+    return _controller.scrollToTop();
+  }
+
+  ///重设数据第四项
   void _resetFour() {
     if (itemHeight == 75) {
       itemHeight = 55;
@@ -138,11 +129,21 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  ///设置第一个项目的高度
+  void _resetSix() {
+    if (itemFirstHeight == 75) {
+      itemFirstHeight = 0;
+    } else {
+      itemFirstHeight = 75;
+    }
+    setState(() {});
+  }
+
   ///add data to tail
   Future _checkAddTail() {
     int last = int.tryParse(_controller.dataList.last) ?? 0;
     List<String> dataList = [];
-    for (int s = 0; s < 5; s++) {
+    for (int s = 0; s < 20; s++) {
       dataList.add((s + last + 1).toString());
     }
     return _controller.addDataToTail(dataList);
@@ -152,7 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future _checkAddHead() {
     int first = int.tryParse(_controller.dataList.first) ?? 0;
     List<String> dataList = [];
-    for (int s = 0; s < 5; s++) {
+    for (int s = 0; s < 20; s++) {
       dataList.add((first - s - 1).toString());
     }
     return _controller.addDataToHead(dataList.reversed.toList());
@@ -191,8 +192,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     onTap: () {
                       //_resetTwo();
                       //_resetFour();
-                      //_resetFive();
-                      _resetSix();
+                      _checkAddHead();
+                      //_resetSix();
                     },
                     child: Container(
                       height: 35,
@@ -232,14 +233,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 shrinkWrap: true,
                 controller: _controller,
                 //physics: const AlwaysScrollableScrollPhysics(),
-                /*headerView: Container(
+                headerView: Container(
                   height: 60,
                   color: Colors.redAccent,
                 ),
                 footerView: Container(
                   height: 60,
                   color: Colors.blue,
-                ),*/
+                ),
                 onStartIndexChange: (int index) {
                   if (kDebugMode) {
                     print("A$index");
