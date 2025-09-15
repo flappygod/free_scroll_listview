@@ -245,11 +245,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 controller: _controller,
                 //physics: const AlwaysScrollableScrollPhysics(),
                 headerView: Container(
-                  height: 60,
+                  height: 75,
                   color: Colors.redAccent,
                 ),
                 footerView: Container(
-                  height: 60,
+                  height: 75,
                   color: Colors.blue,
                 ),
                 onStartIndexChange: (int index) {

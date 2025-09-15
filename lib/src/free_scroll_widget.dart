@@ -212,7 +212,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     //当前列表高度
     double currentListViewHeight = listViewHeight;
     //计算最后一屏高度
-    double lastScreenHeight = 0;
+    double lastScreenHeight = footerViewHeight;
+    //反向计算
     for (int s = maxIndex; s >= _dataListOffset; s--) {
       //没有这个值
       final double? itemHeight = itemsRectHolder[s]?.rectHeight();
