@@ -637,6 +637,9 @@ class FreeScrollListViewController<T> extends ScrollController {
         ///添加数据
         _dataList.insertAll(0, dataList);
 
+        ///缓存之前的
+        int formerDataListOffset = _dataListOffset;
+
         ///位置移动
         _dataListOffset = _dataListOffset + dataList.length;
 
@@ -662,6 +665,12 @@ class FreeScrollListViewController<T> extends ScrollController {
             ///重新设置高度
             _setNegativeHeight(formerTopData - previewHeight);
           }
+        }
+
+        ///从0变为非0，这里需要特殊处理headerViewHeight高度
+        double headerHeight = headerViewHeight;
+        if (formerDataListOffset == 0 && headerHeight != 0) {
+          position.correctBy(-headerHeight);
         }
 
         ///通知刷新数据
