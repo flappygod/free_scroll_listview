@@ -78,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ///跳转到某个位置，尾部空间不足的情况
   Future _resetOne() {
     List<String> dataList = [];
-    for (int s = 0; s < 12; s++) {
+    for (int s = 0; s < 100; s++) {
       dataList.add(s.toString());
     }
     return _controller.setDataAndScrollTo(

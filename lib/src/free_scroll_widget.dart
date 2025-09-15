@@ -667,15 +667,15 @@ class FreeScrollListViewController<T> extends ScrollController {
           }
         }
 
-        ///从0变为非0，这里需要特殊处理headerViewHeight高度
-        double headerHeight = headerViewHeight;
-        if (formerDataListOffset == 0 && headerHeight != 0) {
-          position.correctBy(-headerHeight);
-        }
-
         ///通知刷新数据
         notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
+
+        ///从0变为非0，这里需要特殊处理headerViewHeight高度
+        double headerHeight = headerViewHeight;
+        if (formerDataListOffset == 0 && headerHeight != 0) {
+          position.jumpTo(position.pixels - headerHeight);
+        }
       } else {
         ///直接设置位置进行跳转
         setDataAndScrollTo(
