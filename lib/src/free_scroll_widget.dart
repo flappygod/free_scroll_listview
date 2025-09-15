@@ -1965,12 +1965,14 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
       if (_minScrollExtend == negativeInfinityValue) {
         return;
       }
-      if (pixels >= _minScrollExtend - _minScrollLimit) {
+      double limitPos =
+          (_minScrollExtend - _minScrollLimit).removeTinyFraction();
+      if (pixels >= limitPos) {
         return;
       }
 
       ///这里限制一下不能负得太多，导致滑动到莫名其妙的位置上去，因为有的时候设置了maxScrollExtent后生效有莫名其妙的时间差
-      jumpTo(min(_minScrollExtend - _minScrollLimit, 0));
+      jumpTo(min(limitPos, 0));
     };
     removeListener(_callback);
     addListener(_callback);
