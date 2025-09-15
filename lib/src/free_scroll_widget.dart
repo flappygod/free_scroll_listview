@@ -1927,7 +1927,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   double _minScrollExtend = negativeInfinityValue;
 
   ///部分情况下设置了minScrollExtent仍然会滚出去，这里需要特殊处理下
-  final double _minScrollLimit = 150;
+  final double _minScrollLimit = 120;
 
   ///callback
   late VoidCallback _callback;
