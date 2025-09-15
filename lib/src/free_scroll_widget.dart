@@ -165,7 +165,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
-  ///设置负向滚动的最大搞低
+  ///设置负向滚动的最大高度(当前控件只考虑index 0，而实际需要考虑headerViewHeight)
   void _setNegativeHeight(double height) {
     if (!hasClients || position is! _NegativedScrollPosition) {
       return;
@@ -886,7 +886,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///找到当前的index是否在屏幕上显示
     RectHolder? holder = itemsRectHolder[index];
 
-    ///正在显示中
+    ///正在显示中而且没有在动画中
     if (holder != null && holder.isOnScreen && !_isAnimating) {
       double toOffset = holder.rectTop()! + anchorOffset;
       //底部限制
@@ -904,9 +904,9 @@ class FreeScrollListViewController<T> extends ScrollController {
       ));
     }
 
-    ///if index is not exists
+    ///计算Align
     else {
-      ///get align
+      ///根据位置来做处理
       FreeScrollType align = FreeScrollType.topToBottom;
       List<int> keys = itemsRectHolder.keys.toList();
 
@@ -914,7 +914,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         return Future.delayed(Duration.zero);
       }
 
-      ///keys
+      ///键值
       double pixels = position.pixels;
       int currentIndex = keys.first;
       for (int key in itemsRectHolder.keys) {
@@ -928,7 +928,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         }
       }
 
-      ///first
+      ///第一个默认
       if (index < currentIndex || index == 0) {
         align = FreeScrollType.bottomToTop;
       } else {

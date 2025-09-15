@@ -47,8 +47,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   ///controller
-  final FreeScrollListViewController _controller =
-      FreeScrollListViewController();
+  final FreeScrollListViewController _controller = FreeScrollListViewController();
 
   double bottomHeight = 0;
   double itemHeight = 75;
@@ -56,41 +55,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
+    _resetStart();
+    super.initState();
+  }
+
+  ///初始设置位置进行定位
+  void _resetStart() {
     List<String> dataList = [];
-    for (int s = 0; s < 6; s++) {
+    for (int s = 0; s < 100; s++) {
       dataList.add((s).toString());
     }
     _controller.setDataAndScrollTo(
       dataList,
-      index: 5,
+      index: 35,
       duration: Duration.zero,
       align: FreeScrollType.directJumpTo,
+      anchorOffset: 30,
     );
-
-    super.initState();
   }
 
-  ///add data to tail
-  Future _checkAddTail() {
-    int last = int.tryParse(_controller.dataList.last) ?? 0;
-    List<String> dataList = [];
-    for (int s = 0; s < 5; s++) {
-      dataList.add((s + last + 1).toString());
-    }
-    return _controller.addDataToTail(dataList);
-  }
-
-  ///add data to top
-  Future _checkAddHead() {
-    int first = int.tryParse(_controller.dataList.first) ?? 0;
-    List<String> dataList = [];
-    for (int s = 0; s < 5; s++) {
-      dataList.add((first - s - 1).toString());
-    }
-    return _controller.addDataToHead(dataList.reversed.toList());
-  }
-
-  ///重设数据并跳转到指定位置
+  ///跳转到某个位置，尾部空间不足的情况
   Future _resetOne() {
     List<String> dataList = [];
     for (int s = 0; s < 20; s++) {
@@ -98,11 +82,22 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _controller.setDataAndScrollTo(
       dataList.toList(),
-      index: 4,
-      anchorOffset: 0,
+      index: 14,
+      anchorOffset:0,
       duration: const Duration(milliseconds: 320),
-      align: FreeScrollType.topToBottom,
+      align: FreeScrollType.bottomToTop,
     );
+  }
+
+
+  ///重设数据并跳转到指定位置
+  void _resetThree() {
+    if (bottomHeight == 0) {
+      bottomHeight = 450;
+    } else {
+      bottomHeight = 0;
+    }
+    setState(() {});
   }
 
   ///重设数据并跳转到指定位置
@@ -110,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return _controller.scrollToIndex(0);
   }
 
-  ///重设数据并跳转到指定位置
+  ///设置第一个项目的高度
   void _resetSix() {
     if (itemFirstHeight == 75) {
       itemFirstHeight = 0;
@@ -134,15 +129,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  ///重设数据并跳转到指定位置
-  void _resetThree() {
-    if (bottomHeight == 0) {
-      bottomHeight = 450;
-    } else {
-      bottomHeight = 0;
-    }
-    setState(() {});
-  }
 
   void _resetFour() {
     if (itemHeight == 75) {
@@ -151,6 +137,26 @@ class _MyHomePageState extends State<MyHomePage> {
       itemHeight = 75;
     }
     setState(() {});
+  }
+
+  ///add data to tail
+  Future _checkAddTail() {
+    int last = int.tryParse(_controller.dataList.last) ?? 0;
+    List<String> dataList = [];
+    for (int s = 0; s < 5; s++) {
+      dataList.add((s + last + 1).toString());
+    }
+    return _controller.addDataToTail(dataList);
+  }
+
+  ///add data to top
+  Future _checkAddHead() {
+    int first = int.tryParse(_controller.dataList.first) ?? 0;
+    List<String> dataList = [];
+    for (int s = 0; s < 5; s++) {
+      dataList.add((first - s - 1).toString());
+    }
+    return _controller.addDataToHead(dataList.reversed.toList());
   }
 
   @override
