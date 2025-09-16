@@ -619,7 +619,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///在顶部添加数据
   Future<void> addDataToHead(
     List<T> dataList, {
-    bool tryToMeasure = true,
+    bool tryToMeasureAddedItem = true,
+    bool skipFirstScreenPreview = false,
+    bool skipLastScreenPreview = false,
   }) {
     return _lock.synchronized(() async {
       ///do nothing
@@ -647,7 +649,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         itemsRectHolder.clear();
 
         ///如果不是负无限就进行偏移
-        if (_negativeHeight != negativeInfinityValue && tryToMeasure) {
+        if (_negativeHeight != negativeInfinityValue && tryToMeasureAddedItem) {
           ///之前的高度进行缓存
           double formerTopData = _negativeHeight;
 
@@ -682,6 +684,8 @@ class FreeScrollListViewController<T> extends ScrollController {
           [...dataList, ..._dataList],
           index: max(0, dataList.length - 1),
           align: FreeScrollType.directJumpTo,
+          skipFirstScreenPreview: skipFirstScreenPreview,
+          skipLastScreenPreview: skipLastScreenPreview,
         );
       }
     });
@@ -695,6 +699,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
+    bool skipFirstScreenPreview = false,
+    bool skipLastScreenPreview = false,
   }) {
     if (dataList.isNotEmpty && index >= dataList.length) {
       throw ArgumentError(
@@ -716,6 +722,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       curve: curve,
       duration: duration,
       anchorOffset: anchorOffset,
+      skipFirstScreenPreview: skipFirstScreenPreview,
+      skipLastScreenPreview: skipLastScreenPreview,
     );
   }
 
@@ -731,6 +739,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         anchorOffset: -headerViewHeight,
         curve: curve,
         duration: duration,
+        skipLastScreenPreview: true,
+        skipFirstScreenPreview: true,
       );
     } else {
       return _handleAnimation(animateTo(
@@ -779,6 +789,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
+    bool skipFirstScreenPreview = false,
+    bool skipLastScreenPreview = false,
   }) async {
     if (dataList.isNotEmpty && index >= dataList.length) {
       throw ArgumentError(
@@ -802,6 +814,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         curve: curve,
         duration: duration,
         anchorOffset: anchorOffset,
+        skipFirstScreenPreview: skipFirstScreenPreview,
+        skipLastScreenPreview: skipLastScreenPreview,
       );
     }
 
@@ -873,6 +887,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         curve: curve,
         duration: duration,
         anchorOffset: anchorOffset,
+        skipFirstScreenPreview: skipFirstScreenPreview,
+        skipLastScreenPreview: skipLastScreenPreview,
       );
     }
   }
@@ -997,6 +1013,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     Duration duration = const Duration(milliseconds: 320),
     Curve curve = Curves.easeIn,
     double anchorOffset = 0,
+    bool skipFirstScreenPreview = false,
+    bool skipLastScreenPreview = false,
   }) async {
     ///你不能瞎搞影响性能
     double currentListViewHeight = listViewHeight;
@@ -1034,6 +1052,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         dataList.length,
         previewReverse: true,
         previewExtent: trueAnchorOffset,
+        skip: skipLastScreenPreview,
       );
 
       ///对位置进行修正
@@ -1058,11 +1077,13 @@ class FreeScrollListViewController<T> extends ScrollController {
           dataList.length,
           previewReverse: false,
           previewExtent: max(trueAnchorOffset.abs() - currentListViewHeight, 0),
+          skip: skipFirstScreenPreview,
         ),
         _previewLastController.previewItemsHeight(
           dataList.length,
           previewReverse: true,
           previewExtent: trueAnchorOffset.abs(),
+          skip: skipLastScreenPreview,
         ),
       ]);
 

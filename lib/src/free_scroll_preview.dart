@@ -37,10 +37,12 @@ class AdditionPreviewController<T> extends ChangeNotifier {
     int previewCount, {
     double previewExtent = 0,
     bool previewReverse = false,
+    bool skip = false,
   }) {
     //return null if preview is already gone
-    if (_offsetPreviewCompleter != null &&
-        !_offsetPreviewCompleter!.isCompleted) {
+    if (skip ||
+        (_offsetPreviewCompleter != null &&
+            !_offsetPreviewCompleter!.isCompleted)) {
       return Future.delayed(
         const Duration(milliseconds: 0),
         () => null,

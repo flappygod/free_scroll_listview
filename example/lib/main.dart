@@ -146,7 +146,8 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int s = 0; s < 3; s++) {
       dataList.add((first - s - 1).toString());
     }
-    _controller.addDataToHead(dataList.reversed.toList(), tryToMeasure: false);
+    _controller.addDataToHead(dataList.reversed.toList(),
+        tryToMeasureAddedItem: false);
   }
 
   ///add data to tail
@@ -167,7 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
       dataList.add((first - s - 1).toString());
     }
     return _controller.addDataToHead(dataList.reversed.toList(),
-        tryToMeasure: true);
+        tryToMeasureAddedItem: true);
   }
 
   @override
