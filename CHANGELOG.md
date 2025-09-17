@@ -1,3 +1,3 @@
-## 2.0.10
+## 2.0.11
 
-* Solved a boundary issue.
+* Performance optimize.

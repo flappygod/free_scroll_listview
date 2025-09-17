@@ -207,7 +207,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       return;
     }
 
-    //最大的index
+    ///最大的index
     int maxIndex = (dataList.length - 1);
     //当前列表高度
     double currentListViewHeight = listViewHeight;
@@ -227,7 +227,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       return;
     }
 
-    //否则的话我们就需要计算一下需要切换锚定Index的高度的大小是多少
+    ///否则的话我们就需要计算一下需要切换锚定Index的高度的大小是多少
     double needChangeOffset = 0;
     int? needChangeIndex;
     for (int s = _dataListOffset - 1; s >= 0; s--) {
@@ -242,7 +242,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     if (needChangeIndex == null || _dataListOffset == needChangeOffset) {
       return;
     }
-    //重置当前的锚定index,
+
+    ///重置当前的锚定index,
     _dataListOffset = needChangeIndex;
     //清空缓存item高度
     itemsRectHolder.clear();
@@ -468,7 +469,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         return;
       }
       //首项没有滑出屏幕不处理，让用户无感
-      if ((firstRectBottom ?? 0) - scrollOffset < listViewHeight) {
+      if ((firstRectBottom ?? 0) - scrollOffset < currentListViewHeight) {
         return;
       }
       //跳转
@@ -1478,9 +1479,11 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     }
   }
 
-  ///init height
+  ///如果有正在等待的任务，取消它(创建一个新的定时器)
+  Timer? _debounceTimer;
   void _notifyIndexAndOnShow() {
-    Future.delayed(const Duration(milliseconds: 50)).then((_) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 60), () {
       if (mounted) {
         _notifyIndex();
         _notifyOnShow();
@@ -1509,6 +1512,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   @override
   void dispose() {
     super.dispose();
+    //确保在销毁时取消定时器，避免内存泄漏
+    _debounceTimer?.cancel();
     _animationController?.dispose();
     _animationController = null;
     widget.controller.removeSyncActionListener(_syncListener);
@@ -1640,12 +1645,14 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       //变大
       if (widget.controller._listviewMaxHeight! < constraints.maxHeight) {
         _listViewAreaBigger(
-            widget.controller._listviewMaxHeight!, constraints.maxHeight);
-      }
-      //变小
-      if (widget.controller._listviewMaxHeight! > constraints.maxHeight) {
+          widget.controller._listviewMaxHeight!,
+          constraints.maxHeight,
+        );
+      } else {
         _listViewAreaSmaller(
-            widget.controller._listviewMaxHeight!, constraints.maxHeight);
+          widget.controller._listviewMaxHeight!,
+          constraints.maxHeight,
+        );
       }
       widget.controller._listviewMaxHeight = constraints.maxHeight;
     }
