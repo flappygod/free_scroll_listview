@@ -828,7 +828,10 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
 
     ///所有的数据刷新一遍
-    notifyCheckRectListeners();
+    else if (itemsRectHolder.isEmpty) {
+      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      notifyCheckRectListeners();
+    }
 
     ///找到当前的index是否在屏幕上显示
     RectHolder? holder = itemsRectHolder[index];
@@ -1020,7 +1023,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///你不能瞎搞影响性能
     double currentListViewHeight = listViewHeight;
     if (currentListViewHeight > 0 &&
-        anchorOffset.abs() > currentListViewHeight) {
+        anchorOffset.abs() > currentListViewHeight * 1.5) {
       throw ArgumentError('anchorOffset is too large.');
     }
 
@@ -1535,14 +1538,13 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       clipBehavior: widget.clipBehavior,
 
       ///LayoutBuilder处理整个显示区域出现变化的情况
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          ///检查显示区域大小的变化
-          _checkMaxHeight(constraints);
-
-          return NotificationListener<ScrollNotification>(
-            onNotification: _handleNotification,
-            child: Scrollable(
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _handleNotification,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            ///检查显示区域大小的变化
+            _checkMaxHeight(constraints);
+            return Scrollable(
               key: widget.controller._listViewKey,
               axisDirection: axisDirection,
               controller: widget.controller,
@@ -1629,9 +1631,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                         );
                 });
               },
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
