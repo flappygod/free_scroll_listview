@@ -1528,6 +1528,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     ///最外层裁剪，内部不裁剪
     return ClipRect(
       clipBehavior: widget.clipBehavior,
+
+      ///LayoutBuilder处理整个显示区域出现变化的情况
       child: LayoutBuilder(
         builder: (context, constraints) {
           ///检查显示区域大小的变化
@@ -1635,10 +1637,13 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     widget.controller._listviewMaxHeight ??= constraints.maxHeight;
     //不相等
     if (widget.controller._listviewMaxHeight != constraints.maxHeight) {
+      //变大
       if (widget.controller._listviewMaxHeight! < constraints.maxHeight) {
         _listViewAreaBigger(
             widget.controller._listviewMaxHeight!, constraints.maxHeight);
-      } else {
+      }
+      //变小
+      if (widget.controller._listviewMaxHeight! > constraints.maxHeight) {
         _listViewAreaSmaller(
             widget.controller._listviewMaxHeight!, constraints.maxHeight);
       }
@@ -1967,7 +1972,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     super.debugLabel,
   });
 
-  ///set min scroll extend
+  ///设置最小
   set minScrollExtend(double data) {
     ///已经赋值了
     if (_minScrollExtend == data) {
@@ -1975,7 +1980,7 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     }
     _minScrollExtend = data;
 
-    ///add listener
+    ///添加监听
     _callback = () {
       if (!hasPixels) {
         return;
@@ -1999,12 +2004,12 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
     addListener(_callback);
   }
 
-  ///min scroll extend
+  ///最小Scroll
   double get minScrollExtend {
     return _minScrollExtend;
   }
 
-  ///force negative pixels
+  ///强制负向
   void _forceNegativePixels(double offset) {
     if (hasPixels && hasContentDimensions) {
       super.forcePixels(-offset);
