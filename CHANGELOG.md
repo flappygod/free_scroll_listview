@@ -1,3 +1,3 @@
-## 2.0.11
+## 2.0.12
 
-* Performance optimize.
+* Bug fixes and performance improve.
