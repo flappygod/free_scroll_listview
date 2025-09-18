@@ -2,12 +2,10 @@ import 'package:free_scroll_listview/src/free_scroll_throttller.dart';
 import 'package:free_scroll_listview/src/free_scroll_preview.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'free_scroll_physis.dart';
 import 'free_scroll_wrapper.dart';
+import 'free_scroll_physis.dart';
 import 'free_scroll_base.dart';
 import 'dart:collection';
 import 'dart:async';
@@ -530,9 +528,8 @@ class FreeScrollListViewController<T> extends ScrollController {
   void notifyActionSyncListeners(
     FreeScrollActionSyncType event, {
     dynamic data,
-  }) async {
-    List<FreeScrollListSyncListener> listeners = List.from(_syncListeners);
-    for (FreeScrollListSyncListener listener in listeners) {
+  }) {
+    for (FreeScrollListSyncListener listener in _syncListeners) {
       try {
         listener(event, data: data);
       } catch (e) {
@@ -544,20 +541,25 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///notify listeners
-  Future<void> notifyActionASyncListeners(
+  Future notifyActionASyncListeners(
     FreeScrollActionAsyncType event, {
     dynamic data,
-  }) async {
-    List<FreeScrollListASyncListener> listeners = List.from(_asyncListeners);
-    for (FreeScrollListASyncListener listener in listeners) {
-      try {
-        await listener(event, data: data);
-      } catch (e) {
-        if (kDebugMode) {
-          print(e.toString());
-        }
-      }
+  }) {
+    List<Future> futures = [];
+    for (FreeScrollListASyncListener listener in _asyncListeners) {
+      futures.add(
+        Future(() async {
+          try {
+            await listener(event, data: data);
+          } catch (e) {
+            if (kDebugMode) {
+              print(e.toString());
+            }
+          }
+        }),
+      );
     }
+    return Future.wait(futures);
   }
 
   ///scroll
@@ -1564,7 +1566,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
                   ///Keep the negative scrolling [Viewport] positioned to the [ScrollPosition].
                   offset.addListener(() {
-                    negativeOffset._forceNegativePixels(offset.pixels);
+                    negativeOffset._forceNegativePixels(
+                      offset.pixels,
+                      isOverScrolled(),
+                    );
                   });
 
                   int negativeDataLength = widget.controller._dataListOffset;
@@ -1636,6 +1641,16 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
         ),
       ),
     );
+  }
+
+  ///是否overscroll
+  bool isOverScrolled() {
+    if (!widget.controller.hasClients ||
+        !widget.controller.position.hasPixels) {
+      return false;
+    }
+    ScrollPosition position = widget.controller.position;
+    return position.pixels < position.minScrollExtent + 10;
   }
 
   ///检查控件最大适用的高度
@@ -1972,6 +1987,9 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   ///callback
   late VoidCallback _callback;
 
+  ///是否添加了callback
+  bool _hasCallback = false;
+
   _NegativedScrollPosition({
     required super.physics,
     required super.context,
@@ -2009,8 +2027,12 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
       ///这里限制一下不能负得太多，导致滑动到莫名其妙的位置上去，因为有的时候设置了maxScrollExtent后生效有莫名其妙的时间差
       jumpTo(min(limitPos, 0));
     };
-    removeListener(_callback);
-    addListener(_callback);
+
+    ///只添加一次
+    if (!_hasCallback) {
+      addListener(_callback);
+      _hasCallback = true;
+    }
   }
 
   ///最小Scroll
@@ -2019,14 +2041,41 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
   }
 
   ///强制负向
-  void _forceNegativePixels(double offset) {
-    if (hasPixels && hasContentDimensions) {
+  void _forceNegativePixels(
+    double offset,
+    bool isOverScroll,
+  ) {
+    if (!hasPixels) {
+      return;
+    }
+    if (!hasContentDimensions) {
+      return;
+    }
+    if (isOverScroll) {
+      jumpToPixels(-offset);
+    } else {
       super.forcePixels(-offset);
     }
   }
 
+  ///跳转到指定位置
+  void jumpToPixels(double value) {
+    goIdle();
+    if (pixels != value) {
+      forcePixels(value);
+    }
+    //goBallistic(0.0);
+  }
+
+  ///最小滚动
   @override
-  double get minScrollExtent => min(_minScrollExtend, maxScrollExtent);
+  double get minScrollExtent {
+    if (hasContentDimensions) {
+      return min(_minScrollExtend, maxScrollExtent);
+    } else {
+      return _minScrollExtend;
+    }
+  }
 }
 
 ///wait
