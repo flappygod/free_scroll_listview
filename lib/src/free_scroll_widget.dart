@@ -669,7 +669,15 @@ class FreeScrollListViewController<T> extends ScrollController {
           if ((previewModel?.allPreviewed ?? false) && previewHeight != null) {
             ///重新设置高度
             _setNegativeHeight(formerTopData - previewHeight);
+          } else {
+            ///无法预测多高，直接设置无法计算的高度
+            _setNegativeHeight(_negativeHeight);
           }
+        }
+
+        ///无法预测多高，直接设置无法计算的高度
+        else if (!tryToMeasureAddedItem) {
+          _setNegativeHeight(_negativeHeight);
         }
 
         ///通知刷新数据
