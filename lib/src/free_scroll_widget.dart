@@ -824,6 +824,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     double anchorOffset = 0,
     bool skipFirstScreenPreview = false,
     bool skipLastScreenPreview = false,
+    bool trustedMaxScrollExtent = true,
+    bool trustedMinScrollExtent = true,
   }) async {
     if (dataList.isNotEmpty && index >= dataList.length) {
       throw ArgumentError(
@@ -872,11 +874,13 @@ class FreeScrollListViewController<T> extends ScrollController {
     if (holder != null && holder.isOnScreen && !_isAnimating) {
       double toOffset = holder.rectTop()! + anchorOffset;
       //底部限制
-      if (hasClients && position.maxScrollExtent != double.maxFinite) {
+      if (hasClients &&
+          position.maxScrollExtent != double.maxFinite &&
+          trustedMaxScrollExtent) {
         toOffset = min(position.maxScrollExtent, toOffset);
       }
       //顶部限制
-      if (!position.minScrollExtent.isInfinite) {
+      if (!position.minScrollExtent.isInfinite && trustedMinScrollExtent) {
         toOffset = max(position.minScrollExtent, toOffset);
       }
       return _handleAnimation(animateTo(
