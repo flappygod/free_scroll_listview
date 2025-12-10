@@ -876,11 +876,11 @@ class FreeScrollListViewController<T> extends ScrollController {
       //底部限制
       if (hasClients &&
           position.maxScrollExtent != double.maxFinite &&
-          trustedMaxScrollExtent) {
+          trustMaxScrollExtent) {
         toOffset = min(position.maxScrollExtent, toOffset);
       }
       //顶部限制
-      if (!position.minScrollExtent.isInfinite && trustedMinScrollExtent) {
+      if (!position.minScrollExtent.isInfinite && trustMinScrollExtent) {
         toOffset = max(position.minScrollExtent, toOffset);
       }
       return _handleAnimation(animateTo(
