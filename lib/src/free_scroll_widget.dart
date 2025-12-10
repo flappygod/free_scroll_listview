@@ -76,6 +76,9 @@ class FreeScrollListViewController<T> extends ScrollController {
   //current index
   int _currentEndIndex = -1;
 
+  //current range
+  List<int> _currentRangeIndex = [];
+
   //is animating
   bool _isAnimating = false;
 
@@ -100,6 +103,25 @@ class FreeScrollListViewController<T> extends ScrollController {
   //当前在屏幕上结束的index
   int get currentEndIndex {
     return _currentEndIndex;
+  }
+
+  //当前在屏幕上展示的Range Index
+  List<int> get currentRangeIndex {
+    return _currentRangeIndex;
+  }
+
+  //当前在屏幕上展示的Range数据
+  List<T> get currentRangeData {
+    if (_currentRangeIndex.isNotEmpty &&
+        _currentRangeIndex.first >= 0 &&
+        _currentRangeIndex.length > _currentRangeIndex.last) {
+      return dataList.sublist(
+        _currentRangeIndex.first,
+        _currentRangeIndex.last + 1,
+      );
+    } else {
+      return [];
+    }
   }
 
   ///这里获取的值是当前item顶部相对于View的距离
@@ -1494,13 +1516,14 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   ///如果有正在等待的任务，取消它(创建一个新的定时器)
   Timer? _debounceTimer;
+
   void _notifyIndexAndOnShow() {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 60), () {
-      if (mounted) {
-        _notifyIndex();
-        _notifyOnShow();
+      if (!mounted) {
+        return;
       }
+      _notifyStartEndRange(notifyOnShow: true);
     });
   }
 
@@ -1850,80 +1873,45 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
     ///notify the on show
     if (notification is ScrollUpdateNotification) {
-      _notifyIndex();
-      if ((widget.notifyItemShowWhenAllTypeScroll ||
+      ///全部/或者手势拖动
+      bool notifyOnShow = (widget.notifyItemShowWhenAllTypeScroll ||
           (widget.notifyItemShowWhenGestureScroll &&
-              notification.dragDetails != null))) {
-        if (_throttler.duration.inMilliseconds == 0) {
-          _notifyOnShow();
-        } else {
-          _throttler.throttle(() {
-            _notifyOnShow();
-          });
-        }
-      }
+              notification.dragDetails != null));
+      _notifyStartEndRange(notifyOnShow: notifyOnShow);
     }
     return false;
   }
 
-  ///notify current on show
-  void _notifyOnShow() {
-    if (!mounted || widget.onItemShow == null) {
-      return;
-    }
-
-    ///item show
-    List<int> keys = [];
-
-    ///listview height
-    double listViewHeight = widget.controller.listViewHeight;
-
-    ///keys
-    for (int key in widget.controller.itemsRectHolder.keys) {
-      RectHolder? holder = widget.controller.itemsRectHolder[key];
-
-      if (holder == null || !holder.isOnScreen) {
-        continue;
-      }
-
-      double? rectBottom = holder.rectBottom();
-      double? rectTop = holder.rectTop();
-      if (rectBottom == null || rectTop == null) {
-        continue;
-      }
-
-      ///offset top
-      double offsetTop = rectTop - widget.controller.position.pixels;
-      double offsetBottom = rectBottom - widget.controller.position.pixels;
-
-      ///Listview height
-      if ((offsetTop >= 0 && offsetBottom <= listViewHeight) ||
-          offsetTop <= 0 && offsetBottom >= listViewHeight) {
-        keys.add(key);
-      }
-    }
-
-    ///keys data
-    if (keys.isNotEmpty) {
-      widget.onItemShow?.call(keys);
-    }
-  }
-
-  ///notify index if changed
-  void _notifyIndex() {
+  ///检查notify Start End and Range
+  void _notifyStartEndRange({bool notifyOnShow = true}) {
     if (!mounted) {
       return;
     }
 
+    ///获取pixels
     double pixels = widget.controller.position.pixels;
 
-    ///listview height
+    ///获取列表高度
     double listViewHeight = widget.controller.listViewHeight;
 
-    ///get sorted key
+    ///排序
     List<int> sortedKeys = widget.controller.itemsRectHolder.keys.toList();
 
-    ///start index
+    ///保证不为空
+    if (sortedKeys.isEmpty) {
+      return;
+    }
+
+    /// 保证不为空
+    if (sortedKeys.isEmpty) {
+      return;
+    }
+
+    ///定义StartIndex和EndIndex
+    int? startIndex;
+    int? endIndex;
+
+    /// 找到开始 Index
     for (int key in sortedKeys) {
       RectHolder? holder = widget.controller.itemsRectHolder[key];
       if (holder == null || !holder.isOnScreen) {
@@ -1937,19 +1925,16 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
       double offsetBottom = rectBottom - pixels;
       if (offsetBottom.round() > 0) {
-        int index = key;
-        if (widget.controller._currentStartIndex != index) {
-          widget.controller._currentStartIndex = index;
-          widget.onStartIndexChange?.call(index);
+        startIndex = key;
+        if (widget.controller._currentStartIndex != key) {
+          widget.controller._currentStartIndex = key;
+          widget.onStartIndexChange?.call(key);
         }
         break;
       }
     }
 
-    ///end index
-    if (sortedKeys.isEmpty) {
-      return;
-    }
+    ///找到结束Index
     for (int s = sortedKeys.length - 1; s >= 0; s--) {
       int key = sortedKeys[s];
       RectHolder? holder = widget.controller.itemsRectHolder[key];
@@ -1964,13 +1949,31 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
       double offsetTop = rectTop - pixels;
       if (offsetTop.round() < listViewHeight) {
-        int index = key;
-        if (widget.controller._currentEndIndex != index) {
-          widget.controller._currentEndIndex = index;
-          widget.onEndIndexChange?.call(index);
+        endIndex = key;
+        if (widget.controller._currentEndIndex != key) {
+          widget.controller._currentEndIndex = key;
+          widget.onEndIndexChange?.call(key);
         }
         break;
       }
+    }
+
+    ///如果StartIndex和EndIndex都找到，直接构造RangeKeys
+    List<int> rangeKeys = [];
+    if (startIndex != null && endIndex != null) {
+      int start = sortedKeys.indexOf(startIndex);
+      int end = sortedKeys.indexOf(endIndex);
+      if (start <= end) {
+        rangeKeys = sortedKeys.sublist(start, end + 1);
+      }
+    }
+
+    ///onItemShow的通知增加一个节流
+    widget.controller._currentRangeIndex = rangeKeys;
+    if (rangeKeys.isNotEmpty && notifyOnShow) {
+      _throttler.throttle(() {
+        widget.onItemShow?.call(rangeKeys);
+      });
     }
   }
 
