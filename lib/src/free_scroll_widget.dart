@@ -824,8 +824,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     double anchorOffset = 0,
     bool skipFirstScreenPreview = false,
     bool skipLastScreenPreview = false,
-    bool trustedMaxScrollExtent = true,
-    bool trustedMinScrollExtent = true,
+    bool trustMaxScrollExtent = true,
+    bool trustMinScrollExtent = true,
   }) async {
     if (dataList.isNotEmpty && index >= dataList.length) {
       throw ArgumentError(
