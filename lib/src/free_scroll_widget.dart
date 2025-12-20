@@ -638,6 +638,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       itemsRectHolder.clear();
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
+      await waitForPostFrameCallback();
     });
   }
 
@@ -711,6 +712,9 @@ class FreeScrollListViewController<T> extends ScrollController {
         if (formerDataListOffset == 0 && headerHeight != 0) {
           position.jumpTo(position.pixels - headerHeight);
         }
+
+        ///等待一个帧数
+        await waitForPostFrameCallback();
       } else {
         ///直接设置位置进行跳转
         setDataAndScrollTo(
