@@ -40,9 +40,6 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   ///当前的rect holder
   final RectHolder _rectHolder = RectHolder();
 
-  ///check rect listener
-  late VoidCallback _checkRectListener;
-
   ///refresh state listener
   late ValueChanged<int> _refreshStateListener;
 
@@ -130,12 +127,6 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   void initState() {
-    ///init listener
-    _checkRectListener = () {
-      _refreshRectItems();
-    };
-    widget.controller.addRefreshItemRectListener(_checkRectListener);
-
     ///refresh item
     _refreshStateListener = (int index) {
       if (index == widget.actualIndex) {
@@ -153,11 +144,12 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
     ///监听更换
     if (oldWidget.controller != widget.controller) {
-      oldWidget.controller.removeRefreshItemRectListener(_checkRectListener);
-      oldWidget.controller
-          .removeRefreshItemStateListener(_refreshStateListener);
-      widget.controller.addRefreshItemRectListener(_checkRectListener);
-      widget.controller.addRefreshItemStateListener(_refreshStateListener);
+      oldWidget.controller.removeRefreshItemStateListener(
+        _refreshStateListener,
+      );
+      widget.controller.addRefreshItemStateListener(
+        _refreshStateListener,
+      );
     }
 
     ///index发送了改变，View被服用了
@@ -173,7 +165,6 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   void dispose() {
-    widget.controller.removeRefreshItemRectListener(_checkRectListener);
     widget.controller.removeRefreshItemStateListener(_refreshStateListener);
 
     ///移除rect

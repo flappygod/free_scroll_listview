@@ -52,9 +52,6 @@ class FreeScrollListViewController<T> extends ScrollController {
   //异步监听
   final Set<FreeScrollListASyncListener> _asyncListeners = {};
 
-  //check rect listeners
-  final Set<VoidCallback> _refreshItemRectListeners = {};
-
   //item state listeners
   final Set<ValueChanged<int>> _refreshItemStateListeners = {};
 
@@ -511,24 +508,6 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
-  ///add refresh item rect listener
-  void addRefreshItemRectListener(VoidCallback listener) {
-    _refreshItemRectListeners.add(listener);
-  }
-
-  ///remove refresh item rect listener
-  bool removeRefreshItemRectListener(VoidCallback listener) {
-    return _refreshItemRectListeners.remove(listener);
-  }
-
-  ///notify check rect listeners
-  void notifyCheckRectListeners() {
-    List<VoidCallback> listeners = List.from(_refreshItemRectListeners);
-    for (VoidCallback listener in listeners) {
-      listener();
-    }
-  }
-
   ///add check rect listener
   void addRefreshItemStateListener(ValueChanged<int> listener) {
     _refreshItemStateListeners.add(listener);
@@ -889,7 +868,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     ///所有的数据刷新一遍
     else if (itemsRectHolder.isEmpty) {
       notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-      notifyCheckRectListeners();
+      await waitForPostFrameCallback();
     }
 
     ///找到当前的index是否在屏幕上显示
@@ -1874,7 +1853,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     if (notification is ScrollStartNotification &&
         notification.dragDetails != null) {
       _cancelAnimation();
-      widget.controller.notifyCheckRectListeners();
     }
 
     ///加载之前的消息，FormerMessages

@@ -1,3 +1,3 @@
-## 2.0.13
+## 2.0.15
 
-* Bug fixes and performance improve.
+* refresh only one item when updateData and remove un need code.
