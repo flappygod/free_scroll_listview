@@ -53,7 +53,10 @@ class FreeScrollListViewController<T> extends ScrollController {
   final Set<FreeScrollListASyncListener> _asyncListeners = {};
 
   //check rect listeners
-  final Set<VoidCallback> _checkRectListeners = {};
+  final Set<VoidCallback> _refreshItemRectListeners = {};
+
+  //item state listeners
+  final Set<ValueChanged<int>> _refreshItemStateListeners = {};
 
   //尾部一屏幕的预览
   final AdditionPreviewController<T> _previewLastController =
@@ -508,14 +511,40 @@ class FreeScrollListViewController<T> extends ScrollController {
     }
   }
 
+  ///add refresh item rect listener
+  void addRefreshItemRectListener(VoidCallback listener) {
+    _refreshItemRectListeners.add(listener);
+  }
+
+  ///remove refresh item rect listener
+  bool removeRefreshItemRectListener(VoidCallback listener) {
+    return _refreshItemRectListeners.remove(listener);
+  }
+
+  ///notify check rect listeners
+  void notifyCheckRectListeners() {
+    List<VoidCallback> listeners = List.from(_refreshItemRectListeners);
+    for (VoidCallback listener in listeners) {
+      listener();
+    }
+  }
+
   ///add check rect listener
-  void addCheckRectListener(VoidCallback listener) {
-    _checkRectListeners.add(listener);
+  void addRefreshItemStateListener(ValueChanged<int> listener) {
+    _refreshItemStateListeners.add(listener);
   }
 
   ///remove check rect listener
-  bool removeCheckRectListener(VoidCallback listener) {
-    return _checkRectListeners.remove(listener);
+  bool removeRefreshItemStateListener(ValueChanged<int> listener) {
+    return _refreshItemStateListeners.remove(listener);
+  }
+
+  ///notify refresh item state
+  void notifyRefreshItemStateListener(int index) {
+    List<ValueChanged<int>> listeners = List.from(_refreshItemStateListeners);
+    for (ValueChanged<int> listener in listeners) {
+      listener(index);
+    }
   }
 
   ///add listener
@@ -536,14 +565,6 @@ class FreeScrollListViewController<T> extends ScrollController {
   ///remove listener
   bool removeASyncActionListener(FreeScrollListASyncListener listener) {
     return _asyncListeners.remove(listener);
-  }
-
-  ///notify check rect listeners
-  void notifyCheckRectListeners() {
-    List<VoidCallback> listeners = List.from(_checkRectListeners);
-    for (VoidCallback listener in listeners) {
-      listener();
-    }
   }
 
   ///notify listeners
@@ -627,7 +648,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     assert(index >= 0 && index < dataList.length);
     _dataList[index] = t;
     itemsRectHolder.clear();
-    notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+    notifyRefreshItemStateListener(index);
     notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
   }
 

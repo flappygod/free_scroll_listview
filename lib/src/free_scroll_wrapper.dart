@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 ///包装器小部件，用于帮助获取项目的偏移量
 ///如果项目的大小是固定的，则无需将小部件包装到项目中
 class AnchorItemWrapper extends StatefulWidget {
+  static const int refreshRect = 1;
+  static const int refreshState = 2;
+
   const AnchorItemWrapper({
     required this.actualIndex,
     required this.controller,
@@ -39,6 +42,9 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   ///check rect listener
   late VoidCallback _checkRectListener;
+
+  ///refresh state listener
+  late ValueChanged<int> _refreshStateListener;
 
   ///refresh rect
   void _refreshRectItems() {
@@ -128,7 +134,15 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
     _checkRectListener = () {
       _refreshRectItems();
     };
-    widget.controller.addCheckRectListener(_checkRectListener);
+    widget.controller.addRefreshItemRectListener(_checkRectListener);
+
+    ///refresh item
+    _refreshStateListener = (int index) {
+      if (index == widget.actualIndex) {
+        setState(() {});
+      }
+    };
+    widget.controller.addRefreshItemStateListener(_refreshStateListener);
 
     ///refresh
     _updateScrollRectToController();
@@ -139,8 +153,11 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   void didUpdateWidget(AnchorItemWrapper oldWidget) {
     ///监听更换
     if (oldWidget.controller != widget.controller) {
-      oldWidget.controller.removeCheckRectListener(_checkRectListener);
-      widget.controller.addCheckRectListener(_checkRectListener);
+      oldWidget.controller.removeRefreshItemRectListener(_checkRectListener);
+      oldWidget.controller
+          .removeRefreshItemStateListener(_refreshStateListener);
+      widget.controller.addRefreshItemRectListener(_checkRectListener);
+      widget.controller.addRefreshItemStateListener(_refreshStateListener);
     }
 
     ///index发送了改变，View被服用了
@@ -156,7 +173,8 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
 
   @override
   void dispose() {
-    widget.controller.removeCheckRectListener(_checkRectListener);
+    widget.controller.removeRefreshItemRectListener(_checkRectListener);
+    widget.controller.removeRefreshItemStateListener(_refreshStateListener);
 
     ///移除rect
     _removeFrameRect(widget.actualIndex);
