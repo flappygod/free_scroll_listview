@@ -12,7 +12,7 @@ class AnchorItemWrapper extends StatefulWidget {
     required this.controller,
     this.reverse = false,
     this.addRepaintBoundary = false,
-    this.child,
+    this.builder,
     super.key,
   });
 
@@ -20,7 +20,7 @@ class AnchorItemWrapper extends StatefulWidget {
   final FreeScrollListViewController controller;
 
   //子小部件
-  final Widget? child;
+  final NullableIndexedWidgetBuilder? builder;
 
   //项目的索引
   final int actualIndex;
@@ -178,10 +178,12 @@ class AnchorItemWrapperState extends State<AnchorItemWrapper> {
   Widget build(BuildContext context) {
     if (widget.addRepaintBoundary) {
       return RepaintBoundary(
-        child: widget.child ?? const SizedBox(),
+        child: widget.builder?.call(context, widget.actualIndex) ??
+            const SizedBox(),
       );
     } else {
-      return widget.child ?? const SizedBox();
+      return widget.builder?.call(context, widget.actualIndex) ??
+          const SizedBox();
     }
   }
 }

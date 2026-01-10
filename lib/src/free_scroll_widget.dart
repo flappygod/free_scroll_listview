@@ -1626,7 +1626,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                             actualIndex: actualIndex,
                             controller: widget.controller,
                             addRepaintBoundary: widget.addRepaintBoundary,
-                            child: widget.builder(context, actualIndex),
+                            builder: widget.builder,
                           );
                         },
                         childCount: negativeDataLength,
@@ -1647,7 +1647,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
                             actualIndex: actualIndex,
                             controller: widget.controller,
                             addRepaintBoundary: widget.addRepaintBoundary,
-                            child: widget.builder(context, actualIndex),
+                            builder: widget.builder,
                           );
                         },
                         childCount: positiveDataLength,
