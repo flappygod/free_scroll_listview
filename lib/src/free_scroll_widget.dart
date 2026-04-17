@@ -114,7 +114,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   List<T> get currentRangeData {
     if (_currentRangeIndex.isNotEmpty &&
         _currentRangeIndex.first >= 0 &&
-        _currentRangeIndex.length > _currentRangeIndex.last) {
+        dataList.length > _currentRangeIndex.last) {
       return dataList.sublist(
         _currentRangeIndex.first,
         _currentRangeIndex.last + 1,
@@ -259,7 +259,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       needChangeOffset += itemHeight;
     }
     //没有找到
-    if (needChangeIndex == null || _dataListOffset == needChangeOffset) {
+    if (needChangeIndex == null || _dataListOffset == needChangeIndex) {
       return;
     }
 
@@ -1511,10 +1511,12 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void _cancelAnimation({
     bool resetAnimationOffset = true,
   }) {
-    if (_animationController?.isAnimating ?? false) {
-      _animationController?.stop();
-      _animationController?.reset();
-      _animationController?.dispose();
+    if (_animationController != null) {
+      if (_animationController!.isAnimating) {
+        _animationController!.stop();
+      }
+      _animationController!.reset();
+      _animationController!.dispose();
       _animationController = null;
     }
     if (resetAnimationOffset) {
@@ -1905,11 +1907,6 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     List<int> sortedKeys = widget.controller.itemsRectHolder.keys.toList();
 
     ///保证不为空
-    if (sortedKeys.isEmpty) {
-      return;
-    }
-
-    /// 保证不为空
     if (sortedKeys.isEmpty) {
       return;
     }

@@ -40,11 +40,15 @@ class TimeStampDeBouncer {
       return;
     }
     _isAction = true;
-    action().then((_) {
+    try {
+      action().then((_) {
+        _isAction = false;
+      }).catchError((error) {
+        _isAction = false;
+      });
+    } catch (_) {
       _isAction = false;
-    }).catchError((error) {
-      _isAction = false;
-    });
+    }
   }
 }
 

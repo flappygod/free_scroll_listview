@@ -1,3 +1,3 @@
-## 2.0.16
+## 2.0.17
 
-* Bugs fixed in updateData.
+* Bugs fixed by gpt.
