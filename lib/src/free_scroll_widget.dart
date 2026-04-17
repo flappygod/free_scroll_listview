@@ -1374,6 +1374,7 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   ///animation controller and offset
   AnimationController? _animationController;
+  Completer<void>? _animationCompleter;
   double _animationOffset = 0;
 
   ///init listener
@@ -1432,7 +1433,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     _cancelAnimation(resetAnimationOffset: false);
 
     ///completer
-    Completer completer = Completer();
+    final Completer<void> completer = Completer<void>();
+    _animationCompleter = completer;
 
     ///Define a custom animation from start to end
     AnimationController animationController = AnimationController(
@@ -1511,6 +1513,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   void _cancelAnimation({
     bool resetAnimationOffset = true,
   }) {
+    if (_animationCompleter != null && !_animationCompleter!.isCompleted) {
+      _animationCompleter!.complete();
+    }
+    _animationCompleter = null;
     if (_animationController != null) {
       if (_animationController!.isAnimating) {
         _animationController!.stop();
@@ -1894,6 +1900,9 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   ///检查notify Start End and Range
   void _notifyStartEndRange({bool notifyOnShow = true}) {
     if (!mounted) {
+      return;
+    }
+    if (!widget.controller.hasClients || !widget.controller.position.hasPixels) {
       return;
     }
 
