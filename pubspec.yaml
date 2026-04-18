@@ -1,5 +1,5 @@
 name: free_scroll_listview
-description: "This is a listview support scroll to any index with animation you need. "
+description: "A Flutter list view that supports animated scrolling to any index and efficient head/tail data insertion."
 version: 2.0.19
 homepage: https://github.com/flappygod/free_scroll_listview.git
 

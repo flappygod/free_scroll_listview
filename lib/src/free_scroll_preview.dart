@@ -73,7 +73,7 @@ class AdditionPreviewController<T> extends ChangeNotifier {
         _previewWidgetList.clear();
         notifyListeners();
 
-        //如果原 completer 还没完成，不再强行 complete，直接超时返回 null
+        //如果原 completer 还没完成，这里补一个 null 结果，避免外部继续等待
         //后续即使 postFrame 回来，_checkPreviewHeight 里也会因为 completer 状态变化而退出
         if (completer != null && !completer.isCompleted) {
           completer.complete(null);
