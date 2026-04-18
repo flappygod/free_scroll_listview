@@ -9,7 +9,10 @@ class PreviewModel {
   Map<int, double> itemHeights = {};
 }
 
-/// addition preview controller
+///预览最多等待200毫秒
+const Duration kPreviewItemsTimeout = Duration(milliseconds: 200);
+
+///addition preview controller
 class AdditionPreviewController<T> extends ChangeNotifier {
   //preview offset keys
   final Map<int, GlobalKey> _previewKeys = {};
@@ -43,10 +46,7 @@ class AdditionPreviewController<T> extends ChangeNotifier {
     if (skip ||
         (_offsetPreviewCompleter != null &&
             !_offsetPreviewCompleter!.isCompleted)) {
-      return Future.delayed(
-        const Duration(milliseconds: 0),
-        () => null,
-      );
+      return Future.value(null);
     }
 
     //preview setting
@@ -56,13 +56,37 @@ class AdditionPreviewController<T> extends ChangeNotifier {
 
     _previewKeys.clear();
     _previewWidgetList.clear();
-    _offsetPreviewCompleter = Completer();
+    _offsetPreviewCompleter = Completer<PreviewModel?>();
     notifyListeners();
-    return _offsetPreviewCompleter!.future;
+
+    return _offsetPreviewCompleter!.future.timeout(
+      kPreviewItemsTimeout,
+      onTimeout: () {
+        final completer = _offsetPreviewCompleter;
+
+        //超时后清理状态，避免后续一直卡在“已有未完成预览”
+        _offsetPreviewCompleter = null;
+        _previewCount = 0;
+        _previewReverse = false;
+        _previewExtent = 0;
+        _previewKeys.clear();
+        _previewWidgetList.clear();
+        notifyListeners();
+
+        //如果原 completer 还没完成，不再强行 complete，直接超时返回 null
+        //后续即使 postFrame 回来，_checkPreviewHeight 里也会因为 completer 状态变化而退出
+        if (completer != null && !completer.isCompleted) {
+          //不 complete，交给 timeout 返回值兜底
+          completer.complete(null);
+        }
+
+        return null;
+      },
+    );
   }
 }
 
-/// addition preview
+///addition preview
 class AdditionPreview<T> extends StatefulWidget {
   //controller
   final AdditionPreviewController<T> controller;
@@ -94,7 +118,7 @@ class AdditionPreview<T> extends StatefulWidget {
   }
 }
 
-/// addition preview state
+///addition preview state
 class _AdditionPreviewState<T> extends State<AdditionPreview<T>>
     with SingleTickerProviderStateMixin {
   //listener

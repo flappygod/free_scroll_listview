@@ -270,14 +270,14 @@ class FreeScrollListViewController<T> extends ScrollController {
     //最小高度如果存在那么就进行一个偏移
     _correctNegativeHeight(needChangeOffset);
     //告诉正在进行的动画列表的锚定已经修改，响应的动画响应位置也需要进行偏移
-    notifyActionSyncListeners(
+    _notifyActionSyncListeners(
       FreeScrollActionSyncType.notifyAnimOffset,
       data: needChangeOffset,
     );
     //刷新界面
-    notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+    _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
     //提示index被展示
-    notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
+    _notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
     //当前的滚动距离修正
     position.correctBy(needChangeOffset);
   }
@@ -414,7 +414,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       //执行偏移
       _correctNegativeHeight(heightChanged);
       //通知动画
-      notifyActionSyncListeners(
+      _notifyActionSyncListeners(
         FreeScrollActionSyncType.notifyAnimOffset,
         data: heightChanged,
       );
@@ -477,7 +477,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       itemsRectHolder.clear();
       _setNegativeHeight(0);
       position.jumpTo(0);
-      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       return;
     }
 
@@ -501,7 +501,7 @@ class FreeScrollListViewController<T> extends ScrollController {
       //这种锚定就直接设置为负向无限滚动后等待自动刷新赋值最小negative高度
       _setNegativeHeight(negativeInfinityValue);
       //跳转到指定位置
-      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       //跳转
       position.jumpTo(reIndexOffset);
       return;
@@ -519,7 +519,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///notify refresh item state
-  void notifyRefreshItemStateListener(int index) {
+  void _notifyRefreshItemStateListener(int index) {
     List<ValueChanged<int>> listeners = List.from(_refreshItemStateListeners);
     for (ValueChanged<int> listener in listeners) {
       listener(index);
@@ -527,27 +527,27 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///add listener
-  void addSyncActionListener(FreeScrollListSyncListener listener) {
+  void _addSyncActionListener(FreeScrollListSyncListener listener) {
     _syncListeners.add(listener);
   }
 
   ///remove listener
-  bool removeSyncActionListener(FreeScrollListSyncListener listener) {
+  bool _removeSyncActionListener(FreeScrollListSyncListener listener) {
     return _syncListeners.remove(listener);
   }
 
   ///add listener
-  void addASyncActionListener(FreeScrollListASyncListener listener) {
+  void _addASyncActionListener(FreeScrollListASyncListener listener) {
     _asyncListeners.add(listener);
   }
 
   ///remove listener
-  bool removeASyncActionListener(FreeScrollListASyncListener listener) {
+  bool _removeASyncActionListener(FreeScrollListASyncListener listener) {
     return _asyncListeners.remove(listener);
   }
 
   ///notify listeners
-  void notifyActionSyncListeners(
+  void _notifyActionSyncListeners(
     FreeScrollActionSyncType event, {
     dynamic data,
   }) {
@@ -563,7 +563,7 @@ class FreeScrollListViewController<T> extends ScrollController {
   }
 
   ///notify listeners
-  Future notifyActionASyncListeners(
+  Future _notifyActionASyncListeners(
     FreeScrollActionAsyncType event, {
     dynamic data,
   }) {
@@ -606,8 +606,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataList.clear();
       _dataList.addAll(dataList);
       _dataListOffset = 0;
-      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-      notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
+      _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      _notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
     }
 
     ///set data if is init
@@ -617,8 +617,8 @@ class FreeScrollListViewController<T> extends ScrollController {
       _dataList.clear();
       _dataList.addAll(dataList);
       _dataListOffset = min(_dataListOffset, dataList.length);
-      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-      notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
+      _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      _notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
     }
   }
 
@@ -627,8 +627,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     assert(index >= 0 && index < dataList.length);
     _dataList[index] = t;
     itemsRectHolder.clear();
-    notifyRefreshItemStateListener(index);
-    notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
+    _notifyRefreshItemStateListener(index);
+    _notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
   }
 
   ///add data to tail
@@ -636,8 +636,8 @@ class FreeScrollListViewController<T> extends ScrollController {
     return _lock.synchronized(() async {
       _dataList.addAll(dataList);
       itemsRectHolder.clear();
-      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-      notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
+      _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      _notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
       await waitForPostFrameCallback();
     });
   }
@@ -704,8 +704,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         }
 
         ///通知刷新数据
-        notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
-        notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
+        _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+        _notifyActionASyncListeners(FreeScrollActionAsyncType.notifyIndexShow);
 
         ///从0变为非0，这里需要特殊处理headerViewHeight高度
         double headerHeight = headerViewHeight;
@@ -860,14 +860,14 @@ class FreeScrollListViewController<T> extends ScrollController {
 
     ///这里主要是停止当前的动画
     if (isAnimating) {
-      notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
-      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      _notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
+      _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       await waitForPostFrameCallback();
     }
 
     ///所有的数据刷新一遍
     else if (itemsRectHolder.isEmpty) {
-      notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+      _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
       await waitForPostFrameCallback();
     }
 
@@ -1172,8 +1172,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         _setNegativeHeight(negativeInfinityValue);
         itemsRectHolder.clear();
         _dataListOffset = fixedIndex;
-        notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
-        notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+        _notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
+        _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         await waitForPostFrameCallback();
 
         AnimationData data = AnimationData(
@@ -1185,7 +1185,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         );
 
         ///start animation
-        return _handleAnimation(notifyActionASyncListeners(
+        return _handleAnimation(_notifyActionASyncListeners(
           FreeScrollActionAsyncType.notifyAnimStart,
           data: data,
         ));
@@ -1195,8 +1195,8 @@ class FreeScrollListViewController<T> extends ScrollController {
         _setNegativeHeight(negativeInfinityValue);
         itemsRectHolder.clear();
         _dataListOffset = fixedIndex;
-        notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
-        notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+        _notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
+        _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         await waitForPostFrameCallback();
 
         AnimationData data = AnimationData(
@@ -1208,7 +1208,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         );
 
         ///start animation
-        return _handleAnimation(notifyActionASyncListeners(
+        return _handleAnimation(_notifyActionASyncListeners(
           FreeScrollActionAsyncType.notifyAnimStart,
           data: data,
         ));
@@ -1218,13 +1218,13 @@ class FreeScrollListViewController<T> extends ScrollController {
         _setNegativeHeight(negativeInfinityValue);
         itemsRectHolder.clear();
         _dataListOffset = fixedIndex;
-        notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
-        notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
+        _notifyActionSyncListeners(FreeScrollActionSyncType.notifyAnimStop);
+        _notifyActionSyncListeners(FreeScrollActionSyncType.notifyData);
         if (hasClients && position.hasPixels) {
           jumpTo(fixedAnchor);
         }
         await waitForPostFrameCallback();
-        return notifyActionASyncListeners(
+        return _notifyActionASyncListeners(
           FreeScrollActionAsyncType.notifyIndexShow,
         );
     }
@@ -1236,7 +1236,7 @@ class FreeScrollListViewController<T> extends ScrollController {
     return futureFunction.whenComplete(() {
       _isAnimating = false;
       _resetIndexIfNeeded();
-      notifyActionASyncListeners(
+      _notifyActionASyncListeners(
         FreeScrollActionAsyncType.notifyIndexShow,
       );
     });
@@ -1423,8 +1423,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
           break;
       }
     };
-    widget.controller.addSyncActionListener(_syncListener);
-    widget.controller.addASyncActionListener(_aSyncListener);
+    widget.controller._addSyncActionListener(_syncListener);
+    widget.controller._addASyncActionListener(_aSyncListener);
   }
 
   ///start animation
@@ -1553,10 +1553,10 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
   @override
   void didUpdateWidget(FreeScrollListView oldWidget) {
     if (widget.controller != oldWidget.controller) {
-      oldWidget.controller.removeSyncActionListener(_syncListener);
-      oldWidget.controller.removeASyncActionListener(_aSyncListener);
-      widget.controller.addSyncActionListener(_syncListener);
-      widget.controller.addASyncActionListener(_aSyncListener);
+      oldWidget.controller._removeSyncActionListener(_syncListener);
+      oldWidget.controller._removeASyncActionListener(_aSyncListener);
+      widget.controller._addSyncActionListener(_syncListener);
+      widget.controller._addASyncActionListener(_aSyncListener);
     }
     super.didUpdateWidget(oldWidget);
   }
@@ -1568,8 +1568,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     _debounceTimer?.cancel();
     _animationController?.dispose();
     _animationController = null;
-    widget.controller.removeSyncActionListener(_syncListener);
-    widget.controller.removeASyncActionListener(_aSyncListener);
+    widget.controller._removeSyncActionListener(_syncListener);
+    widget.controller._removeASyncActionListener(_aSyncListener);
   }
 
   @override
@@ -1902,7 +1902,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
     if (!mounted) {
       return;
     }
-    if (!widget.controller.hasClients || !widget.controller.position.hasPixels) {
+    if (!widget.controller.hasClients ||
+        !widget.controller.position.hasPixels) {
       return;
     }
 
