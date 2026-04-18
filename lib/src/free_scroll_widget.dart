@@ -717,7 +717,7 @@ class FreeScrollListViewController<T> extends ScrollController {
         await waitForPostFrameCallback();
       } else {
         ///直接设置位置进行跳转
-        setDataAndScrollTo(
+        return await setDataAndScrollTo(
           [...dataList, ..._dataList],
           index: max(0, dataList.length - 1),
           align: FreeScrollType.directJumpTo,
