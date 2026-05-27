@@ -1444,12 +1444,13 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
     ///add status listener
     animationController.addStatusListener((status) {
-      //监听动画状态
       if (status == AnimationStatus.completed ||
           status == AnimationStatus.dismissed) {
-        //动画自然完成时，调用 completer.complete()
         if (!completer.isCompleted) {
           completer.complete();
+        }
+        if (_animationController == animationController) {
+          _cancelAnimation(resetAnimationOffset: false);
         }
       }
     });
@@ -1465,6 +1466,8 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       begin: data.startPosition,
       end: data.endPosition,
     ).animate(curvedAnimation);
+
+    ///添加监听
     animation.addListener(() {
       ///controller
       if (animationController != _animationController ||
@@ -1517,13 +1520,13 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
       _animationCompleter!.complete();
     }
     _animationCompleter = null;
-    if (_animationController != null) {
-      if (_animationController!.isAnimating) {
-        _animationController!.stop();
+    final AnimationController? controller = _animationController;
+    _animationController = null;
+    if (controller != null) {
+      if (controller.isAnimating) {
+        controller.stop();
       }
-      _animationController!.reset();
-      _animationController!.dispose();
-      _animationController = null;
+      controller.dispose();
     }
     if (resetAnimationOffset) {
       _animationOffset = 0;
@@ -1563,13 +1566,11 @@ class FreeScrollListViewState<T> extends State<FreeScrollListView>
 
   @override
   void dispose() {
-    super.dispose();
-    //确保在销毁时取消定时器，避免内存泄漏
     _debounceTimer?.cancel();
-    _animationController?.dispose();
-    _animationController = null;
+    _cancelAnimation();
     widget.controller._removeSyncActionListener(_syncListener);
     widget.controller._removeASyncActionListener(_aSyncListener);
+    super.dispose();
   }
 
   @override
@@ -2058,6 +2059,15 @@ class _NegativedScrollPosition extends ScrollPositionWithSingleContext {
       addListener(_callback);
       _hasCallback = true;
     }
+  }
+
+  @override
+  void dispose() {
+    if (_hasCallback) {
+      removeListener(_callback);
+      _hasCallback = false;
+    }
+    super.dispose();
   }
 
   ///最小Scroll

@@ -1,5 +1,3 @@
-## 2.0.19
+## 2.0.20
 
-- Fix concurrent update handling when prepending data and waiting for scroll updates.
-- Improve preview timeout handling to avoid stale pending preview state.
-- Refresh package documentation for publishing.
+- Fix bugs which will cause error positon when animation complete.
